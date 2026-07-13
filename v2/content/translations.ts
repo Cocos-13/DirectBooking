@@ -39,8 +39,15 @@ export interface Dictionary {
   };
   reviews: {
     heading: string;
-    subtitle: string;
+    ratingCount: string;
+    superhost: string;
     viewAllCta: string;
+  };
+  gallery: {
+    viewAll: string;
+    close: string;
+    prev: string;
+    next: string;
   };
   location: {
     heading: string;
@@ -177,8 +184,15 @@ export const translations: Record<Lang, Dictionary> = {
     },
     reviews: {
       heading: "Κριτικές επισκεπτών",
-      subtitle: "4.96★ από 23 κριτικές στο Airbnb",
+      ratingCount: "{count} κριτικές",
+      superhost: "Airbnb Superhost",
       viewAllCta: "Δείτε όλες τις κριτικές στο Airbnb",
+    },
+    gallery: {
+      viewAll: "Δείτε και τις {count} φωτογραφίες",
+      close: "Κλείσιμο",
+      prev: "Προηγούμενη",
+      next: "Επόμενη",
     },
     location: {
       heading: "Τοποθεσία",
@@ -320,8 +334,15 @@ export const translations: Record<Lang, Dictionary> = {
     },
     reviews: {
       heading: "Guest reviews",
-      subtitle: "4.96★ from 23 reviews on Airbnb",
+      ratingCount: "{count} reviews",
+      superhost: "Airbnb Superhost",
       viewAllCta: "See all reviews on Airbnb",
+    },
+    gallery: {
+      viewAll: "View all {count} photos",
+      close: "Close",
+      prev: "Previous",
+      next: "Next",
     },
     location: {
       heading: "Location",
