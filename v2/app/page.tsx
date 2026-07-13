@@ -7,6 +7,7 @@ import { Reviews } from "@/components/Reviews";
 import { LocationSection } from "@/components/LocationSection";
 import { HouseRules } from "@/components/HouseRules";
 import { BookingSection } from "@/components/BookingSection";
+import { BookingBar } from "@/components/BookingBar";
 import { Footer } from "@/components/Footer";
 import { siteConfig } from "@/content/siteConfig";
 
@@ -65,6 +66,7 @@ export default function HomePage() {
         <BookingSection />
       </main>
       <Footer />
+      <BookingBar />
     </>
   );
 }

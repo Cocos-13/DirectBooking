@@ -28,15 +28,7 @@ export function Header() {
             </a>
           ))}
         </nav>
-        <div className="flex items-center gap-3">
-          <a
-            href="#book"
-            className="hidden rounded-full bg-terracotta-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 sm:inline-block"
-          >
-            {t.nav.book}
-          </a>
-          <LanguageToggle />
-        </div>
+        <LanguageToggle />
       </div>
     </header>
   );

@@ -31,7 +31,11 @@ export interface Dictionary {
   };
   amenities: {
     heading: string;
-    items: string[];
+    groups: {
+      key: string;
+      label: string;
+      items: string[];
+    }[];
   };
   reviews: {
     heading: string;
@@ -121,30 +125,54 @@ export const translations: Record<Lang, Dictionary> = {
     },
     amenities: {
       heading: "Παροχές",
-      items: [
-        "Wifi",
-        "Ειδικός χώρος εργασίας",
-        "Πλήρως εξοπλισμένη κουζίνα",
-        "Ψυγείο και καταψύκτης",
-        "Φούρνος και ηλεκτρική εστία",
-        "Βραστήρας",
-        "Καφετιέρα Nespresso",
-        "Κατσαρόλες, τηγάνια, πιάτα και μαχαιροπίρουνα",
-        "Κλιματισμός",
-        "Τηλεόραση",
-        "Πλυντήριο ρούχων και απλώστρα",
-        "Σίδερο",
-        "Πιστολάκι για τα μαλλιά",
-        "Αφρόλουτρο και προϊόντα καθαρισμού",
-        "Πετσέτες, σεντόνια, σαπούνι και χαρτί υγείας",
-        "Ζεστό νερό",
-        "Θυρίδα ασφαλείας",
-        "Ανιχνευτής καπνού και πυροσβεστήρας",
-        "Κουτί πρώτων βοηθειών",
-        "Ασανσέρ",
-        "Δωρεάν πάρκινγκ στον δρόμο",
-        "Self check-in με κλειδοθήκη",
-        "Επιτρέπονται διαμονές 28+ διανυκτερεύσεων",
+      groups: [
+        {
+          key: "kitchen",
+          label: "Κουζίνα & φαγητό",
+          items: [
+            "Πλήρως εξοπλισμένη κουζίνα",
+            "Ψυγείο και καταψύκτης",
+            "Φούρνος και ηλεκτρική εστία",
+            "Βραστήρας",
+            "Καφετιέρα Nespresso",
+            "Κατσαρόλες, τηγάνια, πιάτα και μαχαιροπίρουνα",
+          ],
+        },
+        {
+          key: "comfort",
+          label: "Άνεση & βασικά",
+          items: [
+            "Wifi",
+            "Ειδικός χώρος εργασίας",
+            "Κλιματισμός",
+            "Τηλεόραση",
+            "Ζεστό νερό",
+            "Πλυντήριο ρούχων και απλώστρα",
+            "Σίδερο",
+            "Πιστολάκι για τα μαλλιά",
+            "Αφρόλουτρο και προϊόντα καθαρισμού",
+            "Πετσέτες, σεντόνια, σαπούνι και χαρτί υγείας",
+          ],
+        },
+        {
+          key: "safety",
+          label: "Ασφάλεια",
+          items: [
+            "Θυρίδα ασφαλείας",
+            "Ανιχνευτής καπνού και πυροσβεστήρας",
+            "Κουτί πρώτων βοηθειών",
+          ],
+        },
+        {
+          key: "access",
+          label: "Πρόσβαση & πρακτικά",
+          items: [
+            "Ασανσέρ",
+            "Δωρεάν πάρκινγκ στον δρόμο",
+            "Self check-in με κλειδοθήκη",
+            "Επιτρέπονται διαμονές 28+ διανυκτερεύσεων",
+          ],
+        },
       ],
     },
     reviews: {
@@ -240,30 +268,54 @@ export const translations: Record<Lang, Dictionary> = {
     },
     amenities: {
       heading: "Amenities",
-      items: [
-        "Wifi",
-        "Dedicated workspace",
-        "Fully equipped kitchen",
-        "Fridge and freezer",
-        "Oven and stove",
-        "Kettle",
-        "Nespresso coffee machine",
-        "Pots, pans, dishes and cutlery",
-        "Air conditioning",
-        "TV",
-        "Washing machine and drying rack",
-        "Iron",
-        "Hair dryer",
-        "Body soap and cleaning products",
-        "Towels, bed linen, soap and toilet paper",
-        "Hot water",
-        "Safe",
-        "Smoke alarm and fire extinguisher",
-        "First aid kit",
-        "Elevator",
-        "Free street parking",
-        "Self check-in with lockbox",
-        "Long-term stays allowed (28+ nights)",
+      groups: [
+        {
+          key: "kitchen",
+          label: "Kitchen & dining",
+          items: [
+            "Fully equipped kitchen",
+            "Fridge and freezer",
+            "Oven and stove",
+            "Kettle",
+            "Nespresso coffee machine",
+            "Pots, pans, dishes and cutlery",
+          ],
+        },
+        {
+          key: "comfort",
+          label: "Comfort & essentials",
+          items: [
+            "Wifi",
+            "Dedicated workspace",
+            "Air conditioning",
+            "TV",
+            "Hot water",
+            "Washing machine and drying rack",
+            "Iron",
+            "Hair dryer",
+            "Body soap and cleaning products",
+            "Towels, bed linen, soap and toilet paper",
+          ],
+        },
+        {
+          key: "safety",
+          label: "Safety",
+          items: [
+            "Safe",
+            "Smoke alarm and fire extinguisher",
+            "First aid kit",
+          ],
+        },
+        {
+          key: "access",
+          label: "Access & practical",
+          items: [
+            "Elevator",
+            "Free street parking",
+            "Self check-in with lockbox",
+            "Long-term stays allowed (28+ nights)",
+          ],
+        },
       ],
     },
     reviews: {
