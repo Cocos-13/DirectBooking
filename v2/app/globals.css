@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: #367e8a; /* aegean-500 */
+  --rdp-background-color: #dcedef; /* aegean-100 */
+  --rdp-accent-color-dark: #2a6570; /* aegean-600 */
+  --rdp-background-color-dark: #204e57; /* aegean-700 */
+  --rdp-outline: 2px solid var(--rdp-accent-color);
+  --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+}
+
+.rdp {
+  margin: 0;
+}
+
+/* Highlights a free single night that exactly fills a 1-night gap between
+   two bookings — the "orphan gap" exception to the 2-night minimum. */
+.rdp-orphan:not([aria-disabled="true"]) {
+  border-radius: 9999px;
+  box-shadow: inset 0 0 0 2px #e3805a; /* terracotta-400 */
+}
+
+body {
+  color: #132f35; /* aegean-900 */
+}
