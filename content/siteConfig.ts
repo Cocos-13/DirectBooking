@@ -46,8 +46,8 @@ export const siteConfig = {
   // Cross-links to the existing listings (used in the footer / schema
   // sameAs — also a soft trust signal: "already trusted by X guests").
   listings: {
-    airbnbUrl: "https://www.airbnb.com/rooms/903662123074717726",
-    bookingUrl: "https://www.booking.com/hotel/gr/TODO.html",
+    airbnbUrl: "https://www.airbnb.gr/rooms/903662123074717726",
+    bookingUrl: "https://www.booking.com/hotel/gr/comfy-3br-downtown-patras-ypsila-alonia-view.el.html?aid=2311236",
   },
 
   ratings: {
