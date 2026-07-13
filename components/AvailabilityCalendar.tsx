@@ -31,7 +31,16 @@ export function AvailabilityCalendar({ disabledDates, orphanGapNights, selected,
       <DayPicker
         mode="range"
         selected={selected}
-        onSelect={onSelect}
+        onSelect={(range, selectedDay) => {
+          // If a complete range was already selected, clicking any date starts
+          // a fresh check-in instead of extending the existing stay
+          // (matches Booking.com's picker behavior).
+          if (selected?.from && selected?.to) {
+            onSelect({ from: selectedDay, to: undefined });
+            return;
+          }
+          onSelect(range);
+        }}
         disabled={[{ before: today }, { after: horizon }, ...disabled]}
         modifiers={{ orphan }}
         modifiersClassNames={{ orphan: "rdp-orphan" }}

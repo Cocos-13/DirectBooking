@@ -40,8 +40,8 @@ export const siteConfig = {
   // Cross-links to the existing listings (used in the footer / schema
   // sameAs — also a soft trust signal: "already trusted by X guests").
   listings: {
-    airbnbUrl: "https://www.airbnb.com/rooms/TODO",
-    bookingUrl: "https://www.booking.com/hotel/gr/TODO.html",
+    airbnbUrl: "https://www.airbnb.gr/rooms/903662123074717726",
+    bookingUrl: "https://www.booking.com/hotel/gr/comfy-3br-downtown-patras-ypsila-alonia-view.el.html?aid=2311236",
   },
 
   ratings: {
@@ -52,9 +52,9 @@ export const siteConfig = {
   images: [
     // Add real photos to /public/images and list them here in display
     // order. The first image is used as the hero/OG image.
-    { src: "/images/placeholder-1.jpg", altKey: "gallery.alt1" },
-    { src: "/images/placeholder-2.jpg", altKey: "gallery.alt2" },
-    { src: "/images/placeholder-3.jpg", altKey: "gallery.alt3" },
+    { src: "/images/living-room.jpg", altKey: "gallery.alt1" },
+    { src: "/images/bedroom-balcony.jpg", altKey: "gallery.alt2" },
+    { src: "/images/patras-square.jpg", altKey: "gallery.alt3" },
   ],
 
   // How far ahead the availability calendar shows.

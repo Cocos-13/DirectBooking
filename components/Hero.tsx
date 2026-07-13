@@ -10,7 +10,7 @@ export function Hero() {
 
   return (
     <section id="top" className="relative">
-      <div className="relative h-[62vh] min-h-[420px] w-full overflow-hidden bg-aegean-900">
+      <div className="relative h-[calc(100vh-4rem)] min-h-[420px] w-full overflow-hidden bg-aegean-900">
         {heroImage && (
           <Image
             src={heroImage.src}
@@ -22,7 +22,7 @@ export function Hero() {
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-aegean-900/80 via-aegean-900/20 to-aegean-900/10" />
-        <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 px-4 pb-10 sm:px-8 sm:pb-14">
+        <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 px-4 pb-10 sm:px-8 sm:pb-150">
           <div className="mx-auto w-full max-w-5xl">
             <p className="mb-2 text-sm font-medium uppercase tracking-wide text-sand-100/90">
               {t.hero.kicker}

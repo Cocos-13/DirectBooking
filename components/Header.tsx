@@ -15,8 +15,8 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-sand-200 bg-sand-50/90 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+    <header className="sticky top-0 z-50 h-16 border-b border-sand-200 bg-sand-50/90 backdrop-blur">
+      <div className="mx-auto flex h-full max-w-5xl items-center justify-between gap-4 px-4">
         <a href="#top" className="font-semibold text-aegean-700">
           {siteConfig.name}
         </a>
