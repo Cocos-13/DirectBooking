@@ -8,18 +8,17 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://your-site.vercel.app",
 
   address: {
-    streetAddress: "TODO: street & number",
+    streetAddress: "Αθανασίου Διάκου 32",
     addressLocality: "Πάτρα",
     addressRegion: "Αχαΐα",
     postalCode: "TODO",
     addressCountry: "GR",
   },
 
-  // Approximate coordinates near Psila Alonia square — replace with the
-  // exact building location for the map embed and schema.org geo tags.
+  // Coordinates for Athanasiou Diakou 32, right on Psila Alonia square.
   geo: {
-    latitude: 38.2466,
-    longitude: 21.7346,
+    latitude: 38.2406534,
+    longitude: 21.7327531,
   },
 
   contact: {
@@ -30,8 +29,15 @@ export const siteConfig = {
   capacity: {
     maxGuests: 5,
     bedrooms: 2,
-    beds: 3, // 1 double + 1 single + 1 sofa bed
+    beds: 2,
     bathrooms: 1,
+  },
+
+  host: {
+    name: "Κωνσταντίνος",
+    hostingSinceMonths: 9,
+    responseRate: 100,
+    responseTime: "within an hour",
   },
 
   // Simple placeholder pricing — no dynamic pricing in v1.
@@ -40,21 +46,51 @@ export const siteConfig = {
   // Cross-links to the existing listings (used in the footer / schema
   // sameAs — also a soft trust signal: "already trusted by X guests").
   listings: {
-    airbnbUrl: "https://www.airbnb.com/rooms/TODO",
+    airbnbUrl: "https://www.airbnb.com/rooms/903662123074717726",
     bookingUrl: "https://www.booking.com/hotel/gr/TODO.html",
   },
 
   ratings: {
-    airbnbScore: 4.95,
+    airbnbScore: 4.96,
+    airbnbReviewCount: 23,
     airbnbIsSuperhost: true,
   },
+
+  // Quoted verbatim from Airbnb guest reviews — left in their original
+  // language rather than translated, since they're direct quotes.
+  reviews: [
+    {
+      name: "Errietta",
+      text: "Μείναμε πέντε ημέρες την Πρωτοχρονιά στο διαμέρισμα με τον σύζυγό μου και τα δίδυμα αγόρια μας (28 μηνών) και η εμπειρία μας ήταν εξαιρετική. Το σπίτι ήταν πεντακάθαρο, ζεστό, πλήρως εξοπλισμένο και ιδιαίτερα πρακτικό. Ο Κωνσταντίνος ήταν εξαιρετικός οικοδεσπότης: πολύ φιλικός, άμεσος και ευγενικός. Το συστήνουμε ανεπιφύλακτα, ειδικά σε οικογένειες.",
+    },
+    {
+      name: "Paulina",
+      text: "We had a great stay! The place was clean, comfortable, and exactly as described. The host was friendly, responsive, and made check-in easy. We'd happily stay here again and highly recommend it to others! 👌🏽",
+    },
+    {
+      name: "Juela",
+      text: "Ενα από τα καλύτερα καταλύματα που έχω επισκεφθεί, ο χώρος ήταν πεντακάθαρος και εξαιρετικά τακτοποιημένος, ο δε οικοδεσπότης ευγενέστατος και πολύ φιλικός παρέχοντας λεπτομερείς οδηγίες για ό,τι χρειαζόμασταν. Ευελπιστώ να μείνω ξανά σύντομα!",
+    },
+    {
+      name: "Athanasia",
+      text: "Μείναμε με την οικογένειά μου στο κατάλυμα του Κωνσταντίνου και μείναμε κατενθουσιασμένοι! Ο χώρος ήταν πεντακάθαρος, όμορφος και πολύ προσεγμένος. Ο Κωνσταντίνος ήταν εξαιρετικός οικοδεσπότης – ευγενικός, εξυπηρετικός και πάντα άμεσος στην επικοινωνία.",
+    },
+    {
+      name: "Tasos",
+      text: "Εξαιρετικός",
+    },
+    {
+      name: "James",
+      text: "Great space to stay in Patras. The flat was easy to get to, clean and had everything needed. The location was ideal, and lots to do around.",
+    },
+  ],
 
   images: [
     // Add real photos to /public/images and list them here in display
     // order. The first image is used as the hero/OG image.
-    { src: "/images/placeholder-1.jpg", altKey: "gallery.alt1" },
-    { src: "/images/placeholder-2.jpg", altKey: "gallery.alt2" },
-    { src: "/images/placeholder-3.jpg", altKey: "gallery.alt3" },
+    { src: "/images/living-room.jpg", altKey: "gallery.alt1" },
+    { src: "/images/bedroom-balcony.jpg", altKey: "gallery.alt2" },
+    { src: "/images/patras-square.jpg", altKey: "gallery.alt3" },
   ],
 
   // How far ahead the availability calendar shows.

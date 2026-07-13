@@ -8,6 +8,7 @@ export interface Dictionary {
   nav: {
     description: string;
     amenities: string;
+    reviews: string;
     location: string;
     rules: string;
     book: string;
@@ -31,6 +32,11 @@ export interface Dictionary {
   amenities: {
     heading: string;
     items: string[];
+  };
+  reviews: {
+    heading: string;
+    subtitle: string;
+    viewAllCta: string;
   };
   location: {
     heading: string;
@@ -89,6 +95,7 @@ export const translations: Record<Lang, Dictionary> = {
     nav: {
       description: "Το διαμέρισμα",
       amenities: "Παροχές",
+      reviews: "Κριτικές",
       location: "Τοποθεσία",
       rules: "Κανόνες",
       book: "Κράτηση",
@@ -97,15 +104,15 @@ export const translations: Record<Lang, Dictionary> = {
       kicker: "Πάτρα, κέντρο — κοντά σε Ψηλά Αλώνια",
       tagline: "Το σπίτι σας στην καρδιά της Πάτρας",
       subtitle:
-        "Άνετο διαμέρισμα 70τμ, 2 υπνοδωμάτια, έως 5 άτομα. Superhost στο Airbnb με βαθμολογία 4.95★.",
+        "Άνετο διαμέρισμα 70τμ, 2 υπνοδωμάτια, έως 5 άτομα. Airbnb Superhost με βαθμολογία 4.96★ από 23 κριτικές.",
       cta: "Δείτε διαθεσιμότητα",
       priceFrom: "από {price}€ / διανυκτέρευση",
     },
     description: {
       heading: "Το διαμέρισμα",
       paragraphs: [
-        "Ιδανικό για παρέες, οικογένειες και επαγγελματίες που θέλουν άνεση και στυλ στο κέντρο της πόλης.✨ Πλήρως ανακαινισμένο διαμέρισμα στην καρδιά της Πάτρας, πάνω στην πλατεία Ψηλαλωνίων! Απολαύστε τη θέα από το μπαλκόνι και χαλαρώστε σε μοντέρνους & φωτεινούς χώρους.📍Εξαιρετικό σημείο για να εξερευνήσετε την πόλη, δίπλα σε πολυσύχναστους δρόμους με αμέτρητες επιλογές για φαγητό, καφέ ή ποτό.Ο χώρος Το διαμέρισμα βρίσκεται πάνω στην πλατεία Ψηλαλωνίων, σε ένα από τα πιο όμορφα και κεντρικά σημεία της Πάτρας. Πλήρως ανακαινισμένο, 70τ.μ., με δύο υπνοδωμάτια, φωτεινό σαλόνι, πλήρως εξοπλισμένη κουζίνα και μικρό μπαλκόνι με τραπεζάκι και θέα την πλατεία.",
-        "TODO: Δεύτερη παράγραφος — γειτονιά, κοντινά αξιοθέατα, εύκολη πρόσβαση.",
+        "Ιδανικό για παρέες, οικογένειες και επαγγελματίες που θέλουν άνεση και στυλ στο κέντρο της πόλης. ✨ Πλήρως ανακαινισμένο διαμέρισμα στην καρδιά της Πάτρας, πάνω στην πλατεία Ψηλών Αλωνίων! Απολαύστε τη θέα από το μπαλκόνι και χαλαρώστε σε μοντέρνους & φωτεινούς χώρους. 📍 Εξαιρετικό σημείο για να εξερευνήσετε την πόλη, δίπλα σε πολυσύχναστους δρόμους με αμέτρητες επιλογές για φαγητό, καφέ ή ποτό.",
+        "Το διαμέρισμα βρίσκεται στην οδό Αθανασίου Διάκου 32, πάνω στην πλατεία Ψηλών Αλωνίων, σε ένα από τα πιο όμορφα και κεντρικά σημεία της Πάτρας. Πλήρως ανακαινισμένο, 70τ.μ., με δύο υπνοδωμάτια, φωτεινό σαλόνι, πλήρως εξοπλισμένη κουζίνα και μικρό μπαλκόνι με τραπεζάκι και θέα την πλατεία. Οι επισκέπτες έχουν πλήρη πρόσβαση σε ολόκληρο το διαμέρισμα, με self check-in μέσω κλειδοθήκης για ευέλικτη άφιξη.",
       ],
       statSqm: "τ.μ.",
       statBedrooms: "υπνοδωμάτια",
@@ -115,27 +122,49 @@ export const translations: Record<Lang, Dictionary> = {
     amenities: {
       heading: "Παροχές",
       items: [
-        "Wi-Fi",
+        "Wifi",
+        "Ειδικός χώρος εργασίας",
         "Πλήρως εξοπλισμένη κουζίνα",
+        "Ψυγείο και καταψύκτης",
+        "Φούρνος και ηλεκτρική εστία",
+        "Βραστήρας",
+        "Καφετιέρα Nespresso",
+        "Κατσαρόλες, τηγάνια, πιάτα και μαχαιροπίρουνα",
         "Κλιματισμός",
-        "Πλυντήριο ρούχων",
-        "Smart TV",
+        "Τηλεόραση",
+        "Πλυντήριο ρούχων και απλώστρα",
+        "Σίδερο",
+        "Πιστολάκι για τα μαλλιά",
+        "Αφρόλουτρο και προϊόντα καθαρισμού",
+        "Πετσέτες, σεντόνια, σαπούνι και χαρτί υγείας",
+        "Ζεστό νερό",
+        "Θυρίδα ασφαλείας",
+        "Ανιχνευτής καπνού και πυροσβεστήρας",
+        "Κουτί πρώτων βοηθειών",
         "Ασανσέρ",
+        "Δωρεάν πάρκινγκ στον δρόμο",
+        "Self check-in με κλειδοθήκη",
+        "Επιτρέπονται διαμονές 28+ διανυκτερεύσεων",
       ],
+    },
+    reviews: {
+      heading: "Κριτικές επισκεπτών",
+      subtitle: "4.96★ από 23 κριτικές στο Airbnb",
+      viewAllCta: "Δείτε όλες τις κριτικές στο Airbnb",
     },
     location: {
       heading: "Τοποθεσία",
-      text: "TODO: Περιγραφή τοποθεσίας — απόσταση από Πλατεία Ψηλά Αλώνια, παραλιακό μέτωπο, λιμάνι, φοιτητικές εστίες, εστιατόρια.",
+      text: "Το διαμέρισμα βρίσκεται στην οδό Αθανασίου Διάκου 32, πάνω στην πλατεία Ψηλών Αλωνίων — μία από τις πιο όμορφες και κεντρικές πλατείες της Πάτρας. Λίγα λεπτά με τα πόδια από την παραλιακή, το λιμάνι και τους πεζόδρομους με εστιατόρια, καφέ και μπαρ.",
       mapCta: "Άνοιγμα στο Google Maps",
     },
     houseRules: {
       heading: "Κανόνες Σπιτιού",
       items: [
-        "Check-in: TODO ώρα (π.χ. από 15:00)",
-        "Check-out: TODO ώρα (π.χ. έως 11:00)",
-        "TODO: Απαγορεύεται το κάπνισμα",
-        "TODO: Κατοικίδια κατόπιν συνεννόησης",
-        "TODO: Χωρίς πάρτι / εκδηλώσεις",
+        "Check-in: από 15:00",
+        "Check-out: έως 12:00",
+        "Self check-in μέσω κλειδοθήκης — άφιξη χωρίς την παρουσία οικοδεσπότη",
+        "Επιτρέπονται διαμονές μεγάλης διάρκειας (28+ διανυκτερεύσεις)",
+        "Σύμφωνα με την ελληνική νομοθεσία, απαιτείται το ΑΦΜ του βασικού επισκέπτη κατά το check-in (δήλωση διαμονής στην ΑΑΔΕ)",
       ],
     },
     calendar: {
@@ -185,6 +214,7 @@ export const translations: Record<Lang, Dictionary> = {
     nav: {
       description: "The apartment",
       amenities: "Amenities",
+      reviews: "Reviews",
       location: "Location",
       rules: "House rules",
       book: "Book",
@@ -192,15 +222,16 @@ export const translations: Record<Lang, Dictionary> = {
     hero: {
       kicker: "Patras, city center — near Ypsila Alonia",
       tagline: "Your home in the heart of Patras",
-      subtitle: "Comfortable 70m² apartment, 2 bedrooms, sleeps up to 5. Airbnb Superhost, 4.95★.",
+      subtitle:
+        "Comfortable 70m² apartment, 2 bedrooms, sleeps up to 5. Airbnb Superhost, 4.96★ from 23 reviews.",
       cta: "Check availability",
       priceFrom: "from €{price} / night",
     },
     description: {
       heading: "The apartment",
       paragraphs: [
-        "TODO: Add your English description here — size, layout, atmosphere, what makes it stand out.",
-        "TODO: Second paragraph — neighborhood, nearby sights, easy access.",
+        "Ideal for groups, families, and professionals looking for comfort and style in the city center. ✨ Fully renovated apartment in the heart of Patras, right on Ypsila Alonia square! Enjoy the view from the balcony and relax in modern, bright spaces. 📍 A prime spot for exploring the city, next to bustling streets with countless options for food, coffee, or drinks.",
+        "The apartment is located at Athanasiou Diakou 32, right on Ypsila Alonia square, one of the most beautiful and central spots in Patras. Fully renovated, 70m², with two bedrooms, a bright living room, a fully equipped kitchen, and a small balcony with a table overlooking the square. Guests have full access to the whole apartment, with flexible self check-in via a lockbox.",
       ],
       statSqm: "m²",
       statBedrooms: "bedrooms",
@@ -210,27 +241,49 @@ export const translations: Record<Lang, Dictionary> = {
     amenities: {
       heading: "Amenities",
       items: [
-        "TODO: Wi-Fi",
-        "TODO: Fully equipped kitchen",
-        "TODO: Air conditioning",
-        "TODO: Washing machine",
-        "TODO: Smart TV",
-        "TODO: Elevator",
+        "Wifi",
+        "Dedicated workspace",
+        "Fully equipped kitchen",
+        "Fridge and freezer",
+        "Oven and stove",
+        "Kettle",
+        "Nespresso coffee machine",
+        "Pots, pans, dishes and cutlery",
+        "Air conditioning",
+        "TV",
+        "Washing machine and drying rack",
+        "Iron",
+        "Hair dryer",
+        "Body soap and cleaning products",
+        "Towels, bed linen, soap and toilet paper",
+        "Hot water",
+        "Safe",
+        "Smoke alarm and fire extinguisher",
+        "First aid kit",
+        "Elevator",
+        "Free street parking",
+        "Self check-in with lockbox",
+        "Long-term stays allowed (28+ nights)",
       ],
+    },
+    reviews: {
+      heading: "Guest reviews",
+      subtitle: "4.96★ from 23 reviews on Airbnb",
+      viewAllCta: "See all reviews on Airbnb",
     },
     location: {
       heading: "Location",
-      text: "TODO: Location description — distance to Ypsila Alonia square, waterfront, port, university, restaurants.",
+      text: "The apartment is located at Athanasiou Diakou 32, right on Ypsila Alonia square — one of the most beautiful and central squares in Patras. Just a few minutes' walk from the waterfront, the port, and the pedestrian streets full of restaurants, cafés and bars.",
       mapCta: "Open in Google Maps",
     },
     houseRules: {
       heading: "House Rules",
       items: [
-        "Check-in: TODO time (e.g. from 3:00 PM)",
-        "Check-out: TODO time (e.g. until 11:00 AM)",
-        "TODO: No smoking",
-        "TODO: Pets by arrangement",
-        "TODO: No parties / events",
+        "Check-in: from 3:00 PM",
+        "Check-out: until 12:00 PM",
+        "Self check-in via lockbox — arrive without meeting the host",
+        "Long-term stays allowed (28+ nights)",
+        "Under Greek law, the main guest's tax ID (ΑΦΜ) is required at check-in for stay registration with the tax authority (ΑΑΔΕ)",
       ],
     },
     calendar: {

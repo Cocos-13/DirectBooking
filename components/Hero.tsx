@@ -10,7 +10,7 @@ export function Hero() {
 
   return (
     <section id="top" className="relative">
-      <div className="relative h-[62vh] min-h-[420px] w-full overflow-hidden bg-aegean-900">
+      <div className="relative h-screen min-h-[420px] w-full overflow-hidden bg-aegean-900">
         {heroImage && (
           <Image
             src={heroImage.src}

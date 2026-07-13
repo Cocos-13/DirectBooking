@@ -3,6 +3,7 @@ import { Hero } from "@/components/Hero";
 import { Gallery } from "@/components/Gallery";
 import { Description } from "@/components/Description";
 import { Amenities } from "@/components/Amenities";
+import { Reviews } from "@/components/Reviews";
 import { LocationSection } from "@/components/LocationSection";
 import { HouseRules } from "@/components/HouseRules";
 import { BookingSection } from "@/components/BookingSection";
@@ -15,7 +16,7 @@ export default function HomePage() {
     "@type": ["LodgingBusiness", "VacationRental"],
     name: siteConfig.name,
     description:
-      "Comfortable 70m² apartment in central Patras, near Ypsila Alonia square. Sleeps up to 5 guests.",
+      "Fully renovated 70m² apartment on Ypsila Alonia square in central Patras. 2 bedrooms, sleeps up to 5. Airbnb Superhost.",
     url: siteConfig.url,
     image: siteConfig.images.map((img) => `${siteConfig.url}${img.src}`),
     telephone: siteConfig.contact.phone,
@@ -38,6 +39,11 @@ export default function HomePage() {
       "@type": "QuantitativeValue",
       maxValue: siteConfig.capacity.maxGuests,
     },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: siteConfig.ratings.airbnbScore,
+      reviewCount: siteConfig.ratings.airbnbReviewCount,
+    },
   };
 
   return (
@@ -53,6 +59,7 @@ export default function HomePage() {
         <Gallery />
         <Description />
         <Amenities />
+        <Reviews />
         <LocationSection />
         <HouseRules />
         <BookingSection />

@@ -10,6 +10,7 @@ export function Header() {
   const links = [
     { href: "#description", label: t.nav.description },
     { href: "#amenities", label: t.nav.amenities },
+    { href: "#reviews", label: t.nav.reviews },
     { href: "#location", label: t.nav.location },
     { href: "#rules", label: t.nav.rules },
   ];
