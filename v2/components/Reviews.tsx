@@ -1,6 +1,8 @@
 "use client";
 
 import { useLanguage } from "./LanguageProvider";
+import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 import { siteConfig } from "@/content/siteConfig";
 
 // Deterministic warm-palette avatar tint per reviewer, so colors are stable
@@ -30,16 +32,19 @@ export function Reviews() {
   const { airbnbScore, airbnbReviewCount, airbnbIsSuperhost } = siteConfig.ratings;
 
   return (
-    <section id="reviews" className="mx-auto max-w-5xl px-4 py-16">
-      <h2 className="text-2xl font-bold text-aegean-900 sm:text-3xl">{t.reviews.heading}</h2>
+    <section id="reviews" className="mx-auto max-w-5xl px-4 py-16 sm:py-24">
+      <Reveal>
+        <SectionHeading eyebrow={t.reviews.eyebrow}>{t.reviews.heading}</SectionHeading>
+      </Reveal>
 
       {/* Rating anchor — the primary trust signal */}
-      <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-sand-200 bg-white px-6 py-8 text-center">
-        <div className="text-5xl font-bold tracking-tight text-aegean-900">
-          {airbnbScore.toFixed(2)}
-        </div>
-        <Stars />
-        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-aegean-900/70">
+      <Reveal delay={80}>
+        <div className="mt-8 flex flex-col items-center gap-3 rounded-2xl border border-sand-200 bg-white px-6 py-9 text-center shadow-elev-2">
+          <div className="text-6xl font-bold tracking-tight text-aegean-900">
+            {airbnbScore.toFixed(2)}
+          </div>
+          <Stars />
+          <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-aegean-900/70">
           <span>{t.reviews.ratingCount.replace("{count}", String(airbnbReviewCount))}</span>
           {airbnbIsSuperhost && (
             <>
@@ -54,38 +59,41 @@ export function Reviews() {
               </span>
             </>
           )}
-        </p>
-      </div>
+          </p>
+        </div>
+      </Reveal>
 
       {/* Individual reviews — masonry so varied-length quotes pack cleanly */}
-      <div className="mt-8 gap-4 sm:columns-2">
-        {siteConfig.reviews.map((review, i) => (
-          <figure
-            key={review.name}
-            className="mb-4 break-inside-avoid rounded-2xl border border-sand-200 bg-white p-5"
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
-                aria-hidden
-              >
-                {review.name.charAt(0)}
-              </span>
-              <figcaption className="font-semibold text-aegean-900">{review.name}</figcaption>
-            </div>
-            <blockquote className="mt-3 text-sm leading-relaxed text-aegean-900/80">
-              “{review.text}”
-            </blockquote>
-          </figure>
-        ))}
-      </div>
+      <Reveal delay={120}>
+        <div className="mt-8 gap-4 sm:columns-2">
+          {siteConfig.reviews.map((review, i) => (
+            <figure
+              key={review.name}
+              className="mb-4 break-inside-avoid rounded-2xl border border-sand-200 bg-white p-5 shadow-elev-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-elev-2"
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-white ${AVATAR_COLORS[i % AVATAR_COLORS.length]}`}
+                  aria-hidden
+                >
+                  {review.name.charAt(0)}
+                </span>
+                <figcaption className="font-semibold text-aegean-900">{review.name}</figcaption>
+              </div>
+              <blockquote className="mt-3 text-sm leading-relaxed text-aegean-900/80">
+                “{review.text}”
+              </blockquote>
+            </figure>
+          ))}
+        </div>
+      </Reveal>
 
-      <div className="mt-4 text-center">
+      <div className="mt-6 text-center">
         <a
           href={siteConfig.listings.airbnbUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block text-sm font-semibold text-aegean-600 hover:underline"
+          className="inline-block text-sm font-semibold text-aegean-600 transition-colors hover:text-aegean-700 hover:underline"
         >
           {t.reviews.viewAllCta} →
         </a>

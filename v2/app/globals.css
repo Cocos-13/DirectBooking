@@ -26,3 +26,17 @@
 body {
   color: #132f35; /* aegean-900 */
 }
+
+/* Respect users who ask for less motion: neutralize CSS animations and
+   transitions site-wide. The JS-driven Reveal component checks the same
+   media query and renders its content immediately instead of animating. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

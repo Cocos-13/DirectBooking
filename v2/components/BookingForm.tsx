@@ -71,7 +71,7 @@ export function BookingForm({ range, rangeValid }: Props) {
   const hasDates = !!(range?.from && range?.to);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-sand-200 bg-white p-6">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-sand-200 bg-white p-6 shadow-elev-2">
       <div>
         <h3 className="text-lg font-bold text-aegean-900">{t.form.heading}</h3>
         <p className="mt-1 text-sm text-aegean-900/70">{t.form.subtitle}</p>
@@ -142,7 +142,7 @@ export function BookingForm({ range, rangeValid }: Props) {
       <button
         type="submit"
         disabled={!hasDates || !rangeValid || status === "submitting"}
-        className="w-full rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-terracotta-600 disabled:cursor-not-allowed disabled:bg-sand-200 disabled:text-aegean-900/40"
+        className="w-full rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-white shadow-elev-1 transition-all duration-200 hover:-translate-y-0.5 hover:bg-terracotta-600 hover:shadow-elev-2 active:translate-y-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-sand-200 disabled:text-aegean-900/40 disabled:shadow-none"
       >
         {status === "submitting" ? t.form.submitting : t.form.submit}
       </button>

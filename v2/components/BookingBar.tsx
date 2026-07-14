@@ -64,7 +64,7 @@ export function BookingBar() {
         <a
           href="#book"
           tabIndex={visible ? 0 : -1}
-          className="shrink-0 rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-terracotta-600"
+          className="shrink-0 rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-white shadow-elev-2 transition-all duration-200 hover:-translate-y-0.5 hover:bg-terracotta-600 hover:shadow-elev-3 active:translate-y-0"
         >
           {t.hero.cta}
         </a>

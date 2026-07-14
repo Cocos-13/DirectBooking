@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { useLanguage } from "./LanguageProvider";
+import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 import { AvailabilityCalendar } from "./AvailabilityCalendar";
 import { BookingForm } from "./BookingForm";
 import { evaluateBookingRange } from "@/lib/availability";
@@ -53,16 +55,19 @@ export function BookingSection() {
   }
 
   return (
-    <section id="book" className="mx-auto max-w-3xl px-4 py-12">
-      <h2 className="text-2xl font-bold text-aegean-900">{t.calendar.heading}</h2>
-      <p className="mt-1 text-sm text-aegean-900/70">{t.calendar.subtitle}</p>
+    <section id="book" className="mx-auto max-w-3xl px-4 py-16 sm:py-20">
+      <Reveal>
+        <SectionHeading eyebrow={t.calendar.eyebrow} subtitle={t.calendar.subtitle}>
+          {t.calendar.heading}
+        </SectionHeading>
+      </Reveal>
 
       {loadError && <p className="mt-4 text-sm font-medium text-red-600">{t.calendar.error}</p>}
       {!data && !loadError && <p className="mt-4 text-sm text-aegean-900/60">{t.calendar.loading}</p>}
 
       {data && (
         <>
-          <div className="mt-4">
+          <div className="mt-8">
             <AvailabilityCalendar
               disabledDates={data.disabledDates}
               orphanGapNights={data.orphanGapNights}

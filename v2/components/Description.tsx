@@ -1,42 +1,54 @@
 "use client";
 
 import { useLanguage } from "./LanguageProvider";
+import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 import { siteConfig } from "@/content/siteConfig";
 
 export function Description() {
   const { t } = useLanguage();
   const { capacity } = siteConfig;
 
+  const stats = [
+    { value: "70", label: t.description.statSqm },
+    { value: capacity.bedrooms, label: t.description.statBedrooms },
+    { value: capacity.beds, label: t.description.statBeds },
+    { value: capacity.maxGuests, label: t.description.statGuests },
+  ];
+
   return (
-    <section id="description" className="mx-auto max-w-3xl px-4 py-12">
-      <h2 className="text-2xl font-bold text-aegean-900">{t.description.heading}</h2>
+    <section id="description" className="mx-auto max-w-3xl px-4 py-16 sm:py-20">
+      <Reveal>
+        <SectionHeading eyebrow={t.description.eyebrow}>
+          {t.description.heading}
+        </SectionHeading>
+      </Reveal>
 
-      <dl className="mt-4 grid grid-cols-2 gap-4 text-sm text-aegean-900/80 sm:grid-cols-4">
-        <div>
-          <dt className="font-semibold text-aegean-700">70</dt>
-          <dd>{t.description.statSqm}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-aegean-700">{capacity.bedrooms}</dt>
-          <dd>{t.description.statBedrooms}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-aegean-700">{capacity.beds}</dt>
-          <dd>{t.description.statBeds}</dd>
-        </div>
-        <div>
-          <dt className="font-semibold text-aegean-700">{capacity.maxGuests}</dt>
-          <dd>{t.description.statGuests}</dd>
-        </div>
-      </dl>
+      <Reveal delay={80}>
+        <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl border border-sand-200 bg-white px-4 py-4 text-center shadow-elev-1"
+            >
+              <dt className="text-3xl font-bold tracking-tight text-aegean-700">{stat.value}</dt>
+              <dd className="mt-0.5 text-xs font-medium uppercase tracking-wide text-aegean-900/55">
+                {stat.label}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </Reveal>
 
-      <div className="prose prose-sm mt-6 max-w-none text-aegean-900/90">
-        {t.description.paragraphs.map((p, i) => (
-          <p key={i} className="mb-4 leading-relaxed">
-            {p}
-          </p>
-        ))}
-      </div>
+      <Reveal delay={120}>
+        <div className="mt-8 max-w-none text-[15px] text-aegean-900/80">
+          {t.description.paragraphs.map((p, i) => (
+            <p key={i} className="mb-4 leading-relaxed last:mb-0">
+              {p}
+            </p>
+          ))}
+        </div>
+      </Reveal>
     </section>
   );
 }

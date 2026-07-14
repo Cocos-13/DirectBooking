@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 import { useLanguage } from "./LanguageProvider";
+import { SectionHeading } from "./SectionHeading";
+import { Reveal } from "./Reveal";
 
 // Category icons — inline so there's no icon-library dependency. Each is a
 // 24×24 line glyph that inherits the surrounding text color via currentColor.
@@ -41,40 +43,41 @@ export function Amenities() {
   const { t } = useLanguage();
 
   return (
-    <section id="amenities" className="bg-sand-100/60 py-16">
+    <section id="amenities" className="bg-sand-100/60 py-16 sm:py-24">
       <div className="mx-auto max-w-5xl px-4">
-        <h2 className="text-2xl font-bold text-aegean-900 sm:text-3xl">{t.amenities.heading}</h2>
+        <Reveal>
+          <SectionHeading eyebrow={t.amenities.eyebrow}>{t.amenities.heading}</SectionHeading>
+        </Reveal>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {t.amenities.groups.map((group) => (
-            <div
-              key={group.key}
-              className="rounded-2xl border border-sand-200 bg-white p-6"
-            >
-              <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-aegean-50 text-aegean-600">
-                  <svg
-                    aria-hidden
-                    viewBox="0 0 24 24"
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.75}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    {ICONS[group.key] ?? FALLBACK_ICON}
-                  </svg>
-                </span>
-                <h3 className="text-base font-semibold text-aegean-900">{group.label}</h3>
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {t.amenities.groups.map((group, i) => (
+            <Reveal key={group.key} delay={i * 80} className="h-full">
+              <div className="group h-full rounded-2xl border border-sand-200 bg-white p-6 shadow-elev-1 transition-all duration-300 hover:-translate-y-1 hover:border-aegean-100 hover:shadow-elev-2">
+                <div className="flex items-center gap-3">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-aegean-50 text-aegean-600 transition-colors duration-300 group-hover:bg-aegean-100">
+                    <svg
+                      aria-hidden
+                      viewBox="0 0 24 24"
+                      className="h-5 w-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={1.75}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      {ICONS[group.key] ?? FALLBACK_ICON}
+                    </svg>
+                  </span>
+                  <h3 className="text-base font-semibold text-aegean-900">{group.label}</h3>
+                </div>
+
+                <ul className="mt-4 space-y-2 text-sm leading-relaxed text-aegean-900/70">
+                  {group.items.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
               </div>
-
-              <ul className="mt-4 space-y-2 text-sm leading-relaxed text-aegean-900/70">
-                {group.items.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>

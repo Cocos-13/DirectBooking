@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useLanguage } from "./LanguageProvider";
+import { Reveal } from "./Reveal";
 import { siteConfig } from "@/content/siteConfig";
 
 // Show at most this many tiles in the on-page grid; any extras collapse into
@@ -48,8 +49,8 @@ export function Gallery() {
   const hiddenCount = images.length - preview.length;
 
   return (
-    <section aria-label="Photo gallery" className="mx-auto max-w-5xl px-4 py-8">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+    <section aria-label="Photo gallery" className="mx-auto max-w-5xl px-4 py-10 sm:py-12">
+      <Reveal className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
         {preview.map((img, i) => {
           const isOverflowTile = i === preview.length - 1 && hiddenCount > 0;
           return (
@@ -57,14 +58,14 @@ export function Gallery() {
               key={img.src}
               type="button"
               onClick={() => setOpenIndex(i)}
-              className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-sand-100"
+              className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-sand-100 shadow-elev-1 transition-shadow duration-300 hover:shadow-elev-2"
             >
               <Image
                 src={img.src}
                 alt={`${siteConfig.name} — ${i + 1}`}
                 fill
                 sizes="(max-width: 640px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
               />
               {isOverflowTile && (
                 <span className="absolute inset-0 flex items-center justify-center bg-aegean-900/55 text-xl font-semibold text-white">
@@ -74,13 +75,13 @@ export function Gallery() {
             </button>
           );
         })}
-      </div>
+      </Reveal>
 
-      <div className="mt-4 flex justify-center">
+      <div className="mt-5 flex justify-center">
         <button
           type="button"
           onClick={() => setOpenIndex(0)}
-          className="rounded-full border border-aegean-600 px-5 py-2 text-sm font-semibold text-aegean-700 transition-colors hover:bg-aegean-50"
+          className="rounded-full border border-aegean-600 px-5 py-2 text-sm font-semibold text-aegean-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-aegean-50 hover:shadow-elev-1 active:translate-y-0"
         >
           {t.gallery.viewAll.replace("{count}", String(images.length))}
         </button>

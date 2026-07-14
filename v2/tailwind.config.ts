@@ -22,6 +22,7 @@ const config: Config = {
         aegean: {
           50: "#f0f7f8",
           100: "#dcedef",
+          200: "#c3e0e3",
           400: "#4f9aa6",
           500: "#367e8a",
           600: "#2a6570",
@@ -36,6 +37,24 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+      },
+      // Soft, layered elevation — all shadows tinted with aegean-900 (the ink
+      // color) rather than pure black, so cards feel like they belong to the
+      // warm palette instead of floating on a generic grey drop-shadow.
+      boxShadow: {
+        "elev-1": "0 1px 2px rgba(19, 47, 53, 0.04), 0 2px 6px rgba(19, 47, 53, 0.05)",
+        "elev-2": "0 2px 6px rgba(19, 47, 53, 0.05), 0 10px 24px rgba(19, 47, 53, 0.08)",
+        "elev-3": "0 8px 18px rgba(19, 47, 53, 0.08), 0 22px 48px rgba(19, 47, 53, 0.14)",
+      },
+      keyframes: {
+        // Entrance for above-the-fold content (hero) and scroll reveals.
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(18px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in-up": "fade-in-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
   },

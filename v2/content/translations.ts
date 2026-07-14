@@ -21,6 +21,7 @@ export interface Dictionary {
     priceFrom: string;
   };
   description: {
+    eyebrow: string;
     heading: string;
     // TODO: replace with your real copy — this is placeholder text only.
     paragraphs: string[];
@@ -30,6 +31,7 @@ export interface Dictionary {
     statGuests: string;
   };
   amenities: {
+    eyebrow: string;
     heading: string;
     groups: {
       key: string;
@@ -38,6 +40,7 @@ export interface Dictionary {
     }[];
   };
   reviews: {
+    eyebrow: string;
     heading: string;
     ratingCount: string;
     superhost: string;
@@ -50,15 +53,18 @@ export interface Dictionary {
     next: string;
   };
   location: {
+    eyebrow: string;
     heading: string;
     text: string;
     mapCta: string;
   };
   houseRules: {
+    eyebrow: string;
     heading: string;
     items: string[];
   };
   calendar: {
+    eyebrow: string;
     heading: string;
     subtitle: string;
     legendBooked: string;
@@ -120,6 +126,7 @@ export const translations: Record<Lang, Dictionary> = {
       priceFrom: "από {price}€ / διανυκτέρευση",
     },
     description: {
+      eyebrow: "Με μια ματιά",
       heading: "Το διαμέρισμα",
       paragraphs: [
         "Ιδανικό για παρέες, οικογένειες και επαγγελματίες που θέλουν άνεση και στυλ στο κέντρο της πόλης. ✨ Πλήρως ανακαινισμένο διαμέρισμα στην καρδιά της Πάτρας, πάνω στην πλατεία Ψηλών Αλωνίων! Απολαύστε τη θέα από το μπαλκόνι και χαλαρώστε σε μοντέρνους & φωτεινούς χώρους. 📍 Εξαιρετικό σημείο για να εξερευνήσετε την πόλη, δίπλα σε πολυσύχναστους δρόμους με αμέτρητες επιλογές για φαγητό, καφέ ή ποτό.",
@@ -131,6 +138,7 @@ export const translations: Record<Lang, Dictionary> = {
       statGuests: "άτομα",
     },
     amenities: {
+      eyebrow: "Τι περιλαμβάνεται",
       heading: "Παροχές",
       groups: [
         {
@@ -183,6 +191,7 @@ export const translations: Record<Lang, Dictionary> = {
       ],
     },
     reviews: {
+      eyebrow: "Τι λένε οι επισκέπτες",
       heading: "Κριτικές επισκεπτών",
       ratingCount: "{count} κριτικές",
       superhost: "Airbnb Superhost",
@@ -195,11 +204,13 @@ export const translations: Record<Lang, Dictionary> = {
       next: "Επόμενη",
     },
     location: {
+      eyebrow: "Πού θα μείνετε",
       heading: "Τοποθεσία",
       text: "Το διαμέρισμα βρίσκεται στην οδό Αθανασίου Διάκου 32, πάνω στην πλατεία Ψηλών Αλωνίων — μία από τις πιο όμορφες και κεντρικές πλατείες της Πάτρας. Λίγα λεπτά με τα πόδια από την παραλιακή, το λιμάνι και τους πεζόδρομους με εστιατόρια, καφέ και μπαρ.",
       mapCta: "Άνοιγμα στο Google Maps",
     },
     houseRules: {
+      eyebrow: "Καλό να ξέρετε",
       heading: "Κανόνες Σπιτιού",
       items: [
         "Check-in: από 15:00",
@@ -210,6 +221,7 @@ export const translations: Record<Lang, Dictionary> = {
       ],
     },
     calendar: {
+      eyebrow: "Κράτηση απευθείας",
       heading: "Διαθεσιμότητα",
       subtitle: "Ενημερώνεται αυτόματα από τα ημερολόγια Airbnb και Booking.com.",
       legendBooked: "Κρατημένο",
@@ -270,6 +282,7 @@ export const translations: Record<Lang, Dictionary> = {
       priceFrom: "from €{price} / night",
     },
     description: {
+      eyebrow: "At a glance",
       heading: "The apartment",
       paragraphs: [
         "Ideal for groups, families, and professionals looking for comfort and style in the city center. ✨ Fully renovated apartment in the heart of Patras, right on Ypsila Alonia square! Enjoy the view from the balcony and relax in modern, bright spaces. 📍 A prime spot for exploring the city, next to bustling streets with countless options for food, coffee, or drinks.",
@@ -281,6 +294,7 @@ export const translations: Record<Lang, Dictionary> = {
       statGuests: "guests",
     },
     amenities: {
+      eyebrow: "What's included",
       heading: "Amenities",
       groups: [
         {
@@ -333,6 +347,7 @@ export const translations: Record<Lang, Dictionary> = {
       ],
     },
     reviews: {
+      eyebrow: "What guests say",
       heading: "Guest reviews",
       ratingCount: "{count} reviews",
       superhost: "Airbnb Superhost",
@@ -345,11 +360,13 @@ export const translations: Record<Lang, Dictionary> = {
       next: "Next",
     },
     location: {
+      eyebrow: "Where you'll stay",
       heading: "Location",
       text: "The apartment is located at Athanasiou Diakou 32, right on Ypsila Alonia square — one of the most beautiful and central squares in Patras. Just a few minutes' walk from the waterfront, the port, and the pedestrian streets full of restaurants, cafés and bars.",
       mapCta: "Open in Google Maps",
     },
     houseRules: {
+      eyebrow: "Good to know",
       heading: "House Rules",
       items: [
         "Check-in: from 3:00 PM",
@@ -360,6 +377,7 @@ export const translations: Record<Lang, Dictionary> = {
       ],
     },
     calendar: {
+      eyebrow: "Book direct",
       heading: "Availability",
       subtitle: "Updates automatically from the Airbnb and Booking.com calendars.",
       legendBooked: "Booked",
