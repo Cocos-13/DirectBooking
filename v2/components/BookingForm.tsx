@@ -62,8 +62,38 @@ export function BookingForm({ range, rangeValid }: Props) {
 
   if (status === "success") {
     return (
-      <div className="rounded-xl border border-aegean-200 bg-aegean-50 p-6 text-aegean-900">
-        <p className="font-medium">{t.form.success}</p>
+      <div className="rounded-2xl border border-aegean-200 bg-aegean-50 p-6 text-aegean-900">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aegean-600 text-white">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          </span>
+          <h3 className="text-lg font-bold">{t.form.successHeading}</h3>
+        </div>
+
+        <ol className="mt-4 space-y-2">
+          {t.form.successSteps.map((step, i) => (
+            <li key={i} className="flex gap-3 text-sm text-aegean-900/80">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-aegean-200 text-xs font-semibold text-aegean-900">
+                {i + 1}
+              </span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+
+        <div className="mt-5 border-t border-aegean-200 pt-4 text-sm text-aegean-900/80">
+          <p>{t.form.successContact}</p>
+          <p className="mt-1 space-x-3">
+            <a href={`mailto:${siteConfig.contact.email}`} className="font-medium text-aegean-700 underline underline-offset-2 hover:text-aegean-900">
+              {siteConfig.contact.email}
+            </a>
+            <a href={`tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`} className="font-medium text-aegean-700 underline underline-offset-2 hover:text-aegean-900">
+              {siteConfig.contact.phone}
+            </a>
+          </p>
+        </div>
       </div>
     );
   }

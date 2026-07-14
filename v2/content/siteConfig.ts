@@ -11,7 +11,7 @@ export const siteConfig = {
     streetAddress: "Αθανασίου Διάκου 32",
     addressLocality: "Πάτρα",
     addressRegion: "Αχαΐα",
-    postalCode: "TODO",
+    postalCode: "26222",
     addressCountry: "GR",
   },
 
@@ -22,7 +22,7 @@ export const siteConfig = {
   },
 
   contact: {
-    email: "TODO@example.com",
+    email: "mavridiskon14@gmail.com",
     phone: "+30 6900000000",
   },
 

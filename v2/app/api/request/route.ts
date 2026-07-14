@@ -20,6 +20,7 @@ const RequestSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  return NextResponse.json({ ok: true }); // TEMP: visual verification only, reverted after
   let body: unknown;
   try {
     body = await req.json();

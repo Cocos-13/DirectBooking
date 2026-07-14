@@ -88,7 +88,9 @@ export interface Dictionary {
     messagePlaceholder: string;
     submit: string;
     submitting: string;
-    success: string;
+    successHeading: string;
+    successSteps: string[];
+    successContact: string;
     errorGeneric: string;
     errorMinStay: string;
     errorNotAvailable: string;
@@ -246,7 +248,13 @@ export const translations: Record<Lang, Dictionary> = {
       messagePlaceholder: "Οτιδήποτε θέλετε να μας πείτε (προαιρετικό)",
       submit: "Αποστολή αιτήματος",
       submitting: "Αποστολή…",
-      success: "Ευχαριστούμε! Λάβαμε το αίτημά σας και θα επικοινωνήσουμε σύντομα.",
+      successHeading: "Το αίτημά σας στάλθηκε!",
+      successSteps: [
+        "Θα λάβετε ένα email επιβεβαίωσης λήψης στο email που δηλώσατε.",
+        "Ο οικοδεσπότης θα επικοινωνήσει μαζί σας για να επιβεβαιώσει τη διαθεσιμότητα και να σας στείλει οδηγίες πληρωμής.",
+        "Η κράτησή σας οριστικοποιείται μόνο μετά από αυτή την επιβεβαίωση.",
+      ],
+      successContact: "Αν δεν λάβετε απάντηση σύντομα, επικοινωνήστε απευθείας:",
       errorGeneric: "Κάτι πήγε στραβά. Δοκιμάστε ξανά ή στείλτε μας email απευθείας.",
       errorMinStay: "Η ελάχιστη διαμονή είναι 2 διανυκτερεύσεις (εκτός από κενά 1 βραδιάς ανάμεσα σε κρατήσεις).",
       errorNotAvailable: "Οι ημερομηνίες αυτές δεν είναι πλέον διαθέσιμες.",
@@ -401,7 +409,13 @@ export const translations: Record<Lang, Dictionary> = {
       messagePlaceholder: "Anything you'd like us to know (optional)",
       submit: "Send request",
       submitting: "Sending…",
-      success: "Thank you! We received your request and will be in touch shortly.",
+      successHeading: "Request sent!",
+      successSteps: [
+        "You'll receive a confirmation email at the address you provided.",
+        "The host will get in touch to confirm availability and send payment instructions.",
+        "Your booking is only final after that confirmation.",
+      ],
+      successContact: "If you don't hear back soon, reach out directly:",
       errorGeneric: "Something went wrong. Please try again or email us directly.",
       errorMinStay: "Minimum stay is 2 nights (except 1-night gaps between existing bookings).",
       errorNotAvailable: "Those dates are no longer available.",
