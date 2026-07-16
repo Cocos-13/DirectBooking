@@ -52,9 +52,22 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(18px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        // Lightbox photo transitions — a gentle fade paired with a small
+        // horizontal glide in the direction of travel (next = in from right,
+        // prev = in from left), so switching photos feels smooth like Airbnb.
+        "photo-in-right": {
+          "0%": { opacity: "0", transform: "translateX(24px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        "photo-in-left": {
+          "0%": { opacity: "0", transform: "translateX(-24px)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
       },
       animation: {
         "fade-in-up": "fade-in-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "photo-in-right": "photo-in-right 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "photo-in-left": "photo-in-left 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
       },
     },
   },

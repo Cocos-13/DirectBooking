@@ -14,17 +14,20 @@ export function Gallery() {
   const { t } = useLanguage();
   const images = [...siteConfig.images];
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // Direction of the last navigation, so the incoming photo glides in from the
+  // matching side (1 = went forward, -1 = went back).
+  const [direction, setDirection] = useState<1 | -1>(1);
   const hasMultiple = images.length > 1;
 
   const close = useCallback(() => setOpenIndex(null), []);
-  const next = useCallback(
-    () => setOpenIndex((p) => (p === null ? p : (p + 1) % images.length)),
-    [images.length]
-  );
-  const prev = useCallback(
-    () => setOpenIndex((p) => (p === null ? p : (p - 1 + images.length) % images.length)),
-    [images.length]
-  );
+  const next = useCallback(() => {
+    setDirection(1);
+    setOpenIndex((p) => (p === null ? p : (p + 1) % images.length));
+  }, [images.length]);
+  const prev = useCallback(() => {
+    setDirection(-1);
+    setOpenIndex((p) => (p === null ? p : (p - 1 + images.length) % images.length));
+  }, [images.length]);
 
   // While the viewer is open: wire up keyboard nav and lock body scroll.
   useEffect(() => {
@@ -93,7 +96,7 @@ export function Gallery() {
           aria-modal="true"
           aria-label="Photo viewer"
           onClick={close}
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-aegean-900/95 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black"
         >
           <button
             type="button"
@@ -123,17 +126,26 @@ export function Gallery() {
           )}
 
           <div
-            className="relative h-[78vh] w-[92vw] max-w-5xl"
+            className="relative h-[78vh] w-[92vw] max-w-5xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <Image
-              src={images[openIndex].src}
-              alt={`${siteConfig.name} — ${openIndex + 1}`}
-              fill
-              sizes="100vw"
-              priority
-              className="object-contain"
-            />
+            {/* Keyed on the index so React remounts on every switch, replaying
+                the slide-and-fade animation for the newly shown photo. */}
+            <div
+              key={openIndex}
+              className={`absolute inset-0 ${
+                direction === 1 ? "animate-photo-in-right" : "animate-photo-in-left"
+              }`}
+            >
+              <Image
+                src={images[openIndex].src}
+                alt={`${siteConfig.name} — ${openIndex + 1}`}
+                fill
+                sizes="100vw"
+                priority
+                className="object-contain"
+              />
+            </div>
           </div>
 
           {hasMultiple && (
