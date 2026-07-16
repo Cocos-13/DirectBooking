@@ -1,6 +1,6 @@
 "use client";
 
-import { AsciiArt } from "./ui/first-light";
+import Image from "next/image";
 import { useLanguage } from "./LanguageProvider";
 import { siteConfig } from "@/content/siteConfig";
 
@@ -12,9 +12,13 @@ export function Hero() {
     <section id="top" className="relative">
       <div className="relative h-[calc(100dvh-4rem)] min-h-[420px] w-full overflow-hidden bg-aegean-900">
         {heroImage && (
-          <AsciiArt
-            className="absolute inset-0 h-full w-full opacity-90"
-            poster={heroImage.src}
+          <Image
+            src={heroImage.src}
+            alt={t.hero.tagline}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover opacity-90"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-aegean-900/85 via-aegean-900/25 to-aegean-900/10" />
