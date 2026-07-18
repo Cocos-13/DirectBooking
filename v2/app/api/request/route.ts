@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getRawBusyRanges } from "@/lib/ical";
 import { evaluateBookingRange, mergeBusyRanges, nightsBetween } from "@/lib/availability";
 import { getResendClient } from "@/lib/resend";
+import { quoteStay } from "@/lib/pricing";
 import { siteConfig } from "@/content/siteConfig";
 
 const RequestSchema = z.object({
@@ -20,7 +21,6 @@ const RequestSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  return NextResponse.json({ ok: true }); // TEMP: visual verification only, reverted after
   let body: unknown;
   try {
     body = await req.json();
@@ -47,6 +47,10 @@ export async function POST(req: Request) {
   }
 
   const nights = nightsBetween(data.checkin, data.checkout);
+  const quote = quoteStay(data.checkin, data.checkout, siteConfig.pricing);
+  const priceLine = quote
+    ? `<p><strong>Estimated total:</strong> ${quote.totalEur}€ (${quote.weekdayNights} × ${quote.weekdayRateEur}€ weekday + ${quote.weekendNights} × ${quote.weekendRateEur}€ weekend)</p>`
+    : "";
   const ownerEmail = process.env.OWNER_NOTIFICATION_EMAIL;
   const fromEmail = process.env.RESEND_FROM_EMAIL;
 
@@ -61,12 +65,13 @@ export async function POST(req: Request) {
     await resend.emails.send({
       from: fromEmail,
       to: ownerEmail,
-      replyTo: data.email,
+      reply_to: data.email,
       subject: `New booking request: ${data.checkin} → ${data.checkout} (${nights} night${nights === 1 ? "" : "s"})`,
       html: `
         <h2>New booking request — ${siteConfig.name}</h2>
         <p><strong>Dates:</strong> ${data.checkin} → ${data.checkout} (${nights} night${nights === 1 ? "" : "s"})</p>
         <p><strong>Guests:</strong> ${data.guests}</p>
+        ${priceLine}
         <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
         <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
         <p><strong>Phone:</strong> ${escapeHtml(data.phone || "—")}</p>

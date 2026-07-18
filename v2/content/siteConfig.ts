@@ -40,8 +40,19 @@ export const siteConfig = {
     responseTime: "within an hour",
   },
 
-  // Simple placeholder pricing — no dynamic pricing in v1.
-  priceFromEur: 55,
+  // Nightly pricing. Each night is priced by the weekday it *falls on*:
+  //   - Weekend nights = Friday & Saturday
+  //   - Weekday nights = Sunday through Thursday
+  // No dynamic/seasonal pricing in v1 — these two flat rates drive the
+  // booking-form estimate (see lib/pricing.ts).
+  pricing: {
+    weekdayRateEur: 72, // Sun–Thu nights
+    weekendRateEur: 85, // Fri & Sat nights
+  },
+
+  // Lowest nightly rate — shown as the hero/booking-bar "from" price.
+  // Keep in sync with the cheaper of the two rates above.
+  priceFromEur: 72,
 
   // Cross-links to the existing listings (used in the footer / schema
   // sameAs — also a soft trust signal: "already trusted by X guests").

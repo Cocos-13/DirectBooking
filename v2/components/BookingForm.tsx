@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { useLanguage } from "./LanguageProvider";
 import { siteConfig } from "@/content/siteConfig";
+import { quoteStay } from "@/lib/pricing";
 
 interface Props {
   range: DateRange | undefined;
@@ -99,6 +100,14 @@ export function BookingForm({ range, rangeValid }: Props) {
   }
 
   const hasDates = !!(range?.from && range?.to);
+  const quote =
+    hasDates && rangeValid && range?.from && range?.to
+      ? quoteStay(
+          format(range.from, "yyyy-MM-dd"),
+          format(range.to, "yyyy-MM-dd"),
+          siteConfig.pricing
+        )
+      : null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-sand-200 bg-white p-6 shadow-elev-2 dark:border-ink-border dark:bg-ink-surface dark:shadow-none">
@@ -112,6 +121,43 @@ export function BookingForm({ range, rangeValid }: Props) {
           ? `${format(range.from, "yyyy-MM-dd")} → ${format(range.to, "yyyy-MM-dd")}`
           : `${t.form.checkin} / ${t.form.checkout}: —`}
       </div>
+
+      {quote && (
+        <div className="rounded-lg border border-sand-200 bg-sand-100/60 px-4 py-3 text-sm dark:border-ink-border dark:bg-ink-bg">
+          <p className="mb-2 font-semibold text-aegean-900 dark:text-ink-text">{t.form.price.heading}</p>
+          <dl className="space-y-1.5 text-aegean-900/80 dark:text-ink-text/80">
+            {quote.weekdayNights > 0 && (
+              <div className="flex items-baseline justify-between gap-3">
+                <dt>
+                  {t.form.price.weekdayLine
+                    .replace("{count}", String(quote.weekdayNights))
+                    .replace("{rate}", String(quote.weekdayRateEur))}
+                </dt>
+                <dd className="tabular-nums">{quote.weekdaySubtotalEur}€</dd>
+              </div>
+            )}
+            {quote.weekendNights > 0 && (
+              <div className="flex items-baseline justify-between gap-3">
+                <dt>
+                  {t.form.price.weekendLine
+                    .replace("{count}", String(quote.weekendNights))
+                    .replace("{rate}", String(quote.weekendRateEur))}
+                </dt>
+                <dd className="tabular-nums">{quote.weekendSubtotalEur}€</dd>
+              </div>
+            )}
+            <div className="mt-2 flex items-baseline justify-between gap-3 border-t border-sand-200 pt-2 font-semibold text-aegean-900 dark:border-ink-border dark:text-ink-text">
+              <dt>
+                {t.form.price.total}{" "}
+                <span className="font-normal text-aegean-900/60 dark:text-ink-muted">
+                  · {t.form.price.totalNights.replace("{count}", String(quote.nights))}
+                </span>
+              </dt>
+              <dd className="text-base tabular-nums">{quote.totalEur}€</dd>
+            </div>
+          </dl>
+        </div>
+      )}
 
       {/* Honeypot — hidden from real visitors, only bots fill every field */}
       <input

@@ -43,6 +43,7 @@ export interface Dictionary {
     eyebrow: string;
     heading: string;
     ratingCount: string;
+    ratingScale: string;
     superhost: string;
     viewAllCta: string;
     guestLabel: string;
@@ -87,6 +88,13 @@ export interface Dictionary {
     guests: string;
     message: string;
     messagePlaceholder: string;
+    price: {
+      heading: string;
+      weekdayLine: string; // uses {count} and {rate}
+      weekendLine: string; // uses {count} and {rate}
+      total: string;
+      totalNights: string; // uses {count}
+    };
     submit: string;
     submitting: string;
     successHeading: string;
@@ -197,6 +205,7 @@ export const translations: Record<Lang, Dictionary> = {
       eyebrow: "Τι λένε οι επισκέπτες",
       heading: "Κριτικές επισκεπτών",
       ratingCount: "{count} κριτικές",
+      ratingScale: "στα 5",
       superhost: "Airbnb Superhost",
       viewAllCta: "Δείτε όλες τις κριτικές στο Airbnb",
       guestLabel: "Επισκέπτης Airbnb",
@@ -248,6 +257,13 @@ export const translations: Record<Lang, Dictionary> = {
       guests: "Αριθμός ατόμων",
       message: "Μήνυμα",
       messagePlaceholder: "Οτιδήποτε θέλετε να μας πείτε (προαιρετικό)",
+      price: {
+        heading: "Εκτίμηση κόστους",
+        weekdayLine: "Καθημερινές (Κυρ–Πέμ) × {count}  ·  {rate}€/βράδυ",
+        weekendLine: "Σαββατοκύριακο (Παρ–Σαβ) × {count}  ·  {rate}€/βράδυ",
+        total: "Σύνολο",
+        totalNights: "{count} διανυκτερεύσεις",
+      },
       submit: "Αποστολή αιτήματος",
       submitting: "Αποστολή…",
       successHeading: "Το αίτημά σας στάλθηκε!",
@@ -360,6 +376,7 @@ export const translations: Record<Lang, Dictionary> = {
       eyebrow: "What guests say",
       heading: "Guest reviews",
       ratingCount: "{count} reviews",
+      ratingScale: "out of 5",
       superhost: "Airbnb Superhost",
       viewAllCta: "See all reviews on Airbnb",
       guestLabel: "Airbnb guest",
@@ -410,6 +427,13 @@ export const translations: Record<Lang, Dictionary> = {
       guests: "Number of guests",
       message: "Message",
       messagePlaceholder: "Anything you'd like us to know (optional)",
+      price: {
+        heading: "Price estimate",
+        weekdayLine: "Weeknights (Sun–Thu) × {count}  ·  €{rate}/night",
+        weekendLine: "Weekend (Fri–Sat) × {count}  ·  €{rate}/night",
+        total: "Total",
+        totalNights: "{count} nights",
+      },
       submit: "Send request",
       submitting: "Sending…",
       successHeading: "Request sent!",
