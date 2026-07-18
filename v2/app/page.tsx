@@ -6,6 +6,7 @@ import { Amenities } from "@/components/Amenities";
 import { Reviews } from "@/components/Reviews";
 import { LocationSection } from "@/components/LocationSection";
 import { HouseRules } from "@/components/HouseRules";
+import { WhyDirect } from "@/components/WhyDirect";
 import { BookingSection } from "@/components/BookingSection";
 import { BookingBar } from "@/components/BookingBar";
 import { Footer } from "@/components/Footer";
@@ -63,6 +64,7 @@ export default function HomePage() {
         <Reviews />
         <LocationSection />
         <HouseRules />
+        <WhyDirect />
         <BookingSection />
       </main>
       <Footer />

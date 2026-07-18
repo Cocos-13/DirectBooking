@@ -65,6 +65,16 @@ export interface Dictionary {
     heading: string;
     items: string[];
   };
+  whyDirect: {
+    eyebrow: string;
+    heading: string;
+    subtitle: string;
+    benefits: {
+      key: string;
+      title: string;
+      text: string; // "trust" uses {score}
+    }[];
+  };
   calendar: {
     eyebrow: string;
     heading: string;
@@ -231,6 +241,33 @@ export const translations: Record<Lang, Dictionary> = {
         "Self check-in μέσω κλειδοθήκης — άφιξη χωρίς την παρουσία οικοδεσπότη",
         "Επιτρέπονται διαμονές μεγάλης διάρκειας (28+ διανυκτερεύσεις)",
         "Σύμφωνα με την ελληνική νομοθεσία, απαιτείται το ΑΦΜ του βασικού επισκέπτη κατά το check-in (δήλωση διαμονής στην ΑΑΔΕ)",
+      ],
+    },
+    whyDirect: {
+      eyebrow: "Κράτηση απευθείας",
+      heading: "Γιατί να κλείσετε απευθείας",
+      subtitle: "Ίδιο διαμέρισμα, ίδιος Superhost — χωρίς τις χρεώσεις των πλατφορμών ανάμεσά μας.",
+      benefits: [
+        {
+          key: "price",
+          title: "Καλύτερη τιμή, χωρίς προμήθειες",
+          text: "Πληρώνετε απευθείας τον οικοδεσπότη, χωρίς τις χρεώσεις υπηρεσίας που προσθέτουν το Airbnb και το Booking.com.",
+        },
+        {
+          key: "host",
+          title: "Απευθείας επικοινωνία",
+          text: "Ερωτήσεις, ώρα άφιξης, τοπικές συμβουλές — τα κανονίζετε απευθείας με τον οικοδεσπότη, χωρίς μεσάζοντες.",
+        },
+        {
+          key: "flexible",
+          title: "Ευελιξία & εξυπηρέτηση",
+          text: "Ειδικά αιτήματα, μεγαλύτερες διαμονές ή προσαρμοσμένες ρυθμίσεις τακτοποιούνται πιο εύκολα ένας προς έναν.",
+        },
+        {
+          key: "trust",
+          title: "Ίδιο κατάλυμα, ίδιος Superhost",
+          text: "Ακριβώς το κατάλυμα που θα βρείτε στο Airbnb ({score}★), κρατημένο κατευθείαν από την πηγή.",
+        },
       ],
     },
     calendar: {
@@ -402,6 +439,33 @@ export const translations: Record<Lang, Dictionary> = {
         "Self check-in via lockbox — arrive without meeting the host",
         "Long-term stays allowed (28+ nights)",
         "Under Greek law, the main guest's tax ID (ΑΦΜ) is required at check-in for stay registration with the tax authority (ΑΑΔΕ)",
+      ],
+    },
+    whyDirect: {
+      eyebrow: "Direct booking",
+      heading: "Why book direct",
+      subtitle: "Same apartment, same Superhost — without the platform fees in between.",
+      benefits: [
+        {
+          key: "price",
+          title: "Best price, no platform fees",
+          text: "You pay the host directly, with none of the service fees Airbnb and Booking.com add on top.",
+        },
+        {
+          key: "host",
+          title: "Talk to your host directly",
+          text: "Questions, arrival time, local tips — arrange everything one-to-one, with no middleman.",
+        },
+        {
+          key: "flexible",
+          title: "Flexible & personal",
+          text: "Special requests, longer stays or custom arrangements are simply easier to sort out directly.",
+        },
+        {
+          key: "trust",
+          title: "Same home, same Superhost",
+          text: "The exact listing you'll find on Airbnb ({score}★), booked straight from the source.",
+        },
       ],
     },
     calendar: {
