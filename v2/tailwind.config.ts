@@ -56,6 +56,7 @@ const config: Config = {
       fontFamily: {
         sans: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
         display: ["var(--font-display)", "system-ui", "sans-serif"],
+        wordmark: ["var(--font-wordmark)", "var(--font-display)", "system-ui", "sans-serif"],
       },
       // Soft, layered elevation — all shadows tinted with aegean-900 (the ink
       // color) rather than pure black, so cards feel like they belong to the

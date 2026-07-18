@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Onest } from "next/font/google";
+import localFont from "next/font/local";
 import "react-day-picker/dist/style.css";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
@@ -17,9 +18,17 @@ const themeInitScript = `(function(){try{var k="patras-apartment-theme";var s=lo
 // Exposed as a CSS variable and referenced via Tailwind's `font-display`.
 const displayFont = Onest({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["600", "700", "800", "900"],
   display: "swap",
   variable: "--font-display",
+});
+
+// Rapid Response (semi-italic) — a single-style display face used only for
+// the SUPERHOST wordmark behind the rating number.
+const wordmarkFont = localFont({
+  src: "./fonts/RapidResponseSemiItalic.otf",
+  display: "swap",
+  variable: "--font-wordmark",
 });
 
 // Default (Greek) metadata for crawlers and social previews. The visible
@@ -63,7 +72,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="el" className={displayFont.variable} suppressHydrationWarning>
+    <html
+      lang="el"
+      className={`${displayFont.variable} ${wordmarkFont.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           // eslint-disable-next-line react/no-danger

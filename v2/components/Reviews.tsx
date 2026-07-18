@@ -367,6 +367,36 @@ function HalftoneNumber({
   );
 }
 
+// A compact 5-star row that clarifies the score's scale (the halftone number
+// alone doesn't say "out of 5"). Five outlined stars establish the scale; a
+// terracotta-filled copy is clipped to `value / outOf` so the fill is honest
+// (4.96 reads as very nearly — but not quite — full). Sizing is `em`-based so
+// the whole row scales with the wrapper's font-size.
+function StarRating({ value, outOf = 5 }: { value: number; outOf?: number }) {
+  const pct = Math.max(0, Math.min(1, value / outOf)) * 100;
+  const stars = Array.from({ length: outOf }, (_, i) => (
+    <svg key={i} viewBox="0 0 24 24" fill="currentColor" className="h-[1em] w-[1em] shrink-0">
+      <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+    </svg>
+  ));
+  return (
+    <div
+      aria-hidden
+      className="relative inline-flex text-[clamp(0.85rem,3.4vw,1.45rem)] leading-none"
+    >
+      {/* Base: empty (outline-tone) stars establishing the 0–5 scale */}
+      <div className="flex gap-[0.14em] text-aegean-900/20 dark:text-ink-text/25">{stars}</div>
+      {/* Overlay: filled stars clipped to the exact score fraction */}
+      <div
+        className="absolute inset-0 flex gap-[0.14em] overflow-hidden text-terracotta-500"
+        style={{ width: `${pct}%` }}
+      >
+        {stars}
+      </div>
+    </div>
+  );
+}
+
 export function Reviews() {
   const { t } = useLanguage();
   const { theme } = useTheme();
@@ -387,23 +417,45 @@ export function Reviews() {
 
       {/* Rating anchor — the primary trust signal. The score is rendered as a
           halftone dot matrix (poster style): solid at its core, dissolving into
-          scattered dots at the edges. No box; a confident label sits beneath. */}
+          scattered dots at the edges. The SUPERHOST wordmark sits on a lower
+          layer, sliding behind the number: a gradient mask fades its lower
+          half to transparent while the animated dots paint over it, so the
+          word reads clearly at the top and dissolves into the score below. */}
       <Reveal delay={80}>
         <div className="relative mt-12 flex flex-col items-center text-center">
-          <div className="flex w-full items-center justify-center">
-            <HalftoneNumber
-              text={airbnbScore.toFixed(2)}
-              color={theme === "dark" ? "#f4f7f7" : "#000000"}
-            />
+          <div className="relative flex w-full items-center justify-center">
+            {airbnbIsSuperhost && (
+              <>
+                {/* Visual wordmark only — "Superhost" is Airbnb's brand term in
+                    every locale, and the full localized label lives in the
+                    sr-only twin below. */}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute left-1/2 top-[42%] z-0 -translate-x-1/2 -translate-y-full select-none whitespace-nowrap font-wordmark text-[clamp(2.25rem,10.5vw,7.5rem)] uppercase leading-none tracking-[0.06em] text-black/45 dark:text-ink-text/45 [-webkit-mask-image:linear-gradient(to_bottom,black_20%,transparent_80%)] [mask-image:linear-gradient(to_bottom,black_20%,transparent_80%)]"
+                >
+                  Superhost
+                </span>
+                <span className="sr-only">{t.reviews.superhost}</span>
+              </>
+            )}
+            <div className="relative z-10">
+              <HalftoneNumber
+                text={airbnbScore.toFixed(2)}
+                color={theme === "dark" ? "#f4f7f7" : "#000000"}
+              />
+            </div>
           </div>
 
-          {airbnbIsSuperhost && (
-            <p className="relative -mt-1 text-lg font-semibold tracking-tight text-aegean-900 dark:text-ink-text sm:text-xl">
-              {t.reviews.superhost}
-            </p>
-          )}
+          {/* Scale cue — five stars make it read as "out of 5" at a glance,
+              in any language. sr-only text spells the scale out for readers. */}
+          <div className="relative mt-4">
+            <StarRating value={airbnbScore} />
+            <span className="sr-only">
+              {airbnbScore.toFixed(2)} {t.reviews.ratingScale}
+            </span>
+          </div>
 
-          <p className="relative mt-1.5 text-sm text-aegean-900/60 dark:text-ink-muted">
+          <p className="relative mt-2.5 text-sm text-aegean-900/60 dark:text-ink-muted">
             {t.reviews.ratingCount.replace("{count}", String(airbnbReviewCount))}
           </p>
         </div>
