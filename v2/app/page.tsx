@@ -9,6 +9,7 @@ import { HouseRules } from "@/components/HouseRules";
 import { WhyDirect } from "@/components/WhyDirect";
 import { BookingSection } from "@/components/BookingSection";
 import { BookingBar } from "@/components/BookingBar";
+import { ContactFab } from "@/components/ContactFab";
 import { Footer } from "@/components/Footer";
 import { siteConfig } from "@/content/siteConfig";
 
@@ -69,6 +70,7 @@ export default function HomePage() {
       </main>
       <Footer />
       <BookingBar />
+      <ContactFab />
     </>
   );
 }

@@ -126,6 +126,17 @@ export interface Dictionary {
     errorInvalid: string;
     disclaimer: string;
   };
+  contact: {
+    heading: string;
+    subtitle: string;
+    whatsapp: string;
+    viber: string;
+    call: string;
+    email: string;
+    fabLabel: string;
+    fabClose: string;
+    waPrefill: string;
+  };
   footer: {
     disclaimer: string;
     alsoOn: string;
@@ -345,6 +356,17 @@ export const translations: Record<Lang, Dictionary> = {
       errorInvalid: "Παρακαλούμε επιλέξτε έγκυρες ημερομηνίες.",
       disclaimer: "Δεν απαιτείται πληρωμή τώρα. Η πληρωμή κανονίζεται μετά την επιβεβαίωση.",
     },
+    contact: {
+      heading: "Προτιμάτε να μας γράψετε;",
+      subtitle: "Στείλτε μας μήνυμα ή καλέστε μας απευθείας — απαντάμε γρήγορα.",
+      whatsapp: "WhatsApp",
+      viber: "Viber",
+      call: "Κλήση",
+      email: "Email",
+      fabLabel: "Επικοινωνία",
+      fabClose: "Κλείσιμο",
+      waPrefill: "Γεια σας! Ενδιαφέρομαι για κράτηση στο διαμέρισμά σας στην Πάτρα.",
+    },
     footer: {
       disclaimer: "Οι τιμές και η διαθεσιμότητα υπόκεινται σε επιβεβαίωση.",
       alsoOn: "Θα μας βρείτε επίσης στο",
@@ -560,6 +582,17 @@ export const translations: Record<Lang, Dictionary> = {
       errorNotAvailable: "Those dates are no longer available.",
       errorInvalid: "Please select valid dates.",
       disclaimer: "No payment is required now. Payment is arranged after confirmation.",
+    },
+    contact: {
+      heading: "Prefer to message us?",
+      subtitle: "Send a message or call us directly — we reply quickly.",
+      whatsapp: "WhatsApp",
+      viber: "Viber",
+      call: "Call",
+      email: "Email",
+      fabLabel: "Contact us",
+      fabClose: "Close",
+      waPrefill: "Hi! I'm interested in booking your apartment in Patras.",
     },
     footer: {
       disclaimer: "Prices and availability are subject to confirmation.",

@@ -8,6 +8,7 @@ import { SectionHeading } from "./SectionHeading";
 import { Reveal } from "./Reveal";
 import { AvailabilityCalendar } from "./AvailabilityCalendar";
 import { BookingForm } from "./BookingForm";
+import { ContactBlock } from "./ContactChannels";
 import { evaluateBookingRange } from "@/lib/availability";
 import type { MergedRange } from "@/lib/types";
 
@@ -103,6 +104,10 @@ export function BookingSection() {
 
           <div className="mt-6">
             <BookingForm range={range} rangeValid={!!(range?.from && range?.to && !rangeError)} />
+          </div>
+
+          <div className="mt-6">
+            <ContactBlock />
           </div>
         </>
       )}

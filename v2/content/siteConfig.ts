@@ -23,7 +23,7 @@ export const siteConfig = {
 
   contact: {
     email: "mavridiskon14@gmail.com",
-    phone: "+30 6900000000",
+    phone: "+30 6936983364",
   },
 
   capacity: {
