@@ -22,7 +22,7 @@ export function Hero() {
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-aegean-900/85 via-aegean-900/25 to-aegean-900/10" />
-        <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 px-4 pb-10 sm:px-8 sm:pb-16">
+        <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 px-4 pb-2 sm:px-8 sm:pb-12">
           <div className="mx-auto w-full max-w-5xl">
             <p className="mb-3 animate-fade-in-up text-xs font-semibold uppercase tracking-[0.2em] text-sand-100/90">
               {t.hero.kicker}
