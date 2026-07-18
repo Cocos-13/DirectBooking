@@ -75,6 +75,16 @@ export interface Dictionary {
       text: string; // "trust" uses {score}
     }[];
   };
+  cancellation: {
+    heading: string;
+    intro: string;
+    tiers: { label: string; detail: string }[];
+    reassure: string;
+  };
+  bookingRecap: {
+    heading: string;
+    items: string[];
+  };
   calendar: {
     eyebrow: string;
     heading: string;
@@ -268,6 +278,25 @@ export const translations: Record<Lang, Dictionary> = {
           title: "Ίδιο κατάλυμα, ίδιος Superhost",
           text: "Ακριβώς το κατάλυμα που θα βρείτε στο Airbnb ({score}★), κρατημένο κατευθείαν από την πηγή.",
         },
+      ],
+    },
+    cancellation: {
+      heading: "Πολιτική ακύρωσης",
+      intro: "Τα σχέδια αλλάζουν — δείτε πώς λειτουργούν οι ακυρώσεις μόλις επιβεβαιωθούν οι ημερομηνίες σας.",
+      tiers: [
+        { label: "14+ ημέρες πριν την άφιξη", detail: "Πλήρης επιστροφή" },
+        { label: "7–13 ημέρες πριν", detail: "Επιστροφή 50%" },
+        { label: "Λιγότερο από 7 ημέρες πριν", detail: "Χωρίς επιστροφή" },
+      ],
+      reassure: "Δεν προκαταβάλλεται κανένα ποσό μέχρι να επιβεβαιώσουμε τις ημερομηνίες σας — το αίτημα είναι πάντα δωρεάν.",
+    },
+    bookingRecap: {
+      heading: "Καλό να ξέρετε",
+      items: [
+        "Check-in από 15:00 · check-out έως 12:00",
+        "Ελάχιστη διαμονή 2 διανυκτερεύσεις",
+        "Δωρεάν ακύρωση έως 14 ημέρες πριν την άφιξη",
+        "Καμία πληρωμή τώρα — πληρώνετε μετά την επιβεβαίωση",
       ],
     },
     calendar: {
@@ -466,6 +495,25 @@ export const translations: Record<Lang, Dictionary> = {
           title: "Same home, same Superhost",
           text: "The exact listing you'll find on Airbnb ({score}★), booked straight from the source.",
         },
+      ],
+    },
+    cancellation: {
+      heading: "Cancellation policy",
+      intro: "Plans change — here's how cancellations work once your dates are confirmed.",
+      tiers: [
+        { label: "14+ days before check-in", detail: "Full refund" },
+        { label: "7–13 days before", detail: "50% refund" },
+        { label: "Less than 7 days before", detail: "Non-refundable" },
+      ],
+      reassure: "No payment is taken until we confirm your dates, so sending a request is always free.",
+    },
+    bookingRecap: {
+      heading: "Good to know",
+      items: [
+        "Check-in from 3 PM · check-out by 12 PM",
+        "Minimum stay 2 nights",
+        "Free cancellation up to 14 days before arrival",
+        "No payment now — you pay after we confirm",
       ],
     },
     calendar: {

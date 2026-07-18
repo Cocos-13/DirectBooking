@@ -78,7 +78,30 @@ export function BookingSection() {
 
           {rangeError && <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">{rangeError}</p>}
 
-          <div className="mt-8">
+          <div className="mt-8 rounded-2xl border border-sand-200 bg-white p-5 shadow-elev-1 dark:border-ink-border dark:bg-ink-surface dark:shadow-none">
+            <p className="text-sm font-semibold text-aegean-900 dark:text-ink-text">{t.bookingRecap.heading}</p>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {t.bookingRecap.items.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-sm text-aegean-900/75 dark:text-ink-text/75">
+                  <svg
+                    aria-hidden
+                    viewBox="0 0 24 24"
+                    className="mt-0.5 h-4 w-4 shrink-0 text-terracotta-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.25}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-6">
             <BookingForm range={range} rangeValid={!!(range?.from && range?.to && !rangeError)} />
           </div>
         </>
