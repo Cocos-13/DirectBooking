@@ -32,6 +32,18 @@
   box-shadow: inset 0 0 0 2px #e3805a; /* terracotta-400 */
 }
 
+html {
+  /* Smooth in-page navigation for both the header nav and the mobile drawer.
+     Neutralized under prefers-reduced-motion by the rule below. */
+  scroll-behavior: smooth;
+}
+
+/* Offset anchored sections so their headings clear the sticky 4rem header when
+   reached via an in-page link (scrollIntoView + :target both honor this). */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
 body {
   color: #132f35; /* aegean-900 */
 }
