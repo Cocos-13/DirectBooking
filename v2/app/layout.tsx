@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "react-day-picker/dist/style.css";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import { Analytics } from "@/components/Analytics";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { siteConfig } from "@/content/siteConfig";
 import { translations } from "@/content/translations";
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <LanguageProvider>{children}</LanguageProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
