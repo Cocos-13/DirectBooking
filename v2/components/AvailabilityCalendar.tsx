@@ -22,9 +22,9 @@ export function AvailabilityCalendar({ disabledDates, orphanGapNights, selected,
 
   return (
     <div>
-      <div className="mb-3 flex flex-wrap gap-4 text-xs text-aegean-900/70">
-        <LegendDot className="bg-sand-200" label={t.calendar.legendAvailable} />
-        <LegendDot className="bg-aegean-700" label={t.calendar.legendBooked} />
+      <div className="mb-3 flex flex-wrap gap-4 text-xs text-aegean-900/70 dark:text-ink-muted">
+        <LegendDot className="bg-sand-200 dark:bg-ink-raised" label={t.calendar.legendAvailable} />
+        <LegendDot className="bg-aegean-700 dark:bg-aegean-400" label={t.calendar.legendBooked} />
         <LegendDot className="bg-terracotta-400" label={t.calendar.legendOneNight} />
       </div>
 
@@ -49,7 +49,7 @@ export function AvailabilityCalendar({ disabledDates, orphanGapNights, selected,
         toDate={horizon}
       />
 
-      <p className="mt-3 text-xs text-aegean-900/60">{t.calendar.minStayNotice}</p>
+      <p className="mt-3 text-xs text-aegean-900/60 dark:text-ink-muted">{t.calendar.minStayNotice}</p>
     </div>
   );
 }

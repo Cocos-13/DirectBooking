@@ -1,6 +1,10 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // Dark mode is opt-in via a `dark` class on <html>, toggled by ThemeProvider
+  // (and applied pre-hydration by the inline script in app/layout.tsx to avoid
+  // a flash of the light theme).
+  darkMode: "class",
   content: [
     "./app/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -34,9 +38,24 @@ const config: Config = {
           100: "#f4efe4",
           200: "#e8dfc9",
         },
+        // Dark-mode "ink" palette — the mirror of the sand/aegean light scheme.
+        // Deep desaturated aegean tones so dark mode still reads as the same
+        // warm-coast brand rather than a generic slate-grey theme. Semantic
+        // names (bg/surface/raised/border/text/muted/faint) map 1:1 onto the
+        // roles the light palette fills with sand-50/white/sand-200/aegean-900.
+        ink: {
+          bg: "#0c2024", // page background — one step below aegean-900
+          surface: "#14323a", // cards / raised panels
+          raised: "#1c414a", // hover / elevated surfaces
+          border: "#274d55", // borders + dividers
+          text: "#e9f1f2", // primary text
+          muted: "#a3bcc1", // secondary text
+          faint: "#6f8c92", // tertiary / disabled text
+        },
       },
       fontFamily: {
         sans: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
       },
       // Soft, layered elevation — all shadows tinted with aegean-900 (the ink
       // color) rather than pure black, so cards feel like they belong to the
@@ -63,11 +82,23 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateX(-24px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
         },
+        // Testimonial carousel: block fade for the swapped quote, plus a
+        // per-word blur-in (staggered via inline animation-delay).
+        "testimonial-in": {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "blur-in": {
+          "0%": { filter: "blur(10px)", opacity: "0", transform: "translateY(5px)" },
+          "100%": { filter: "blur(0)", opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "fade-in-up": "fade-in-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
         "photo-in-right": "photo-in-right 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
         "photo-in-left": "photo-in-left 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "testimonial-in": "testimonial-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "blur-in": "blur-in 0.4s ease-out both",
       },
     },
   },

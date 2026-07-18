@@ -62,8 +62,8 @@ export function BookingSection() {
         </SectionHeading>
       </Reveal>
 
-      {loadError && <p className="mt-4 text-sm font-medium text-red-600">{t.calendar.error}</p>}
-      {!data && !loadError && <p className="mt-4 text-sm text-aegean-900/60">{t.calendar.loading}</p>}
+      {loadError && <p className="mt-4 text-sm font-medium text-red-600 dark:text-red-400">{t.calendar.error}</p>}
+      {!data && !loadError && <p className="mt-4 text-sm text-aegean-900/60 dark:text-ink-muted">{t.calendar.loading}</p>}
 
       {data && (
         <>
@@ -76,7 +76,7 @@ export function BookingSection() {
             />
           </div>
 
-          {rangeError && <p className="mt-3 text-sm font-medium text-red-600">{rangeError}</p>}
+          {rangeError && <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">{rangeError}</p>}
 
           <div className="mt-8">
             <BookingForm range={range} rangeValid={!!(range?.from && range?.to && !rangeError)} />

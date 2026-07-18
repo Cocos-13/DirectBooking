@@ -45,6 +45,7 @@ export interface Dictionary {
     ratingCount: string;
     superhost: string;
     viewAllCta: string;
+    guestLabel: string;
   };
   gallery: {
     viewAll: string;
@@ -198,6 +199,7 @@ export const translations: Record<Lang, Dictionary> = {
       ratingCount: "{count} κριτικές",
       superhost: "Airbnb Superhost",
       viewAllCta: "Δείτε όλες τις κριτικές στο Airbnb",
+      guestLabel: "Επισκέπτης Airbnb",
     },
     gallery: {
       viewAll: "Δείτε και τις {count} φωτογραφίες",
@@ -360,6 +362,7 @@ export const translations: Record<Lang, Dictionary> = {
       ratingCount: "{count} reviews",
       superhost: "Airbnb Superhost",
       viewAllCta: "See all reviews on Airbnb",
+      guestLabel: "Airbnb guest",
     },
     gallery: {
       viewAll: "View all {count} photos",

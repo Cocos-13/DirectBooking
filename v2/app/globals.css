@@ -12,6 +12,15 @@
   --rdp-outline-selected: 2px solid var(--rdp-accent-color);
 }
 
+/* Dark-mode calendar: keep the aegean accent for selected days (it reads well
+   on both themes) but darken the plain hover/range backgrounds so they sit on
+   the ink surface instead of glowing as light-blue tiles. Day text inherits
+   the body's dark:text-ink-text. */
+.dark {
+  --rdp-background-color: #1c414a; /* ink-raised */
+  --rdp-background-color-dark: #274d55; /* ink-border */
+}
+
 .rdp {
   margin: 0;
 }
@@ -35,6 +44,7 @@ body {
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0 !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;

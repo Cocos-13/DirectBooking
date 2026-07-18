@@ -61,7 +61,7 @@ export function Gallery() {
               key={img.src}
               type="button"
               onClick={() => setOpenIndex(i)}
-              className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-sand-100 shadow-elev-1 transition-shadow duration-300 hover:shadow-elev-2"
+              className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-sand-100 shadow-elev-1 transition-shadow duration-300 hover:shadow-elev-2 dark:bg-ink-surface"
             >
               <Image
                 src={img.src}
@@ -84,7 +84,7 @@ export function Gallery() {
         <button
           type="button"
           onClick={() => setOpenIndex(0)}
-          className="rounded-full border border-aegean-600 px-5 py-2 text-sm font-semibold text-aegean-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-aegean-50 hover:shadow-elev-1 active:translate-y-0"
+          className="rounded-full border border-aegean-600 px-5 py-2 text-sm font-semibold text-aegean-700 transition-all duration-200 hover:-translate-y-0.5 hover:bg-aegean-50 hover:shadow-elev-1 active:translate-y-0 dark:border-aegean-400/50 dark:text-aegean-200 dark:hover:bg-white/5"
         >
           {t.gallery.viewAll.replace("{count}", String(images.length))}
         </button>

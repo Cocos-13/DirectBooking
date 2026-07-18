@@ -62,9 +62,9 @@ export function BookingForm({ range, rangeValid }: Props) {
 
   if (status === "success") {
     return (
-      <div className="rounded-2xl border border-aegean-200 bg-aegean-50 p-6 text-aegean-900">
+      <div className="rounded-2xl border border-aegean-200 bg-aegean-50 p-6 text-aegean-900 dark:border-aegean-500/25 dark:bg-aegean-500/10 dark:text-ink-text">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aegean-600 text-white">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-aegean-600 text-white dark:bg-aegean-500">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 6L9 17l-5-5" />
             </svg>
@@ -74,8 +74,8 @@ export function BookingForm({ range, rangeValid }: Props) {
 
         <ol className="mt-4 space-y-2">
           {t.form.successSteps.map((step, i) => (
-            <li key={i} className="flex gap-3 text-sm text-aegean-900/80">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-aegean-200 text-xs font-semibold text-aegean-900">
+            <li key={i} className="flex gap-3 text-sm text-aegean-900/80 dark:text-ink-text/80">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-aegean-200 text-xs font-semibold text-aegean-900 dark:bg-aegean-500/25 dark:text-ink-text">
                 {i + 1}
               </span>
               <span>{step}</span>
@@ -83,13 +83,13 @@ export function BookingForm({ range, rangeValid }: Props) {
           ))}
         </ol>
 
-        <div className="mt-5 border-t border-aegean-200 pt-4 text-sm text-aegean-900/80">
+        <div className="mt-5 border-t border-aegean-200 pt-4 text-sm text-aegean-900/80 dark:border-aegean-500/25 dark:text-ink-text/80">
           <p>{t.form.successContact}</p>
           <p className="mt-1 space-x-3">
-            <a href={`mailto:${siteConfig.contact.email}`} className="font-medium text-aegean-700 underline underline-offset-2 hover:text-aegean-900">
+            <a href={`mailto:${siteConfig.contact.email}`} className="font-medium text-aegean-700 underline underline-offset-2 hover:text-aegean-900 dark:text-aegean-200 dark:hover:text-ink-text">
               {siteConfig.contact.email}
             </a>
-            <a href={`tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`} className="font-medium text-aegean-700 underline underline-offset-2 hover:text-aegean-900">
+            <a href={`tel:${siteConfig.contact.phone.replace(/\s+/g, "")}`} className="font-medium text-aegean-700 underline underline-offset-2 hover:text-aegean-900 dark:text-aegean-200 dark:hover:text-ink-text">
               {siteConfig.contact.phone}
             </a>
           </p>
@@ -101,13 +101,13 @@ export function BookingForm({ range, rangeValid }: Props) {
   const hasDates = !!(range?.from && range?.to);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-sand-200 bg-white p-6 shadow-elev-2">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-sand-200 bg-white p-6 shadow-elev-2 dark:border-ink-border dark:bg-ink-surface dark:shadow-none">
       <div>
-        <h3 className="text-lg font-bold text-aegean-900">{t.form.heading}</h3>
-        <p className="mt-1 text-sm text-aegean-900/70">{t.form.subtitle}</p>
+        <h3 className="text-lg font-bold text-aegean-900 dark:text-ink-text">{t.form.heading}</h3>
+        <p className="mt-1 text-sm text-aegean-900/70 dark:text-ink-text/70">{t.form.subtitle}</p>
       </div>
 
-      <div className="rounded-lg bg-sand-100/80 px-4 py-3 text-sm text-aegean-900">
+      <div className="rounded-lg bg-sand-100/80 px-4 py-3 text-sm text-aegean-900 dark:bg-ink-bg dark:text-ink-text">
         {hasDates && range?.from && range?.to
           ? `${format(range.from, "yyyy-MM-dd")} → ${format(range.to, "yyyy-MM-dd")}`
           : `${t.form.checkin} / ${t.form.checkout}: —`}
@@ -133,7 +133,7 @@ export function BookingForm({ range, rangeValid }: Props) {
           autoComplete="tel"
         />
         <div>
-          <label className="mb-1 block text-sm font-medium text-aegean-900" htmlFor="guests">
+          <label className="mb-1 block text-sm font-medium text-aegean-900 dark:text-ink-text" htmlFor="guests">
             {t.form.guests}
           </label>
           <select
@@ -141,7 +141,7 @@ export function BookingForm({ range, rangeValid }: Props) {
             name="guests"
             required
             defaultValue={2}
-            className="w-full rounded-lg border border-sand-200 px-3 py-2 text-sm focus:border-aegean-400 focus:outline-none focus:ring-1 focus:ring-aegean-400"
+            className="w-full rounded-lg border border-sand-200 px-3 py-2 text-sm focus:border-aegean-400 focus:outline-none focus:ring-1 focus:ring-aegean-400 dark:border-ink-border dark:bg-ink-bg dark:text-ink-text dark:focus:border-aegean-400 dark:focus:ring-aegean-400"
           >
             {Array.from({ length: siteConfig.capacity.maxGuests }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
@@ -153,7 +153,7 @@ export function BookingForm({ range, rangeValid }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-aegean-900" htmlFor="message">
+        <label className="mb-1 block text-sm font-medium text-aegean-900 dark:text-ink-text" htmlFor="message">
           {t.form.message}
         </label>
         <textarea
@@ -161,23 +161,23 @@ export function BookingForm({ range, rangeValid }: Props) {
           name="message"
           rows={3}
           placeholder={t.form.messagePlaceholder}
-          className="w-full rounded-lg border border-sand-200 px-3 py-2 text-sm focus:border-aegean-400 focus:outline-none focus:ring-1 focus:ring-aegean-400"
+          className="w-full rounded-lg border border-sand-200 px-3 py-2 text-sm focus:border-aegean-400 focus:outline-none focus:ring-1 focus:ring-aegean-400 dark:border-ink-border dark:bg-ink-bg dark:text-ink-text dark:placeholder:text-ink-faint dark:focus:border-aegean-400 dark:focus:ring-aegean-400"
         />
       </div>
 
       {status === "error" && errorMessage && (
-        <p className="text-sm font-medium text-red-600">{errorMessage}</p>
+        <p className="text-sm font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
       )}
 
       <button
         type="submit"
         disabled={!hasDates || !rangeValid || status === "submitting"}
-        className="w-full rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-white shadow-elev-1 transition-all duration-200 hover:-translate-y-0.5 hover:bg-terracotta-600 hover:shadow-elev-2 active:translate-y-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-sand-200 disabled:text-aegean-900/40 disabled:shadow-none"
+        className="w-full rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-white shadow-elev-1 transition-all duration-200 hover:-translate-y-0.5 hover:bg-terracotta-600 hover:shadow-elev-2 active:translate-y-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-sand-200 disabled:text-aegean-900/40 disabled:shadow-none dark:disabled:bg-ink-raised dark:disabled:text-ink-faint"
       >
         {status === "submitting" ? t.form.submitting : t.form.submit}
       </button>
 
-      <p className="text-center text-xs text-aegean-900/60">{t.form.disclaimer}</p>
+      <p className="text-center text-xs text-aegean-900/60 dark:text-ink-muted">{t.form.disclaimer}</p>
     </form>
   );
 }
@@ -197,7 +197,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-aegean-900" htmlFor={name}>
+      <label className="mb-1 block text-sm font-medium text-aegean-900 dark:text-ink-text" htmlFor={name}>
         {label}
       </label>
       <input
@@ -206,7 +206,7 @@ function Field({
         type={type}
         required={required}
         autoComplete={autoComplete}
-        className="w-full rounded-lg border border-sand-200 px-3 py-2 text-sm focus:border-aegean-400 focus:outline-none focus:ring-1 focus:ring-aegean-400"
+        className="w-full rounded-lg border border-sand-200 px-3 py-2 text-sm focus:border-aegean-400 focus:outline-none focus:ring-1 focus:ring-aegean-400 dark:border-ink-border dark:bg-ink-bg dark:text-ink-text dark:placeholder:text-ink-faint dark:focus:border-aegean-400 dark:focus:ring-aegean-400"
       />
     </div>
   );

@@ -47,16 +47,16 @@ export function BookingBar() {
   return (
     <div
       aria-hidden={!visible}
-      className={`fixed inset-x-0 bottom-0 z-40 border-t border-sand-200 bg-sand-50/95 backdrop-blur transition-transform duration-300 ease-out ${
+      className={`fixed inset-x-0 bottom-0 z-40 border-t border-sand-200 bg-sand-50/95 backdrop-blur transition-transform duration-300 ease-out dark:border-ink-border dark:bg-ink-bg/95 ${
         visible ? "translate-y-0" : "pointer-events-none translate-y-full"
       }`}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-aegean-900">{price}</p>
+          <p className="truncate text-sm font-semibold text-aegean-900 dark:text-ink-text">{price}</p>
           {siteConfig.ratings.airbnbIsSuperhost && (
-            <p className="text-xs text-aegean-900/60">
+            <p className="text-xs text-aegean-900/60 dark:text-ink-muted">
               ★ {siteConfig.ratings.airbnbScore.toFixed(2)} · Airbnb Superhost
             </p>
           )}

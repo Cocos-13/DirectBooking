@@ -24,16 +24,16 @@ export function SectionHeading({
   return (
     <div className={`${align === "center" ? "text-center" : ""} ${className}`}>
       {eyebrow && (
-        <p className="mb-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-terracotta-500">
+        <p className="mb-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-terracotta-500 dark:text-terracotta-400">
           {eyebrow}
         </p>
       )}
-      <h2 className="text-3xl font-bold tracking-tight text-aegean-900 sm:text-4xl">
+      <h2 className="text-3xl font-bold tracking-tight text-aegean-900 sm:text-4xl dark:text-ink-text">
         {children}
       </h2>
       {subtitle && (
         <p
-          className={`mt-3 max-w-2xl text-base leading-relaxed text-aegean-900/70 ${
+          className={`mt-3 max-w-2xl text-base leading-relaxed text-aegean-900/70 dark:text-ink-text/70 ${
             align === "center" ? "mx-auto" : ""
           }`}
         >

@@ -43,7 +43,7 @@ export function Amenities() {
   const { t } = useLanguage();
 
   return (
-    <section id="amenities" className="bg-sand-100/60 py-16 sm:py-24">
+    <section id="amenities" className="bg-sand-100/60 py-16 sm:py-24 dark:bg-ink-surface/25">
       <div className="mx-auto max-w-5xl px-4">
         <Reveal>
           <SectionHeading eyebrow={t.amenities.eyebrow}>{t.amenities.heading}</SectionHeading>
@@ -52,9 +52,9 @@ export function Amenities() {
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {t.amenities.groups.map((group, i) => (
             <Reveal key={group.key} delay={i * 80} className="h-full">
-              <div className="group h-full rounded-2xl border border-sand-200 bg-white p-6 shadow-elev-1 transition-all duration-300 hover:-translate-y-1 hover:border-aegean-100 hover:shadow-elev-2">
+              <div className="group h-full rounded-2xl border border-sand-200 bg-white p-6 shadow-elev-1 transition-all duration-300 hover:-translate-y-1 hover:border-aegean-100 hover:shadow-elev-2 dark:border-ink-border dark:bg-ink-surface dark:shadow-none dark:hover:border-aegean-500/40">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-aegean-50 text-aegean-600 transition-colors duration-300 group-hover:bg-aegean-100">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-aegean-50 text-aegean-600 transition-colors duration-300 group-hover:bg-aegean-100 dark:bg-aegean-500/15 dark:text-aegean-200 dark:group-hover:bg-aegean-500/25">
                     <svg
                       aria-hidden
                       viewBox="0 0 24 24"
@@ -68,10 +68,10 @@ export function Amenities() {
                       {ICONS[group.key] ?? FALLBACK_ICON}
                     </svg>
                   </span>
-                  <h3 className="text-base font-semibold text-aegean-900">{group.label}</h3>
+                  <h3 className="text-base font-semibold text-aegean-900 dark:text-ink-text">{group.label}</h3>
                 </div>
 
-                <ul className="mt-4 space-y-2 text-sm leading-relaxed text-aegean-900/70">
+                <ul className="mt-4 space-y-2 text-sm leading-relaxed text-aegean-900/70 dark:text-ink-text/70">
                   {group.items.map((item) => (
                     <li key={item}>{item}</li>
                   ))}

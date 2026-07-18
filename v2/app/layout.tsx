@@ -1,9 +1,26 @@
 import type { Metadata } from "next";
+import { Onest } from "next/font/google";
 import "react-day-picker/dist/style.css";
 import "./globals.css";
 import { LanguageProvider } from "@/components/LanguageProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { siteConfig } from "@/content/siteConfig";
 import { translations } from "@/content/translations";
+
+// Runs before first paint (blocking, in <head>) so the correct theme class is
+// on <html> before any styled content renders — no flash of the wrong theme.
+// Mirrors the logic in ThemeProvider; keep the storage key in sync.
+const themeInitScript = `(function(){try{var k="patras-apartment-theme";var s=localStorage.getItem(k);var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d);}catch(e){}})();`;
+
+// Onest — an elegant geometric sans, arguably the closest free stand-in for
+// Airbnb's Cereal. Used for statement numerals (e.g. the guest rating).
+// Exposed as a CSS variable and referenced via Tailwind's `font-display`.
+const displayFont = Onest({
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+  display: "swap",
+  variable: "--font-display",
+});
 
 // Default (Greek) metadata for crawlers and social previews. The visible
 // page content still switches with the client-side language toggle.
@@ -46,9 +63,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="el">
-      <body className="bg-sand-50 font-sans text-aegean-900 antialiased">
-        <LanguageProvider>{children}</LanguageProvider>
+    <html lang="el" className={displayFont.variable} suppressHydrationWarning>
+      <head>
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
+      </head>
+      <body className="bg-sand-50 font-sans text-aegean-900 antialiased dark:bg-ink-bg dark:text-ink-text">
+        <ThemeProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
