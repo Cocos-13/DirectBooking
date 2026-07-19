@@ -19,7 +19,7 @@ import { siteConfig } from "@/content/siteConfig";
 
 export async function GET(req: Request) {
   const token = new URL(req.url).searchParams.get("token") ?? "";
-  const p = verifyDepositResolve(token);
+  const p = await verifyDepositResolve(token);
   if (!p) return ownerPage("Invalid link", `<p>${INVALID}</p>`, 400);
 
   const already = await settledNotice(p.depositOrderCode);
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
   const form = await req.formData().catch(() => null);
   const token = (form?.get("token") as string) ?? "";
   const action = (form?.get("action") as string) ?? "";
-  const p = verifyDepositResolve(token);
+  const p = await verifyDepositResolve(token);
   if (!p) return ownerPage("Invalid link", `<p>${INVALID}</p>`, 400);
 
   const already = await settledNotice(p.depositOrderCode);

@@ -189,7 +189,7 @@ export async function POST(req: Request) {
   // Notify the owner that money has landed — with a "send deposit hold link"
   // button they click 1–2 days before arrival.
   if (ownerEmail) {
-    const depositButton = buildDepositSendButton(orderCode, guestEmail, guestName, lang, checkin, checkout);
+    const depositButton = await buildDepositSendButton(orderCode, guestEmail, guestName, lang, checkin, checkout);
     try {
       await resend.emails.send({
         from: fromEmail,
@@ -304,20 +304,20 @@ function secondsUntilCheckout(checkout: string, extraDays: number): number {
 }
 
 /** Signed "Send deposit hold link" button for the owner's PAID email. */
-function buildDepositSendButton(
+async function buildDepositSendButton(
   bookingOrderCode: number,
   guestEmail: string,
   guestName: string,
   lang: "el" | "en",
   checkin: string,
   checkout: string
-): string {
+): Promise<string> {
   const amount = siteConfig.deposit.amountEur;
   if (!amount || !guestEmail || !isApprovalConfigured()) return "";
 
   // Valid through checkout + a few days so the owner can send it near arrival.
   const ttl = secondsUntilCheckout(checkout, 3);
-  const token = signDepositSend(
+  const token = await signDepositSend(
     { bookingOrderCode, email: guestEmail, name: guestName, checkin, checkout, lang },
     ttl
   );
@@ -376,7 +376,7 @@ async function handleDepositAuthorized(
   if (!fromEmail || !ownerEmail || !isApprovalConfigured()) return;
 
   const ttl = secondsUntilCheckout(checkout, 30);
-  const token = signDepositResolve(
+  const token = await signDepositResolve(
     { depositOrderCode: orderCode, transactionId, amountCents, email, name, checkin, checkout, lang },
     ttl
   );

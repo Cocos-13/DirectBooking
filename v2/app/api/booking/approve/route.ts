@@ -26,7 +26,7 @@ const HOLD_TTL_MS = 35 * 60 * 1000;
 
 export async function GET(req: Request) {
   const token = new URL(req.url).searchParams.get("token") ?? "";
-  const booking = verifyBooking(token);
+  const booking = await verifyBooking(token);
   if (!booking) return htmlPage("Invalid link", `<p>${INVALID}</p>`, 400);
   if (!isVivaConfigured()) return htmlPage("Payments off", `<p>${NOT_CONFIGURED}</p>`, 503);
 
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
   const form = await req.formData().catch(() => null);
   const token = (form?.get("token") as string) ?? "";
-  const booking = verifyBooking(token);
+  const booking = await verifyBooking(token);
   if (!booking) return htmlPage("Invalid link", `<p>${INVALID}</p>`, 400);
   if (!isVivaConfigured()) return htmlPage("Payments off", `<p>${NOT_CONFIGURED}</p>`, 503);
 

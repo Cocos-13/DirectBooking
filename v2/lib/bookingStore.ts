@@ -393,6 +393,32 @@ export async function getRecentAudit(limit = 100): Promise<Record<string, unknow
   >[];
 }
 
+// ---------------------------------------------------------------------------
+// Generic KV helpers — used by the token vault (lib/bookingToken.ts) to store
+// signed-link payloads server-side so PII stays out of URLs/logs. No-op / null
+// when the store isn't configured (caller then falls back to embedding).
+// ---------------------------------------------------------------------------
+
+export async function kvPutJSON(key: string, value: unknown, ttlSec: number): Promise<boolean> {
+  const c = getClient();
+  if (!c) return false;
+  try {
+    await c.set(key, value, { ex: ttlSec });
+    return true;
+  } catch (err) {
+    console.error("[kv] put failed:", err);
+    return false;
+  }
+}
+
+export async function kvGetJSON<T>(key: string): Promise<T | null> {
+  const c = getClient();
+  if (!c) return null;
+  const v = await c.get<T | string>(key);
+  if (v == null) return null;
+  return typeof v === "string" ? safeParse<T>(v) : (v as T);
+}
+
 function safeParse<T>(value: string): T | null {
   try {
     return JSON.parse(value) as T;

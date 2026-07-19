@@ -17,7 +17,7 @@ const DEPOSIT_LINK_TIMEOUT_SEC = 48 * 60 * 60;
 
 export async function GET(req: Request) {
   const token = new URL(req.url).searchParams.get("token") ?? "";
-  const p = verifyDepositSend(token);
+  const p = await verifyDepositSend(token);
   if (!p) return ownerPage("Invalid link", `<p>${INVALID}</p>`, 400);
   const amount = siteConfig.deposit.amountEur;
   if (!amount || !isVivaConfigured()) {
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
 
   const form = await req.formData().catch(() => null);
   const token = (form?.get("token") as string) ?? "";
-  const p = verifyDepositSend(token);
+  const p = await verifyDepositSend(token);
   if (!p) return ownerPage("Invalid link", `<p>${INVALID}</p>`, 400);
 
   const amount = siteConfig.deposit.amountEur;

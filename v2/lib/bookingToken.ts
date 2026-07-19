@@ -1,14 +1,23 @@
 import crypto from "crypto";
+import { isStoreConfigured, kvGetJSON, kvPutJSON } from "./bookingStore";
 
 // HMAC-signed, URL-safe tokens embedded in the OWNER's emails. Because only the
 // owner receives those emails, a valid token is proof the owner authorized this
 // specific action — no login or admin panel required.
 //
-// Every token is a typed envelope: a `kind` discriminator (so a deposit token
-// can never be replayed as a booking-approval token), a `jti` nonce, and an
-// `exp` expiry (so a stale/forwarded link goes inert). Amounts and prices are
-// deliberately NOT signed — they're recomputed from the signed dates at use
-// time, keeping pricing a single source of truth in siteConfig/lib/pricing.
+// Two on-the-wire formats (chosen automatically):
+//   "2.<id>.<sig(id)>"     — VAULTED: the payload lives in KV under tok:<id>;
+//                            the URL carries only an opaque id, so guest PII
+//                            (name/email/phone) never lands in a URL or an
+//                            access log. Used whenever the store is configured.
+//   "1.<data>.<sig(data)>" — EMBEDDED: payload base64url in the token itself.
+//                            Fallback when there's no store (degrades to the
+//                            previous behaviour). Also legacy "<data>.<sig>"
+//                            (2-part) tokens still verify, for links in flight.
+//
+// Every payload is a typed envelope: a `kind` discriminator (so a deposit token
+// can never be replayed as a booking token), a `jti` nonce, and an `exp`. Prices
+// are never signed — recomputed from the signed dates at use time.
 
 const DEFAULT_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
@@ -32,51 +41,71 @@ function sign(data: string): string {
   return crypto.createHmac("sha256", secret).update(data).digest("base64url");
 }
 
-/** Signs `payload` under a namespace `kind`, valid for `ttlSeconds`. */
-export function signToken<T>(
+function sigMatches(value: string, expected: string): boolean {
+  const a = Buffer.from(value);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+function makeEnvelope<T>(kind: string, payload: T, ttlSeconds: number): Envelope<T> {
+  const now = Math.floor(Date.now() / 1000);
+  return { v: 1, kind, jti: crypto.randomUUID(), iat: now, exp: now + ttlSeconds, p: payload };
+}
+
+function validate<T>(kind: string, env: Envelope<T> | null): T | null {
+  if (!env || env.v !== 1 || env.kind !== kind || env.p == null) return null;
+  const now = Math.floor(Date.now() / 1000);
+  if (typeof env.exp !== "number" || env.exp < now) return null; // expired
+  return env.p;
+}
+
+/** Signs `payload` under a namespace `kind`. Vaults it in KV when available. */
+export async function signToken<T>(
   kind: string,
   payload: T,
   ttlSeconds: number = DEFAULT_TTL_SECONDS
-): string {
-  const now = Math.floor(Date.now() / 1000);
-  const envelope: Envelope<T> = {
-    v: 1,
-    kind,
-    jti: crypto.randomUUID(),
-    iat: now,
-    exp: now + ttlSeconds,
-    p: payload,
-  };
-  const data = Buffer.from(JSON.stringify(envelope)).toString("base64url");
-  return `${data}.${sign(data)}`;
+): Promise<string> {
+  const env = makeEnvelope(kind, payload, ttlSeconds);
+
+  if (isStoreConfigured()) {
+    const id = crypto.randomUUID();
+    const stored = await kvPutJSON(`tok:${id}`, env, ttlSeconds);
+    if (stored) return `2.${id}.${sign(id)}`;
+    // else fall through to embedded (store write failed) — better a working
+    // link with PII in the URL than a broken approval flow.
+  }
+
+  const data = Buffer.from(JSON.stringify(env)).toString("base64url");
+  return `1.${data}.${sign(data)}`;
 }
 
-/**
- * Verifies signature, version, matching `kind`, and expiry (constant-time on
- * the signature). Returns the payload or null. A token minted for a different
- * `kind` fails here even though the signature is valid.
- */
-export function verifyToken<T>(kind: string, token: string): T | null {
-  const [data, sig] = (token ?? "").split(".");
-  if (!data || !sig) return null;
+/** Verifies a token of the given `kind` and returns its payload, or null. */
+export async function verifyToken<T>(kind: string, token: string): Promise<T | null> {
+  const parts = (token ?? "").split(".");
 
-  const expected = sign(data);
-  const a = Buffer.from(sig);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+  // Legacy 2-part embedded token: "<data>.<sig>".
+  if (parts.length === 2) {
+    const [data, sig] = parts;
+    if (!data || !sig || !sigMatches(sig, sign(data))) return null;
+    return validate(kind, decodeEmbedded<T>(data));
+  }
 
-  let envelope: Envelope<T>;
+  if (parts.length === 3) {
+    const [mode, mid, sig] = parts;
+    if (!mid || !sig || !sigMatches(sig, sign(mid))) return null;
+    if (mode === "2") return validate(kind, await kvGetJSON<Envelope<T>>(`tok:${mid}`));
+    if (mode === "1") return validate(kind, decodeEmbedded<T>(mid));
+  }
+
+  return null;
+}
+
+function decodeEmbedded<T>(data: string): Envelope<T> | null {
   try {
-    envelope = JSON.parse(Buffer.from(data, "base64url").toString("utf8")) as Envelope<T>;
+    return JSON.parse(Buffer.from(data, "base64url").toString("utf8")) as Envelope<T>;
   } catch {
     return null;
   }
-
-  if (envelope.v !== 1 || envelope.kind !== kind || envelope.p == null) return null;
-  const now = Math.floor(Date.now() / 1000);
-  if (typeof envelope.exp !== "number" || envelope.exp < now) return null; // expired
-
-  return envelope.p;
 }
 
 // --- Booking approval (the "Approve & send payment link" button) ------------
@@ -91,14 +120,11 @@ export interface BookingPayload {
   lang: "el" | "en";
 }
 
-export function signBooking(
-  payload: BookingPayload,
-  ttlSeconds: number = DEFAULT_TTL_SECONDS
-): string {
+export function signBooking(payload: BookingPayload, ttlSeconds: number = DEFAULT_TTL_SECONDS) {
   return signToken("booking", payload, ttlSeconds);
 }
 
-export function verifyBooking(token: string): BookingPayload | null {
+export function verifyBooking(token: string) {
   return verifyToken<BookingPayload>("booking", token);
 }
 
@@ -114,11 +140,11 @@ export interface DepositSendPayload {
   lang: "el" | "en";
 }
 
-export function signDepositSend(payload: DepositSendPayload, ttlSeconds: number): string {
+export function signDepositSend(payload: DepositSendPayload, ttlSeconds: number) {
   return signToken("deposit-send", payload, ttlSeconds);
 }
 
-export function verifyDepositSend(token: string): DepositSendPayload | null {
+export function verifyDepositSend(token: string) {
   return verifyToken<DepositSendPayload>("deposit-send", token);
 }
 
@@ -135,10 +161,10 @@ export interface DepositResolvePayload {
   lang: "el" | "en";
 }
 
-export function signDepositResolve(payload: DepositResolvePayload, ttlSeconds: number): string {
+export function signDepositResolve(payload: DepositResolvePayload, ttlSeconds: number) {
   return signToken("deposit-resolve", payload, ttlSeconds);
 }
 
-export function verifyDepositResolve(token: string): DepositResolvePayload | null {
+export function verifyDepositResolve(token: string) {
   return verifyToken<DepositResolvePayload>("deposit-resolve", token);
 }

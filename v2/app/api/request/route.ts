@@ -96,7 +96,7 @@ export async function POST(req: Request) {
   // payments are fully configured; otherwise the flow stays request-only.
   let approveBlock = "";
   if (quote && isVivaConfigured() && isApprovalConfigured()) {
-    const token = signBooking({
+    const token = await signBooking({
       name: data.name,
       email: data.email,
       phone: data.phone || undefined,
