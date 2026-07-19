@@ -21,13 +21,28 @@ Guest submits a request
 
 **Why it's safe**
 
-- The Approve button is an **HMAC-signed link**. Only your inbox receives it, so
-  only you can approve — no login/admin panel needed.
+- The Approve button is an **HMAC-signed link** that **expires after 7 days**.
+  Only your inbox receives it, so only you can approve — no login/admin panel
+  needed. A stale or altered link is inert.
 - Clicking the link only **shows a review page** (GET). The charge is created on
   **Confirm** (POST), so email/link scanners can't trigger a payment.
-- The webhook body is public and unauthenticated, so it is **never trusted
-  directly** — the server re-fetches the transaction from Viva with our own
-  credentials and checks status + amount before marking anything paid.
+- **Confirm re-checks availability** against the live calendar (platforms +
+  direct bookings + holds) and, when the store is configured, **places a
+  ~30-minute hold** on the dates before creating the order — so the same nights
+  can't be sold to a second guest during the payment window.
+- The webhook body is public and unauthenticated, so **only the `TransactionId`
+  is taken from it**. Status, amount, order code, and the dates (`merchantTrns`)
+  are read back from Viva over an **authenticated retrieve**. The paid amount is
+  then **verified against the amount we recorded at approval time**; a mismatch
+  or an unmatchable payment **alerts you and is NOT auto-confirmed** (the
+  calendar is never blocked on unverified money). Confirmation is **idempotent**
+  by order code, so retried webhook deliveries don't double-book or double-email.
+
+> **Store note:** holds, amount verification against the recorded order, and the
+> audit trail need the KV store (below). With no store the webhook still refuses
+> to trust the wire — it verifies the amount by re-quoting the dates from the
+> *authenticated* transaction — but it can't place holds (it relies on the
+> availability re-check alone) and can't dedupe repeated deliveries.
 
 ## Setup checklist
 
@@ -103,16 +118,46 @@ deployed URL.
 - [ ] Set `VIVA_ENV=production`.
 - [ ] Do one small real transaction to confirm, then refund it if desired.
 
+## Refundable deposit (card pre-authorization)
+
+The stay is paid in full up front; the damage deposit is a **separate refundable
+hold** (`content/siteConfig.ts` → `deposit.amountEur`, `0` disables it). A
+pre-auth hold falls off a card within days, so it is placed **near arrival**,
+not at booking:
+
+```
+Guest pays the stay  →  PAID email to owner now includes a
+  "Send €X deposit hold link" button
+    → owner clicks it 1–2 days before check-in → review page → Confirm
+    → a Viva PRE-AUTH order is created; guest is emailed a hold link
+    → guest authorizes on Viva (a hold, not a charge)
+    → webhook records it and emails the owner a "Release / Capture" link
+  after checkout:
+    → owner clicks Release (no damage) or Capture €N (damage)
+```
+
+- The deposit order is tagged `DEP|…` in `merchantTrns` and tracked separately,
+  so the webhook never mistakes the (different) deposit amount for the stay
+  total.
+- **Release/Capture needs extra credentials** — Viva's Payment API uses Basic
+  auth (`VIVA_MERCHANT_ID` + `VIVA_API_KEY`), and *Settings → API Access → "Allow
+  …pre-auth captures via API"* must be enabled. **Without them the owner still
+  sends holds but resolves them in the Viva portal** (the resolve page says so).
+- The guest is emailed when the hold is released or captured.
+
 ## Where the code lives
 
 | File | Responsibility |
 | --- | --- |
-| `lib/viva.ts` | OAuth2 token, create order, retrieve transaction; demo/prod hosts |
-| `lib/bookingToken.ts` | HMAC sign/verify of the Approve link |
+| `lib/viva.ts` | OAuth2 token, create order, retrieve transaction, pre-auth capture/release; demo/prod hosts |
+| `lib/bookingToken.ts` | HMAC sign/verify of the owner action links (approve, deposit send/resolve), typed by `kind` + expiry |
+| `lib/bookingStore.ts` | Confirmed bookings, holds, pending orders, deposits, audit log (KV; no-op without creds) |
 | `lib/pricing.ts` | `quoteStay()` — the amount charged (recomputed from dates) |
-| `app/api/request/route.ts` | Adds the signed Approve button to the owner email |
-| `app/api/booking/approve/route.ts` | Review page (GET) + create order & email guest (POST) |
-| `app/api/viva/webhook/route.ts` | Verification handshake + payment confirmation |
+| `app/api/request/route.ts` | Adds the signed Approve button to the owner email; server-side date bounds |
+| `app/api/booking/approve/route.ts` | Review page (GET) + availability re-check, hold, create order, email guest (POST) |
+| `app/api/deposit/send/route.ts` | Owner review (GET) + create pre-auth hold & email guest (POST) |
+| `app/api/deposit/resolve/route.ts` | Owner review (GET) + release/capture the hold (POST) |
+| `app/api/viva/webhook/route.ts` | Verification handshake + amount-verified payment confirmation + deposit authorization |
 | `app/booking/success` · `app/booking/failure` | Guest landing pages |
 
 ## Troubleshooting

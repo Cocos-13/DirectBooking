@@ -1,6 +1,6 @@
 import ical from "node-ical";
 import type { BusyRange, IcalSource } from "./types";
-import { getConfirmedBookings, isStoreConfigured } from "./bookingStore";
+import { getActiveHolds, getConfirmedBookings, isStoreConfigured } from "./bookingStore";
 
 // How long Next.js may serve a cached copy of each iCal feed before
 // re-fetching. Keeps us well clear of any rate limits and avoids hitting
@@ -80,6 +80,20 @@ export async function getRawBusyRanges(): Promise<BusyRange[]> {
         )
         .catch((err) => {
           console.error("[ical] direct-booking store read failed:", err);
+          return [];
+        })
+    );
+
+    // Active holds — nights with a live pay link out to a guest. Treated as
+    // busy so the same nights aren't offered to (or bookable by) a second
+    // guest during the ~30-minute payment window. Expired holds self-prune.
+    jobs.push(
+      getActiveHolds()
+        .then((holds) =>
+          holds.map((h): BusyRange => ({ start: h.checkin, end: h.checkout, source: "direct" }))
+        )
+        .catch((err) => {
+          console.error("[ical] hold read failed:", err);
           return [];
         })
     );

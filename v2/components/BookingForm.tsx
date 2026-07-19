@@ -264,6 +264,8 @@ function mapError(reason: string | undefined, t: ReturnType<typeof useLanguage>[
       return t.form.errorMinStay;
     case "not-available":
       return t.form.errorNotAvailable;
+    case "past-date":
+    case "too-far":
     case "invalid-range":
     case "invalid-fields":
       return t.form.errorInvalid;

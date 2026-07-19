@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getRawBusyRanges } from "@/lib/ical";
 import { evaluateBookingRange, mergeBusyRanges, nightsBetween } from "@/lib/availability";
+import { audit } from "@/lib/bookingStore";
 import { getResendClient } from "@/lib/resend";
 import { quoteStay } from "@/lib/pricing";
 import { isVivaConfigured } from "@/lib/viva";
@@ -43,10 +44,19 @@ export async function POST(req: Request) {
 
   const raw = await getRawBusyRanges();
   const merged = mergeBusyRanges(raw);
-  const evaluation = evaluateBookingRange(data.checkin, data.checkout, merged);
+  const evaluation = evaluateBookingRange(data.checkin, data.checkout, merged, {
+    horizonDays: siteConfig.calendarHorizonDays,
+  });
   if (!evaluation.ok) {
     return NextResponse.json({ error: evaluation.reason }, { status: 409 });
   }
+
+  // Audit breadcrumb — dates/guest count only, no PII in the trail.
+  await audit("request.received", {
+    checkin: data.checkin,
+    checkout: data.checkout,
+    guests: data.guests,
+  });
 
   const nights = nightsBetween(data.checkin, data.checkout);
   const quote = quoteStay(data.checkin, data.checkout, siteConfig.pricing);
@@ -121,11 +131,11 @@ export async function POST(req: Request) {
       data.lang === "el"
         ? {
             subject: "Λάβαμε το αίτημά σας",
-            body: `Γεια σας ${data.name},<br/><br/>Λάβαμε το αίτημα κράτησης για ${data.checkin} → ${data.checkout}. Θα επικοινωνήσουμε μαζί σας σύντομα για επιβεβαίωση.<br/><br/>${siteConfig.name}`,
+            body: `Γεια σας ${escapeHtml(data.name)},<br/><br/>Λάβαμε το αίτημα κράτησης για ${data.checkin} → ${data.checkout}. Θα επικοινωνήσουμε μαζί σας σύντομα για επιβεβαίωση.<br/><br/>${escapeHtml(siteConfig.name)}`,
           }
         : {
             subject: "We received your booking request",
-            body: `Hi ${data.name},<br/><br/>We received your booking request for ${data.checkin} → ${data.checkout}. We'll get back to you shortly to confirm.<br/><br/>${siteConfig.name}`,
+            body: `Hi ${escapeHtml(data.name)},<br/><br/>We received your booking request for ${data.checkin} → ${data.checkout}. We'll get back to you shortly to confirm.<br/><br/>${escapeHtml(siteConfig.name)}`,
           };
 
     await resend.emails.send({

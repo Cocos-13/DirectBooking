@@ -16,6 +16,11 @@ export interface MergedRange {
   end: string; // YYYY-MM-DD, exclusive
 }
 
-export type BookingRejectionReason = "invalid-range" | "not-available" | "min-stay";
+export type BookingRejectionReason =
+  | "invalid-range"
+  | "not-available"
+  | "min-stay"
+  | "past-date"
+  | "too-far";
 
 export type BookingEvaluation = { ok: true } | { ok: false; reason: BookingRejectionReason };

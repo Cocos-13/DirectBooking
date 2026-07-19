@@ -54,6 +54,15 @@ export const siteConfig = {
   // Keep in sync with the cheaper of the two rates above.
   priceFromEur: 72,
 
+  // Refundable damage deposit. Collected as a card PRE-AUTHORIZATION (a hold,
+  // not a charge) via a link the owner sends the guest shortly before arrival —
+  // pre-auth holds fall off cards within days, so they can't be placed months
+  // ahead. Released after checkout if there's no damage, or captured up to this
+  // amount if there is. Set to 0 to disable the deposit flow entirely.
+  deposit: {
+    amountEur: 200,
+  },
+
   // Cross-links to the existing listings (used in the footer / schema
   // sameAs — also a soft trust signal: "already trusted by X guests").
   listings: {
