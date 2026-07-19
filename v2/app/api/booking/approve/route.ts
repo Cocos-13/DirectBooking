@@ -58,7 +58,9 @@ export async function POST(req: Request) {
       customerName: booking.name,
       customerPhone: booking.phone,
       lang: booking.lang,
-      merchantTrns: `${booking.checkin}_${booking.checkout}_${booking.email}`,
+      // Pipe-delimited so the webhook can recover lang + dates + email for a
+      // localized receipt (email addresses never contain "|").
+      merchantTrns: `${booking.lang}|${booking.checkin}|${booking.checkout}|${booking.email}`,
       customerTrns:
         booking.lang === "el"
           ? `Κράτηση ${siteConfig.name}: ${booking.checkin} → ${booking.checkout}`
