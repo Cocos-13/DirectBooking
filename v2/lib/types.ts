@@ -1,4 +1,4 @@
-export type IcalSource = "airbnb" | "booking";
+export type IcalSource = "airbnb" | "booking" | "direct";
 
 /**
  * A blocked stretch of nights. `start` is the check-in day (first occupied

@@ -1,5 +1,6 @@
 import ical from "node-ical";
 import type { BusyRange, IcalSource } from "./types";
+import { getConfirmedBookings, isStoreConfigured } from "./bookingStore";
 
 // How long Next.js may serve a cached copy of each iCal feed before
 // re-fetching. Keeps us well clear of any rate limits and avoids hitting
@@ -65,6 +66,22 @@ export async function getRawBusyRanges(): Promise<BusyRange[]> {
         console.error("[ical] Booking.com feed failed:", err);
         return [];
       })
+    );
+  }
+
+  // This site's own paid direct bookings — so the calendar and request
+  // validation block them immediately, without waiting for Airbnb/Booking.com
+  // to import our published feed.
+  if (isStoreConfigured()) {
+    jobs.push(
+      getConfirmedBookings()
+        .then((bookings) =>
+          bookings.map((b): BusyRange => ({ start: b.checkin, end: b.checkout, source: "direct" }))
+        )
+        .catch((err) => {
+          console.error("[ical] direct-booking store read failed:", err);
+          return [];
+        })
     );
   }
 

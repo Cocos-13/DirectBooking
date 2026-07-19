@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { retrieveTransaction } from "@/lib/viva";
+import { saveConfirmedBooking } from "@/lib/bookingStore";
 import { getResendClient } from "@/lib/resend";
 import { siteConfig } from "@/content/siteConfig";
 
@@ -61,6 +62,22 @@ export async function POST(req: Request) {
   const guestEmail = email || tx.email || payload.EventData?.Email;
   const guestName = tx.fullName || payload.EventData?.FullName || "";
   const orderCode = tx.orderCode || payload.EventData?.OrderCode || 0;
+
+  // Persist the confirmed booking so it blocks these dates on our own
+  // calendar and gets published in /api/calendar.ics. Idempotent by order
+  // code; a store failure must not fail the webhook.
+  if (checkin && checkout) {
+    try {
+      await saveConfirmedBooking(orderCode, {
+        checkin,
+        checkout,
+        guestName,
+        createdAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error("[viva/webhook] failed to persist booking:", err);
+    }
+  }
 
   const fromEmail = process.env.RESEND_FROM_EMAIL;
   const ownerEmail = process.env.OWNER_NOTIFICATION_EMAIL;
