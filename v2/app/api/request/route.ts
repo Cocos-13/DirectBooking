@@ -4,6 +4,8 @@ import { getRawBusyRanges } from "@/lib/ical";
 import { evaluateBookingRange, mergeBusyRanges, nightsBetween } from "@/lib/availability";
 import { getResendClient } from "@/lib/resend";
 import { quoteStay } from "@/lib/pricing";
+import { isVivaConfigured } from "@/lib/viva";
+import { isApprovalConfigured, signBooking } from "@/lib/bookingToken";
 import { siteConfig } from "@/content/siteConfig";
 
 const RequestSchema = z.object({
@@ -51,6 +53,33 @@ export async function POST(req: Request) {
   const priceLine = quote
     ? `<p><strong>Estimated total:</strong> ${quote.totalEur}€ (${quote.weekdayNights} × ${quote.weekdayRateEur}€ weekday + ${quote.weekendNights} × ${quote.weekendRateEur}€ weekend)</p>`
     : "";
+
+  // Owner-only "Approve" button: a signed link that, when clicked, creates a
+  // Viva payment order and emails the guest the pay link. Only rendered when
+  // payments are fully configured; otherwise the flow stays request-only.
+  let approveBlock = "";
+  if (quote && isVivaConfigured() && isApprovalConfigured()) {
+    const token = signBooking({
+      name: data.name,
+      email: data.email,
+      phone: data.phone || undefined,
+      checkin: data.checkin,
+      checkout: data.checkout,
+      guests: data.guests,
+      lang: data.lang,
+    });
+    const approveUrl = `${siteConfig.url}/api/booking/approve?token=${encodeURIComponent(token)}`;
+    approveBlock = `
+      <p style="margin:24px 0 8px">
+        <a href="${approveUrl}" style="display:inline-block;background:#c65a3a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:9999px;font-weight:600">
+          Approve &amp; send payment link — ${quote.totalEur}€
+        </a>
+      </p>
+      <p style="font-size:12px;color:#888888;margin-top:0">
+        Clicking confirms the dates and emails the guest a Viva.com link to pay the full amount. Only you received this email.
+      </p>`;
+  }
+
   const ownerEmail = process.env.OWNER_NOTIFICATION_EMAIL;
   const fromEmail = process.env.RESEND_FROM_EMAIL;
 
@@ -77,6 +106,7 @@ export async function POST(req: Request) {
         <p><strong>Phone:</strong> ${escapeHtml(data.phone || "—")}</p>
         <p><strong>Language:</strong> ${data.lang}</p>
         <p><strong>Message:</strong><br/>${escapeHtml(data.message || "—").replace(/\n/g, "<br/>")}</p>
+        ${approveBlock}
       `,
     });
   } catch (err) {
