@@ -14,15 +14,39 @@ import crypto from "crypto";
 // when that happens (e.g. the webhook falls back to Viva's authenticated
 // transaction data, never the public POST body).
 
+// Hash-keyed collections (list/scan friendly).
 const K = {
-  confirmed: "directBookings",
-  holds: "holds",
-  pending: "pendingOrders",
-  deposits: "deposits",
-  audit: "auditLog",
+  confirmed: "directBookings", // hash: orderCode -> non-PII booking (dates/amount)
+  holds: "holds", // hash: holdId -> Hold (no PII)
+  audit: "auditLog", // list (no raw PII)
+} as const;
+
+// Per-record keys that carry PII and therefore get a Redis TTL so the data
+// physically expires — Redis can only expire whole keys, not hash fields.
+const PREFIX = {
+  bpii: "bpii:", // booking guest PII, split out of the confirmed record
+  pending: "pending:", // pending order (holds guest PII until payment)
+  deposit: "deposit:", // deposit record (holds guest PII)
 } as const;
 
 const AUDIT_MAX = 5000; // keep the most recent N audit entries
+
+// Guest contact PII is retained for RETENTION_DAYS after checkout, then the KV
+// TTL deletes it automatically (GDPR storage limitation). Non-PII booking
+// dates/amounts stay in the hash for the calendar/feed and tax reconciliation.
+const RETENTION_DAYS = 365;
+const RETENTION_FLOOR_SEC = 7 * 24 * 60 * 60; // never expire PII sooner than a week
+// Abandoned (never-paid) orders shouldn't keep PII forever — they only matter
+// until payment completes, which can't happen after the checkout link lapses.
+const PENDING_TTL_SEC = 6 * 60 * 60;
+
+/** Seconds until `checkout` + RETENTION_DAYS, floored so it's never too short. */
+function retentionTtlSec(checkout: string): number {
+  const end = Date.parse(`${checkout}T00:00:00Z`);
+  const base = Number.isNaN(end) ? Date.now() : end;
+  const secs = Math.floor((base - Date.now()) / 1000) + RETENTION_DAYS * 86400;
+  return Math.max(RETENTION_FLOOR_SEC, secs);
+}
 
 function creds(): { url: string; token: string } | null {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -72,7 +96,30 @@ export async function saveConfirmedBooking(
 ): Promise<void> {
   const c = getClient();
   if (!c) return;
-  await c.hset(K.confirmed, { [String(orderCode)]: booking });
+  const { guestName, guestEmail, ...nonPii } = booking;
+  // The durable calendar/financial record carries no PII.
+  await c.hset(K.confirmed, { [String(orderCode)]: nonPii });
+  // Guest PII lives in its own key with a retention TTL (auto-purged).
+  if (guestName || guestEmail) {
+    await c.set(
+      `${PREFIX.bpii}${orderCode}`,
+      { guestName, guestEmail },
+      { ex: retentionTtlSec(booking.checkout) }
+    );
+  }
+}
+
+/** Guest PII for a booking, while still within the retention window (else null). */
+export async function getBookingPii(
+  orderCode: number | string
+): Promise<{ guestName?: string; guestEmail?: string } | null> {
+  const c = getClient();
+  if (!c) return null;
+  const v = await c.get<{ guestName?: string; guestEmail?: string } | string>(
+    `${PREFIX.bpii}${orderCode}`
+  );
+  if (!v) return null;
+  return typeof v === "string" ? safeParse<{ guestName?: string; guestEmail?: string }>(v) : v;
 }
 
 /** A single confirmed booking by order code, or null. Used for idempotency. */
@@ -227,7 +274,9 @@ export async function savePendingOrder(
 ): Promise<void> {
   const c = getClient();
   if (!c) return;
-  await c.hset(K.pending, { [String(orderCode)]: order });
+  // Per-record key with a short TTL: it's only needed until payment, and this
+  // guarantees the guest PII inside an abandoned order is auto-purged.
+  await c.set(`${PREFIX.pending}${orderCode}`, order, { ex: PENDING_TTL_SEC });
 }
 
 export async function getPendingOrder(
@@ -235,7 +284,7 @@ export async function getPendingOrder(
 ): Promise<PendingOrder | null> {
   const c = getClient();
   if (!c) return null;
-  const value = await c.hget<PendingOrder | string>(K.pending, String(orderCode));
+  const value = await c.get<PendingOrder | string>(`${PREFIX.pending}${orderCode}`);
   if (!value) return null;
   const parsed = typeof value === "string" ? safeParse<PendingOrder>(value) : value;
   return parsed && parsed.checkin ? parsed : null;
@@ -244,7 +293,7 @@ export async function getPendingOrder(
 export async function deletePendingOrder(orderCode: number | string): Promise<void> {
   const c = getClient();
   if (!c) return;
-  await c.hdel(K.pending, String(orderCode)).catch(() => {});
+  await c.del(`${PREFIX.pending}${orderCode}`).catch(() => {});
 }
 
 // ---------------------------------------------------------------------------
@@ -279,7 +328,11 @@ export async function saveDeposit(
 ): Promise<void> {
   const c = getClient();
   if (!c) return;
-  await c.hset(K.deposits, { [String(depositOrderCode)]: record });
+  // Per-record key with the same retention TTL as booking PII (it holds the
+  // guest's name/email); recomputed from checkout on each lifecycle update.
+  await c.set(`${PREFIX.deposit}${depositOrderCode}`, record, {
+    ex: retentionTtlSec(record.checkout),
+  });
 }
 
 export async function getDeposit(
@@ -287,7 +340,7 @@ export async function getDeposit(
 ): Promise<DepositRecord | null> {
   const c = getClient();
   if (!c) return null;
-  const value = await c.hget<DepositRecord | string>(K.deposits, String(depositOrderCode));
+  const value = await c.get<DepositRecord | string>(`${PREFIX.deposit}${depositOrderCode}`);
   if (!value) return null;
   const parsed = typeof value === "string" ? safeParse<DepositRecord>(value) : value;
   return parsed && parsed.status ? parsed : null;
