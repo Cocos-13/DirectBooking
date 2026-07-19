@@ -26,6 +26,26 @@ export const siteConfig = {
     phone: "+30 6936983364",
   },
 
+  // Legal / registration identity. Greek law 4446/2016 (art. 111) requires the
+  // short-term-rental registry number (ΑΜΑ — Αριθμός Μητρώου Ακινήτων) to be
+  // displayed. Fill these in; empty values render a visible TODO in the legal
+  // pages and are omitted from the footer until set.
+  registration: {
+    amaNumber: "", // ΑΜΑ — REQUIRED to display. Paste yours here.
+    controllerName: "", // Data-controller legal name (person or company) for the Privacy Policy.
+    controllerEmail: "mavridiskon14@gmail.com", // Where privacy/GDPR requests go.
+    taxId: "", // ΑΦΜ, only if you invoice as a business (optional).
+  },
+
+  // Version stamp for the guest-facing Terms/Privacy/House-Rules. Bump this
+  // whenever their content changes; the version each guest accepted is recorded
+  // with their booking as consent evidence. Keep as YYYY-MM-DD.
+  policyVersion: "2026-07-19",
+
+  // Set false once a lawyer has reviewed the legal pages — hides the "draft,
+  // pending legal review" banner. Keep true until then.
+  legalDraft: true,
+
   capacity: {
     maxGuests: 5,
     bedrooms: 2,

@@ -19,6 +19,11 @@ const RequestSchema = z.object({
   guests: z.coerce.number().int().min(1).max(5),
   message: z.string().trim().max(2000).optional().or(z.literal("")),
   lang: z.enum(["el", "en"]).default("el"),
+  // Explicit acceptance of Terms/House-Rules/Privacy. Must be literally true —
+  // a missing/false value fails validation, so the server never processes a
+  // request without recorded consent (defense-in-depth behind the UI checkbox).
+  consent: z.literal(true),
+  policyVersion: z.string().trim().max(40).optional(),
   // Honeypot: real visitors never fill this (it's visually hidden). Bots
   // that blindly fill every field will trip it.
   website: z.string().max(0).optional().or(z.literal("")),
@@ -66,11 +71,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: evaluation.reason }, { status: 409 });
   }
 
-  // Audit breadcrumb — dates/guest count only, no PII in the trail.
+  // Audit breadcrumb + consent evidence. No raw PII in the trail: the guest is
+  // referenced by a one-way hash of their email, so a dispute ("did they accept
+  // v2026-07-19 of the terms?") can be answered by re-hashing their email and
+  // matching, without storing the address in the log.
   await audit("request.received", {
     checkin: data.checkin,
     checkout: data.checkout,
     guests: data.guests,
+    consent: true,
+    policyVersion: data.policyVersion || null,
+    emailHash: hashId(data.email.toLowerCase()),
+    ipHash: hashId(ip),
   });
 
   const nights = nightsBetween(data.checkin, data.checkout);

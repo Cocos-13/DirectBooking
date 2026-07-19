@@ -18,10 +18,11 @@ export function BookingForm({ range, rangeValid }: Props) {
   const { t, lang } = useLanguage();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [consent, setConsent] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!range?.from || !range?.to || !rangeValid) return;
+    if (!range?.from || !range?.to || !rangeValid || !consent) return;
 
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -43,6 +44,8 @@ export function BookingForm({ range, rangeValid }: Props) {
           checkin: format(range.from, "yyyy-MM-dd"),
           checkout: format(range.to, "yyyy-MM-dd"),
           lang,
+          consent: true,
+          policyVersion: siteConfig.policyVersion,
         }),
       });
 
@@ -211,13 +214,33 @@ export function BookingForm({ range, rangeValid }: Props) {
         />
       </div>
 
+      <label className="flex items-start gap-2.5 text-xs text-aegean-900/70 dark:text-ink-text/70">
+        <input
+          type="checkbox"
+          name="consent"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          required
+          className="mt-0.5 h-4 w-4 shrink-0 rounded border-sand-300 text-terracotta-500 focus:ring-terracotta-400 dark:border-ink-border dark:bg-ink-bg"
+        />
+        <span>
+          {lang === "el" ? "Έχω διαβάσει και αποδέχομαι τους " : "I have read and accept the "}
+          <ConsentLink href="/legal/terms">{lang === "el" ? "Όρους" : "Terms"}</ConsentLink>
+          {", "}
+          <ConsentLink href="/legal/house-rules">{lang === "el" ? "Κανόνες" : "House Rules"}</ConsentLink>
+          {lang === "el" ? " και την " : " and "}
+          <ConsentLink href="/legal/privacy">{lang === "el" ? "Πολιτική Απορρήτου" : "Privacy Policy"}</ConsentLink>
+          .
+        </span>
+      </label>
+
       {status === "error" && errorMessage && (
         <p className="text-sm font-medium text-red-600 dark:text-red-400">{errorMessage}</p>
       )}
 
       <button
         type="submit"
-        disabled={!hasDates || !rangeValid || status === "submitting"}
+        disabled={!hasDates || !rangeValid || !consent || status === "submitting"}
         className="w-full rounded-full bg-terracotta-500 px-6 py-3 text-sm font-semibold text-white shadow-elev-1 transition-all duration-200 hover:-translate-y-0.5 hover:bg-terracotta-600 hover:shadow-elev-2 active:translate-y-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:bg-sand-200 disabled:text-aegean-900/40 disabled:shadow-none dark:disabled:bg-ink-raised dark:disabled:text-ink-faint"
       >
         {status === "submitting" ? t.form.submitting : t.form.submit}
@@ -255,6 +278,19 @@ function Field({
         className="w-full rounded-lg border border-sand-200 px-3 py-2 text-sm focus:border-aegean-400 focus:outline-none focus:ring-1 focus:ring-aegean-400 dark:border-ink-border dark:bg-ink-bg dark:text-ink-text dark:placeholder:text-ink-faint dark:focus:border-aegean-400 dark:focus:ring-aegean-400"
       />
     </div>
+  );
+}
+
+function ConsentLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="font-medium text-aegean-700 underline underline-offset-2 hover:text-aegean-900 dark:text-aegean-200 dark:hover:text-ink-text"
+    >
+      {children}
+    </a>
   );
 }
 
