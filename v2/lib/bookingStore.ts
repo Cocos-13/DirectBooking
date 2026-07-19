@@ -51,20 +51,24 @@ export async function saveConfirmedBooking(
   await c.hset(KEY, { [String(orderCode)]: booking });
 }
 
-/** All confirmed direct bookings. Returns [] when the store isn't configured. */
-export async function getConfirmedBookings(): Promise<ConfirmedBooking[]> {
+/**
+ * All confirmed direct bookings, each tagged with its `id` (the Viva order
+ * code used as the hash key) so the published feed can emit a stable UID.
+ * Returns [] when the store isn't configured.
+ */
+export async function getConfirmedBookings(): Promise<(ConfirmedBooking & { id: string })[]> {
   const c = getClient();
   if (!c) return [];
 
   const all = await c.hgetall<Record<string, ConfirmedBooking | string>>(KEY);
   if (!all) return [];
 
-  const out: ConfirmedBooking[] = [];
-  for (const value of Object.values(all)) {
+  const out: (ConfirmedBooking & { id: string })[] = [];
+  for (const [id, value] of Object.entries(all)) {
     // @upstash/redis usually returns the deserialized object, but tolerate a
     // raw JSON string too, just in case.
     const parsed = typeof value === "string" ? safeParse(value) : value;
-    if (parsed && parsed.checkin && parsed.checkout) out.push(parsed);
+    if (parsed && parsed.checkin && parsed.checkout) out.push({ ...parsed, id });
   }
   return out;
 }
