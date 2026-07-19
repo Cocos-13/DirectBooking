@@ -269,6 +269,8 @@ function mapError(reason: string | undefined, t: ReturnType<typeof useLanguage>[
     case "invalid-range":
     case "invalid-fields":
       return t.form.errorInvalid;
+    case "rate-limited":
+      return t.form.errorRateLimited;
     default:
       return t.form.errorGeneric;
   }

@@ -11,6 +11,7 @@ import {
   isStoreConfigured,
   savePendingOrder,
 } from "@/lib/bookingStore";
+import { clientIp, firstExceeded, hashId } from "@/lib/rateLimit";
 import { siteConfig } from "@/content/siteConfig";
 
 // Owner-facing approval endpoint reached from the button in the notification
@@ -53,6 +54,14 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const rl = await firstExceeded([
+    { key: `approve:ip:${hashId(clientIp(req))}:1m`, limit: 20, windowSec: 60 },
+  ]);
+  if (rl) {
+    await audit("rate.limited", { endpoint: "approve" });
+    return htmlPage("Too many requests", `<p>${TOO_MANY}</p>`, 429);
+  }
+
   const form = await req.formData().catch(() => null);
   const token = (form?.get("token") as string) ?? "";
   const booking = verifyBooking(token);
@@ -217,6 +226,7 @@ function guestEmailCopy(booking: BookingPayload, amount: number, url: string) {
 const INVALID = "This link is invalid or has expired.";
 const NOT_CONFIGURED = "Payments are not configured on this site yet.";
 const ORDER_FAILED = "Could not create the payment order. Please try again shortly.";
+const TOO_MANY = "Too many requests. Please wait a minute and try again.";
 
 function unavailableMessage(reason: string): string {
   switch (reason) {

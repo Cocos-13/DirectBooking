@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getRawBusyRanges } from "@/lib/ical";
 import { evaluateBookingRange, mergeBusyRanges, nightsBetween } from "@/lib/availability";
 import { audit } from "@/lib/bookingStore";
+import { clientIp, firstExceeded, hashId } from "@/lib/rateLimit";
 import { getResendClient } from "@/lib/resend";
 import { quoteStay } from "@/lib/pricing";
 import { isVivaConfigured } from "@/lib/viva";
@@ -40,6 +41,20 @@ export async function POST(req: Request) {
   // Honeypot tripped — pretend success, do nothing.
   if (data.website) {
     return NextResponse.json({ ok: true });
+  }
+
+  // Rate limiting: cap per-IP (abuse/floods) AND per-recipient-email. The
+  // per-email cap is the key defense against using this endpoint to bomb a
+  // victim's inbox with acknowledgement emails from our domain.
+  const ip = clientIp(req);
+  const exceeded = await firstExceeded([
+    { key: `req:ip:${hashId(ip)}:10m`, limit: 5, windowSec: 600 },
+    { key: `req:ip:${hashId(ip)}:1d`, limit: 40, windowSec: 86400 },
+    { key: `req:email:${hashId(data.email.toLowerCase())}:1h`, limit: 4, windowSec: 3600 },
+  ]);
+  if (exceeded) {
+    await audit("rate.limited", { endpoint: "request", scope: exceeded.key.split(":").slice(0, 2).join(":") });
+    return NextResponse.json({ error: "rate-limited" }, { status: 429 });
   }
 
   const raw = await getRawBusyRanges();

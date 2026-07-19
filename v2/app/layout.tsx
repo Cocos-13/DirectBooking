@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Onest } from "next/font/google";
 import localFont from "next/font/local";
 import "react-day-picker/dist/style.css";
@@ -72,6 +73,10 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Nonce minted per request by middleware; lets the strict CSP allow this
+  // inline theme script without opening script-src to 'unsafe-inline'.
+  const nonce = headers().get("x-nonce") ?? undefined;
+
   return (
     <html
       lang="el"
@@ -80,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         <script
+          nonce={nonce}
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />

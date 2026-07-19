@@ -124,6 +124,7 @@ export interface Dictionary {
     errorMinStay: string;
     errorNotAvailable: string;
     errorInvalid: string;
+    errorRateLimited: string;
     disclaimer: string;
   };
   contact: {
@@ -361,6 +362,7 @@ export const translations: Record<Lang, Dictionary> = {
       errorMinStay: "Η ελάχιστη διαμονή είναι 2 διανυκτερεύσεις (εκτός από κενά 1 βραδιάς ανάμεσα σε κρατήσεις).",
       errorNotAvailable: "Οι ημερομηνίες αυτές δεν είναι πλέον διαθέσιμες.",
       errorInvalid: "Παρακαλούμε επιλέξτε έγκυρες ημερομηνίες.",
+      errorRateLimited: "Πολλά αιτήματα σε σύντομο διάστημα. Περιμένετε λίγο και δοκιμάστε ξανά.",
       disclaimer: "Δεν απαιτείται πληρωμή τώρα. Η πληρωμή κανονίζεται μετά την επιβεβαίωση.",
     },
     contact: {
@@ -595,6 +597,7 @@ export const translations: Record<Lang, Dictionary> = {
       errorMinStay: "Minimum stay is 2 nights (except 1-night gaps between existing bookings).",
       errorNotAvailable: "Those dates are no longer available.",
       errorInvalid: "Please select valid dates.",
+      errorRateLimited: "Too many requests in a short time. Please wait a moment and try again.",
       disclaimer: "No payment is required now. Payment is arranged after confirmation.",
     },
     contact: {

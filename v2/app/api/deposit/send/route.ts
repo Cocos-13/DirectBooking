@@ -2,6 +2,7 @@ import { verifyDepositSend } from "@/lib/bookingToken";
 import { createPaymentOrder, isVivaConfigured } from "@/lib/viva";
 import { getResendClient } from "@/lib/resend";
 import { audit, saveDeposit } from "@/lib/bookingStore";
+import { clientIp, firstExceeded, hashId } from "@/lib/rateLimit";
 import { escHtml, ownerPage } from "@/lib/ownerHtml";
 import { siteConfig } from "@/content/siteConfig";
 
@@ -42,6 +43,14 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const rl = await firstExceeded([
+    { key: `deposit-send:ip:${hashId(clientIp(req))}:1m`, limit: 20, windowSec: 60 },
+  ]);
+  if (rl) {
+    await audit("rate.limited", { endpoint: "deposit-send" });
+    return ownerPage("Too many requests", `<p>${TOO_MANY}</p>`, 429);
+  }
+
   const form = await req.formData().catch(() => null);
   const token = (form?.get("token") as string) ?? "";
   const p = verifyDepositSend(token);
@@ -168,3 +177,4 @@ function guestHoldEmail(
 const INVALID = "This link is invalid or has expired.";
 const NOT_CONFIGURED = "The deposit flow isn't enabled on this site.";
 const ORDER_FAILED = "Could not create the deposit hold. Please try again shortly.";
+const TOO_MANY = "Too many requests. Please wait a minute and try again.";

@@ -15,6 +15,7 @@ import {
   signDepositResolve,
   signDepositSend,
 } from "@/lib/bookingToken";
+import { clientIp, firstExceeded, hashId } from "@/lib/rateLimit";
 import { quoteStay } from "@/lib/pricing";
 import { getResendClient } from "@/lib/resend";
 import { siteConfig } from "@/content/siteConfig";
@@ -49,6 +50,17 @@ interface VivaWebhookBody {
 }
 
 export async function POST(req: Request) {
+  // Generous per-IP cap: a forged flood otherwise makes us call the Viva API
+  // (retrieveTransaction) for each POST. Real Viva deliveries stay well under
+  // this; if legitimately throttled, Viva simply retries later.
+  const rl = await firstExceeded([
+    { key: `viva-webhook:ip:${hashId(clientIp(req))}:1m`, limit: 120, windowSec: 60 },
+  ]);
+  if (rl) {
+    await audit("rate.limited", { endpoint: "viva-webhook" });
+    return NextResponse.json({ error: "rate-limited" }, { status: 429 });
+  }
+
   let payload: VivaWebhookBody;
   try {
     payload = (await req.json()) as VivaWebhookBody;

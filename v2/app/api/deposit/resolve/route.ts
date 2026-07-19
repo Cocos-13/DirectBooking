@@ -5,6 +5,7 @@ import {
 import { capturePreauth, isDepositCaptureConfigured, releasePreauth } from "@/lib/viva";
 import { getResendClient } from "@/lib/resend";
 import { audit, getDeposit, saveDeposit } from "@/lib/bookingStore";
+import { clientIp, firstExceeded, hashId } from "@/lib/rateLimit";
 import { escHtml, ownerPage } from "@/lib/ownerHtml";
 import { siteConfig } from "@/content/siteConfig";
 
@@ -57,6 +58,14 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const rl = await firstExceeded([
+    { key: `deposit-resolve:ip:${hashId(clientIp(req))}:1m`, limit: 20, windowSec: 60 },
+  ]);
+  if (rl) {
+    await audit("rate.limited", { endpoint: "deposit-resolve" });
+    return ownerPage("Too many requests", `<p>Too many requests. Please wait a minute and try again.</p>`, 429);
+  }
+
   const form = await req.formData().catch(() => null);
   const token = (form?.get("token") as string) ?? "";
   const action = (form?.get("action") as string) ?? "";

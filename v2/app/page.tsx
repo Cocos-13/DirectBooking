@@ -11,9 +11,13 @@ import { BookingSection } from "@/components/BookingSection";
 import { BookingBar } from "@/components/BookingBar";
 import { ContactFab } from "@/components/ContactFab";
 import { Footer } from "@/components/Footer";
+import { headers } from "next/headers";
 import { siteConfig } from "@/content/siteConfig";
 
 export default function HomePage() {
+  // Per-request CSP nonce (see middleware.ts) for the inline JSON-LD script.
+  const nonce = headers().get("x-nonce") ?? undefined;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": ["LodgingBusiness", "VacationRental"],
@@ -53,6 +57,7 @@ export default function HomePage() {
     <>
       <script
         type="application/ld+json"
+        nonce={nonce}
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
