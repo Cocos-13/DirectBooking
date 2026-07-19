@@ -31,8 +31,8 @@ export const siteConfig = {
   // displayed. Fill these in; empty values render a visible TODO in the legal
   // pages and are omitted from the footer until set.
   registration: {
-    amaNumber: "", // ΑΜΑ — REQUIRED to display. Paste yours here.
-    controllerName: "", // Data-controller legal name (person or company) for the Privacy Policy.
+    amaNumber: "00003559420", // ΑΜΑ (Αριθμός Μητρώου Ακινήτου) — displayed in the footer.
+    controllerName: "ΜΑΥΡΙΔΗΣ ΛΕΩΝΙ ΚΩΝ.", // Administrator / data-controller (as registered).
     controllerEmail: "mavridiskon14@gmail.com", // Where privacy/GDPR requests go.
     taxId: "", // ΑΦΜ, only if you invoice as a business (optional).
   },
