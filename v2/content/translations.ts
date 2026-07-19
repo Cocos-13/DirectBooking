@@ -137,6 +137,13 @@ export interface Dictionary {
     fabClose: string;
     waPrefill: string;
   };
+  payment: {
+    successHeading: string;
+    successText: string;
+    failureHeading: string;
+    failureText: string;
+    backHome: string;
+  };
   footer: {
     disclaimer: string;
     alsoOn: string;
@@ -367,6 +374,13 @@ export const translations: Record<Lang, Dictionary> = {
       fabClose: "Κλείσιμο",
       waPrefill: "Γεια σας! Ενδιαφέρομαι για κράτηση στο διαμέρισμά σας στην Πάτρα.",
     },
+    payment: {
+      successHeading: "Η πληρωμή ολοκληρώθηκε!",
+      successText: "Ευχαριστούμε — η κράτησή σας επιβεβαιώθηκε. Θα λάβετε email με απόδειξη και οδηγίες άφιξης.",
+      failureHeading: "Η πληρωμή δεν ολοκληρώθηκε",
+      failureText: "Κάτι πήγε στραβά με την πληρωμή και δεν χρεωθήκατε. Δοκιμάστε ξανά τον σύνδεσμο ή επικοινωνήστε μαζί μας.",
+      backHome: "Επιστροφή στην αρχική",
+    },
     footer: {
       disclaimer: "Οι τιμές και η διαθεσιμότητα υπόκεινται σε επιβεβαίωση.",
       alsoOn: "Θα μας βρείτε επίσης στο",
@@ -593,6 +607,13 @@ export const translations: Record<Lang, Dictionary> = {
       fabLabel: "Contact us",
       fabClose: "Close",
       waPrefill: "Hi! I'm interested in booking your apartment in Patras.",
+    },
+    payment: {
+      successHeading: "Payment complete!",
+      successText: "Thank you — your booking is confirmed. You'll receive an email receipt and arrival instructions.",
+      failureHeading: "Payment didn't go through",
+      failureText: "Something went wrong with the payment and you weren't charged. Try the link again or contact us.",
+      backHome: "Back to home",
     },
     footer: {
       disclaimer: "Prices and availability are subject to confirmation.",
