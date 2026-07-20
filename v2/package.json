@@ -11,7 +11,7 @@
   "dependencies": {
     "@upstash/redis": "^1.38.0",
     "date-fns": "^3.6.0",
-    "next": "14.2.5",
+    "next": "14.2.35",
     "node-ical": "^0.18.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
@@ -25,7 +25,7 @@
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.5",
+    "eslint-config-next": "14.2.35",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.5.4"
