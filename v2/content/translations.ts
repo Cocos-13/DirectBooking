@@ -155,7 +155,7 @@ export interface Dictionary {
 export const translations: Record<Lang, Dictionary> = {
   el: {
     meta: {
-      title: "Διαμέρισμα Πάτρα Κέντρο | Κοντά στην Πλατεία Ψηλά Αλώνια",
+      title: "Άνετο 3άρι Κέντρο Πάτρας • Υψηλά Αλώνια",
       description:
         "Άνετο διαμέρισμα 70τμ στο κέντρο της Πάτρας, κοντά στην Πλατεία Ψηλά Αλώνια. 2 υπνοδωμάτια, έως 5 άτομα. Κράτηση απευθείας, χωρίς προμήθεια πλατφόρμας.",
     },
@@ -391,7 +391,7 @@ export const translations: Record<Lang, Dictionary> = {
   },
   en: {
     meta: {
-      title: "Apartment Patras Center | Near Ypsila Alonia Square",
+      title: "Comfy 3BR Apt • Downtown Patras • Ypsila Alonia",
       description:
         "Comfortable 70m² apartment in central Patras, near Ypsila Alonia square. 2 bedrooms, sleeps up to 5. Book direct, no platform commission.",
     },
