@@ -1,13 +1,18 @@
 import ical from "node-ical";
+import { unstable_cache } from "next/cache";
 import type { BusyRange, IcalSource } from "./types";
+import { propertyToday } from "./availability";
 import { getActiveHolds, getConfirmedBookings, isStoreConfigured } from "./bookingStore";
 
-// How long Next.js may serve a cached copy of each iCal feed before
+// How long a fetched copy of each platform iCal feed may be reused before
 // re-fetching. Keeps us well clear of any rate limits and avoids hitting
 // Airbnb/Booking.com on every page load.
 const REVALIDATE_SECONDS = 60 * 30; // 30 minutes
 
 function toDateOnly(d: Date): string {
+  // node-ical materializes a VALUE=DATE property as local midnight, so reading
+  // it back with the local getters round-trips to the same calendar day on any
+  // server timezone. Do NOT switch these to the UTC getters.
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
@@ -41,68 +46,102 @@ async function parseBusyRanges(url: string, source: IcalSource): Promise<BusyRan
 }
 
 /**
- * Fetches both platform calendars and returns their raw busy ranges
- * (unmerged, tagged by source). A feed that fails to fetch or parse is
- * dropped rather than failing the whole page — one broken export URL
- * shouldn't take the calendar down.
+ * Airbnb + Booking.com busy ranges, cached for REVALIDATE_SECONDS.
+ *
+ * Deliberately wrapped in `unstable_cache` rather than relying on the route's
+ * own cache: the availability route has to be fully dynamic (see below), and
+ * this keeps the platform-feed cache lifetime an explicit property of *this*
+ * function instead of an emergent side effect of route config.
+ *
+ * A feed that fails to fetch or parse is dropped rather than failing the whole
+ * page — one broken export URL shouldn't take the calendar down.
  */
-export async function getRawBusyRanges(): Promise<BusyRange[]> {
-  const airbnbUrl = process.env.ICAL_URL_AIRBNB;
-  const bookingUrl = process.env.ICAL_URL_BOOKING;
+const getPlatformBusyRanges = unstable_cache(
+  async (): Promise<BusyRange[]> => {
+    const airbnbUrl = process.env.ICAL_URL_AIRBNB;
+    const bookingUrl = process.env.ICAL_URL_BOOKING;
 
-  const jobs: Promise<BusyRange[]>[] = [];
+    const jobs: Promise<BusyRange[]>[] = [];
 
-  if (airbnbUrl) {
-    jobs.push(
-      parseBusyRanges(airbnbUrl, "airbnb").catch((err) => {
-        console.error("[ical] Airbnb feed failed:", err);
-        return [];
-      })
-    );
-  }
-  if (bookingUrl) {
-    jobs.push(
-      parseBusyRanges(bookingUrl, "booking").catch((err) => {
-        console.error("[ical] Booking.com feed failed:", err);
-        return [];
-      })
-    );
-  }
-
-  // This site's own paid direct bookings — so the calendar and request
-  // validation block them immediately, without waiting for Airbnb/Booking.com
-  // to import our published feed.
-  if (isStoreConfigured()) {
-    jobs.push(
-      getConfirmedBookings()
-        .then((bookings) =>
-          bookings.map((b): BusyRange => ({ start: b.checkin, end: b.checkout, source: "direct" }))
-        )
-        .catch((err) => {
-          console.error("[ical] direct-booking store read failed:", err);
+    if (airbnbUrl) {
+      jobs.push(
+        parseBusyRanges(airbnbUrl, "airbnb").catch((err) => {
+          console.error("[ical] Airbnb feed failed:", err);
           return [];
         })
-    );
+      );
+    }
+    if (bookingUrl) {
+      jobs.push(
+        parseBusyRanges(bookingUrl, "booking").catch((err) => {
+          console.error("[ical] Booking.com feed failed:", err);
+          return [];
+        })
+      );
+    }
 
+    if (jobs.length === 0) {
+      console.warn(
+        "[ical] No ICAL_URL_AIRBNB / ICAL_URL_BOOKING configured — platform bookings will NOT block dates on this site."
+      );
+      return [];
+    }
+
+    const results = await Promise.all(jobs);
+    return results.flat();
+  },
+  ["ical-platform-feeds"],
+  { revalidate: REVALIDATE_SECONDS, tags: ["availability"] }
+);
+
+/** This site's own paid bookings + live pay-link holds. Never cached. */
+async function getDirectBusyRanges(): Promise<BusyRange[]> {
+  // Config-gated: with no store there is nothing to read.
+  if (!isStoreConfigured()) return [];
+
+  const [bookings, holds] = await Promise.all([
+    // Paid direct bookings — blocked on this site immediately, without waiting
+    // for Airbnb/Booking.com to re-import our published feed.
+    getConfirmedBookings().catch((err) => {
+      console.error("[ical] direct-booking store read failed:", err);
+      return [];
+    }),
     // Active holds — nights with a live pay link out to a guest. Treated as
     // busy so the same nights aren't offered to (or bookable by) a second
-    // guest during the ~30-minute payment window. Expired holds self-prune.
-    jobs.push(
-      getActiveHolds()
-        .then((holds) =>
-          holds.map((h): BusyRange => ({ start: h.checkin, end: h.checkout, source: "direct" }))
-        )
-        .catch((err) => {
-          console.error("[ical] hold read failed:", err);
-          return [];
-        })
-    );
-  }
+    // guest during the payment window. Expired holds self-prune.
+    getActiveHolds().catch((err) => {
+      console.error("[ical] hold read failed:", err);
+      return [];
+    }),
+  ]);
 
-  if (jobs.length === 0) {
-    console.warn("[ical] No ICAL_URL_AIRBNB / ICAL_URL_BOOKING configured — calendar will show fully open.");
-  }
+  return [
+    ...bookings.map((b): BusyRange => ({ start: b.checkin, end: b.checkout, source: "direct" })),
+    ...holds.map((h): BusyRange => ({ start: h.checkin, end: h.checkout, source: "direct" })),
+  ];
+}
 
-  const results = await Promise.all(jobs);
-  return results.flat();
+/**
+ * Every busy range relevant to a *future* stay, from all three sources
+ * (Airbnb, Booking.com, this site's own bookings/holds), unmerged and tagged.
+ *
+ * Freshness is deliberately asymmetric: platform feeds are up to 30 minutes
+ * stale (they're slow-moving and rate-limited), but our own store is read live
+ * on every call, so a booking paid for one second ago blocks its dates on the
+ * very next page load.
+ */
+export async function getRawBusyRanges(): Promise<BusyRange[]> {
+  const [platform, direct] = await Promise.all([
+    getPlatformBusyRanges().catch((err) => {
+      console.error("[ical] platform feeds failed:", err);
+      return [] as BusyRange[];
+    }),
+    getDirectBusyRanges(),
+  ]);
+
+  // Drop ranges that are entirely in the past. Nothing downstream can book
+  // them (`evaluateBookingRange` rejects past check-ins), and without this the
+  // blocked-date list grows without bound as the years accumulate.
+  const today = propertyToday();
+  return [...platform, ...direct].filter((r) => r.end >= today);
 }

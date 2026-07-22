@@ -8,13 +8,18 @@
 ------------------------------------------------------------------------
 STAGE 0 — ACCOUNTS YOU NEED (do these first; everything else depends on them)
 ------------------------------------------------------------------------
-[ ] 0.1  A domain name for the site (e.g. yourapartment.gr).
-[ ] 0.2  A Vercel account (or other Node host) connected to the GitHub repo
-         Cocos-13/DirectBooking.
-[ ] 0.3  A Viva.com account — start in the DEMO portal (demo.vivapayments.com);
+[x] 0.1  A domain name for the site (e.g. yourapartment.gr).
+         Bought: cocosapartments.com (Cloudflare Registrar).
+[x] 0.2  A Vercel account (or other Node host) connected to the GitHub repo
+         Cocos-13/DirectBooking. Project: direct-booking. Root Directory = v2,
+         Framework Preset must be explicitly "Next.js" (was stuck on "Other"
+         even after selecting it at import — caused broken edge middleware
+         bundling / __dirname crash; fixed by setting it manually).
+[x] 0.3  A Viva.com account — start in the DEMO portal (demo.vivapayments.com);
          you'll add the LIVE one later in Stage 7.
-[ ] 0.4  A Resend account (resend.com) for sending emails.
-[ ] 0.5  An Upstash account (or use Vercel's KV/Marketplace integration).
+[x] 0.4  A Resend account (resend.com) for sending emails.
+[x] 0.5  An Upstash account (or use Vercel's KV/Marketplace integration).
+         Done via Vercel Storage > Upstash Redis (auto-injected KV vars).
 
 ------------------------------------------------------------------------
 STAGE 1 — PROVISION THE KV STORE  *** MOST IMPORTANT SINGLE STEP ***
@@ -22,41 +27,101 @@ Without this the site still runs, but you LOSE: date holds, webhook amount
 verification, durable rate limiting, 12-month PII auto-purge, and the token
 vault (PII stays out of URLs only with the store). Do not go live without it.
 ------------------------------------------------------------------------
-[ ] 1.1  On Vercel: Storage > add a Redis/KV store (Upstash) to the project.
+[x] 1.1  On Vercel: Storage > add a Redis/KV store (Upstash) to the project.
          This auto-injects KV_REST_API_URL and KV_REST_API_TOKEN.
          (Elsewhere: create an Upstash Redis DB and copy its REST URL + token
           into UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN.)
-[ ] 1.2  Confirm both variables are present in the deployment environment.
+[x] 1.2  Confirm both variables are present in the deployment environment.
 
 ------------------------------------------------------------------------
 STAGE 2 — EMAIL (Resend)
 ------------------------------------------------------------------------
-[ ] 2.1  In Resend, add and VERIFY your sending domain (DNS records).
+[x] 2.1  In Resend, add and VERIFY your sending domain (DNS records).
          (Until then you can only send from onboarding@resend.dev for testing.)
-[ ] 2.2  Create a Resend API key.
-[ ] 2.3  Set env vars:
+         Verified: cocosapartments.com (DNS records added in Cloudflare, DNS
+         only / grey-cloud, not proxied).
+[x] 2.2  Create a Resend API key.
+[x] 2.3  Set env vars:
            RESEND_API_KEY            = re_...
            RESEND_FROM_EMAIL         = "Patras Apartment <bookings@yourdomain.gr>"
            OWNER_NOTIFICATION_EMAIL  = your inbox (where booking/paid alerts go)
-[ ] 2.4  Later, after deploy, send yourself a test to confirm delivery + that
+         NOTE: enter the RESEND_FROM_EMAIL value in Vercel WITHOUT surrounding
+         quote marks (Vercel's env var UI stores literal characters, unlike a
+         .env file — typing the quotes broke Resend's `from` field validation
+         until removed).
+[x] 2.4  Later, after deploy, send yourself a test to confirm delivery + that
          mails don't land in spam (SPF/DKIM from the verified domain).
+         Confirmed via a real booking-request submission — owner + guest
+         emails both arrived.
 
 ------------------------------------------------------------------------
 STAGE 3 — CALENDAR SYNC (Airbnb / Booking.com iCal)
 ------------------------------------------------------------------------
-[ ] 3.1  Airbnb: Listing > Availability > Sync calendars > Export calendar link.
+[x] 3.1  Airbnb: Listing > Availability > Sync calendars > Export calendar link.
            Set  ICAL_URL_AIRBNB = that URL.
-[ ] 3.2  Booking.com: Extranet > Calendar > Sync > iCal export URL.
+         Obtained and working — verified by fetching it: 7 events (4 "Reserved",
+         3 "Airbnb (Not available)"), parses cleanly.
+[x] 3.2  Booking.com: Extranet > Calendar > Sync > iCal export URL.
            Set  ICAL_URL_BOOKING = that URL.
+         Obtained and working — verified: 3 "CLOSED - Not available" events.
+         NOTE the host is ical.booking.com/v1/export/... (not the admin.booking
+         .com URL shown in .env.local.example).
+
+[ ] 3.2b *** THE ONE THING STILL BLOCKING STAGE 3 ***
+         Both URLs are ONLY in the local .env.local. They are NOT set in Vercel,
+         so https://www.cocosapartments.com/api/availability returns
+         {"merged":[]} — the LIVE SITE SHOWS EVERY NIGHT AS FREE, including
+         nights Airbnb has already sold (e.g. 2026-07-20→23, 07-28→30,
+         08-02→05, 08-22→24) and Booking.com has closed (2026-08-08→11).
+         Until this is fixed the site can take a double booking.
+
+         Fix (from the v2/ directory):
+           npm i -g vercel
+           vercel link
+           grep '^ICAL_URL_AIRBNB='  .env.local | cut -d= -f2- | tr -d '\n' \
+             | vercel env add ICAL_URL_AIRBNB production
+           grep '^ICAL_URL_BOOKING=' .env.local | cut -d= -f2- | tr -d '\n' \
+             | vercel env add ICAL_URL_BOOKING production
+           vercel --prod            # env vars only apply to a NEW deployment
+         (Or paste both into Vercel > Project > Settings > Environment
+          Variables > Production, then redeploy. Do NOT wrap them in quotes —
+          same trap as RESEND_FROM_EMAIL in 2.3.)
+
+         VERIFY afterwards — this must NOT come back empty:
+           curl -s https://www.cocosapartments.com/api/availability
+
 [ ] 3.3  After deploy: in BOTH Airbnb and Booking.com, IMPORT this site's feed
-           https://YOURDOMAIN/api/calendar.ics
+           https://www.cocosapartments.com/api/calendar.ics
          so a direct booking blocks those dates on the platforms too.
          (This closes the double-booking loop in both directions.)
+         The feed is already live and serves valid iCal — it's just empty
+         until the first paid direct booking, which is correct. Importing an
+         empty calendar is fine and is the right time to do it.
+         It publishes ONLY direct bookings, never the platforms' own blocks,
+         so there is no echo loop between Airbnb and Booking.com.
+
+[ ] 3.4  Sanity-check on the live site once 3.2b is deployed: open the
+         Availability section and confirm the nights above are greyed out and
+         that picking a stay that runs THROUGH a booked block is impossible.
+
+NOTE (not a checklist item, just so it isn't a surprise): the Airbnb and
+Booking.com calendars are not synced to each other — Airbnb's reservations do
+not close those dates on Booking.com. This site takes the union of both, so it
+is stricter than either platform. That is the safe direction, but it means the
+platforms can still double-book each other independently of this site.
 
 ------------------------------------------------------------------------
 STAGE 4 — SITE + SECRETS
 ------------------------------------------------------------------------
-[ ] 4.1  NEXT_PUBLIC_SITE_URL = https://YOURDOMAIN  (your real domain).
+[ ] 4.1  NEXT_PUBLIC_SITE_URL = https://www.cocosapartments.com
+         *** CONFIRMED MISSING IN PRODUCTION *** — the live sitemap and
+         robots.txt currently say "https://your-site.vercel.app" (the
+         placeholder fallback in content/siteConfig.ts). Consequences beyond
+         SEO: the owner "Approve & send payment link" button in the request
+         email is built as ${siteConfig.url}/api/booking/approve, so it points
+         at the placeholder host and CANNOT WORK. That is very likely why 6.4
+         is still untested. Set this at the same time as 3.2b and redeploy.
+         Verify:  curl -s https://www.cocosapartments.com/robots.txt
 [ ] 4.2  BOOKING_APPROVAL_SECRET = a long random value.
            Generate with:  openssl rand -base64 32
 [ ] 4.3  (Optional) NEXT_PUBLIC_ANALYTICS_DOMAIN for cookieless Plausible stats.
@@ -66,23 +131,33 @@ STAGE 4 — SITE + SECRETS
 ------------------------------------------------------------------------
 STAGE 5 — PAYMENTS: VIVA DEMO (get the full flow working before real money)
 ------------------------------------------------------------------------
-[ ] 5.1  In the Viva DEMO portal, get Smart Checkout credentials:
+[x] 5.1  In the Viva DEMO portal, get Smart Checkout credentials:
            VIVA_CLIENT_ID, VIVA_CLIENT_SECRET   (Settings > API Access)
-[ ] 5.2  Create/note a payment SOURCE and its numeric code:
+[x] 5.2  Create/note a payment SOURCE and its numeric code:
            VIVA_SOURCE_CODE   (Sales > Websites/Apps)
-[ ] 5.3  On that source, set redirect URLs:
-           Success -> https://YOURDOMAIN/booking/success
-           Failure -> https://YOURDOMAIN/booking/failure
-[ ] 5.4  Set  VIVA_ENV = demo  and  VIVA_WEBHOOK_VERIFICATION_KEY = (from Viva).
-[ ] 5.5  Add a webhook in Viva pointing to
-           https://YOURDOMAIN/api/viva/webhook
-         Event type: "Transaction Payment Created" (id 1796). Save; Viva does a
-         one-time GET verification (needs VIVA_WEBHOOK_VERIFICATION_KEY set).
+[ ] 5.3  On that source, set redirect URLs:            <-- NOT YET CONFIRMED
+           Success -> https://www.cocosapartments.com/booking/success
+           Failure -> https://www.cocosapartments.com/booking/failure
+         (Use the www. host — the bare domain 308-redirects to www, which can
+         break strict redirect matching.)
+[x] 5.4  Set  VIVA_ENV = demo  and  VIVA_WEBHOOK_VERIFICATION_KEY = (from Viva).
+         Verification key retrieved via
+           GET https://demo.vivapayments.com/api/messages/config/token
+           (Basic auth: Merchant ID as username, API Key as password — NOT
+           demo-api.vivapayments.com, that host 404s on this endpoint).
+[x] 5.5  Add a webhook in Viva pointing to
+           https://www.cocosapartments.com/api/viva/webhook
+         Event type: "Transaction Payment Created" (id 1796). Saved and
+         verified successfully once VIVA_WEBHOOK_VERIFICATION_KEY was set +
+         deployed and the www. URL was used (the bare domain redirect made
+         Viva's verifier fail).
 [ ] 5.6  DEPOSIT (pre-auth) capture — needed to release/capture the damage hold
          FROM the site (otherwise you resolve holds in the Viva portal):
            VIVA_MERCHANT_ID, VIVA_API_KEY  (Payment API Basic-auth credentials)
-         and in Viva enable: Settings > API Access >
-           "Allow recurring payments and pre-auth captures via API".
+         Env vars are set, but double check in Viva: Settings > API Access >
+           "Allow recurring payments and pre-auth captures via API"
+         is actually TICKED — this was seen unchecked earlier and not
+         explicitly re-confirmed after.        <-- VERIFY THIS CHECKBOX
          Deposit amount lives in content/siteConfig.ts (deposit.amountEur).
 
 ------------------------------------------------------------------------
@@ -90,12 +165,15 @@ STAGE 6 — DEPLOY + END-TO-END TEST (on DEMO)
 Viva webhooks and redirects cannot reach localhost, so this must be on the
 deployed HTTPS URL.
 ------------------------------------------------------------------------
-[ ] 6.1  Deploy to Vercel; point your domain at it (HTTPS auto).
+[x] 6.1  Deploy to Vercel; point your domain at it (HTTPS auto).
 [ ] 6.2  Open the site; confirm it loads, EL/EN toggle works, calendar shows
          availability, and the map/analytics render (if configured).
-[ ] 6.3  Submit a booking request (tick the consent box). Confirm:
+         BLOCKED until 3.2b — the calendar currently renders fully open
+         because the iCal URLs aren't in the Vercel environment.
+[x] 6.3  Submit a booking request (tick the consent box). Confirm:
            - you (owner) get the request email WITH an "Approve" button;
            - the guest gets an acknowledgement email.
+         Confirmed working (test request from cocosapartments.com).
 [ ] 6.4  Click Approve > Confirm. Confirm the guest gets a Viva pay link.
 [ ] 6.5  Pay with a Viva DEMO test card. Confirm:
            - you land on /booking/success;

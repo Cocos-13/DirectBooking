@@ -93,6 +93,9 @@ export interface Dictionary {
     legendAvailable: string;
     legendOneNight: string;
     minStayNotice: string;
+    pickCheckin: string;
+    pickCheckout: string;
+    clearDates: string;
     loading: string;
     error: string;
   };
@@ -326,6 +329,9 @@ export const translations: Record<Lang, Dictionary> = {
       legendAvailable: "Διαθέσιμο",
       legendOneNight: "Διαθέσιμο για 1 διανυκτέρευση",
       minStayNotice: "Ελάχιστη διαμονή 2 διανυκτερεύσεις, εκτός αν καλύπτει ακριβώς ένα κενό 1 βραδιάς ανάμεσα σε δύο κρατήσεις.",
+      pickCheckin: "Επιλέξτε ημερομηνία άφιξης.",
+      pickCheckout: "Τώρα επιλέξτε ημερομηνία αναχώρησης.",
+      clearDates: "Καθαρισμός ημερομηνιών",
       loading: "Φόρτωση διαθεσιμότητας…",
       error: "Δεν ήταν δυνατή η φόρτωση της διαθεσιμότητας. Δοκιμάστε ξανά αργότερα.",
     },
@@ -562,6 +568,9 @@ export const translations: Record<Lang, Dictionary> = {
       legendAvailable: "Available",
       legendOneNight: "Available for 1 night",
       minStayNotice: "2-night minimum stay, unless it exactly fills a 1-night gap between two bookings.",
+      pickCheckin: "Pick your arrival date.",
+      pickCheckout: "Now pick your departure date.",
+      clearDates: "Clear dates",
       loading: "Loading availability…",
       error: "Couldn't load availability. Please try again shortly.",
     },

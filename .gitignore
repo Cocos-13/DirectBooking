@@ -28,3 +28,5 @@ next-env.d.ts
 
 # local Claude Code tool settings (machine-specific, not project config)
 .claude/settings.local.json
+.vercel
+.env*

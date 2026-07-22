@@ -16,6 +16,9 @@ interface AvailabilityResponse {
   merged: MergedRange[];
   disabledDates: string[];
   orphanGapNights: string[];
+  /** Property-local "today" and booking window, as the server will enforce them. */
+  today: string;
+  horizonDays: number;
 }
 
 export function BookingSection() {
@@ -26,7 +29,9 @@ export function BookingSection() {
   const [rangeError, setRangeError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/availability")
+    // `no-store` so a back/forward navigation can't resurrect a stale copy of
+    // the availability the visitor is about to book against.
+    fetch("/api/availability", { cache: "no-store" })
       .then((res) => {
         if (!res.ok) throw new Error("bad status");
         return res.json();
@@ -42,7 +47,13 @@ export function BookingSection() {
     if (newRange?.from && newRange?.to && data) {
       const checkin = format(newRange.from, "yyyy-MM-dd");
       const checkout = format(newRange.to, "yyyy-MM-dd");
-      const evaluation = evaluateBookingRange(checkin, checkout, data.merged);
+      // Same guards the server applies in /api/request, using the property's
+      // clock rather than the visitor's — so the UI never green-lights a stay
+      // the server is about to reject.
+      const evaluation = evaluateBookingRange(checkin, checkout, data.merged, {
+        today: data.today,
+        horizonDays: data.horizonDays,
+      });
       if (!evaluation.ok) {
         setRangeError(
           evaluation.reason === "min-stay"
@@ -70,6 +81,7 @@ export function BookingSection() {
         <>
           <div className="mt-8">
             <AvailabilityCalendar
+              merged={data.merged}
               disabledDates={data.disabledDates}
               orphanGapNights={data.orphanGapNights}
               selected={range}

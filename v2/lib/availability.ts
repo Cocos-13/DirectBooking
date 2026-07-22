@@ -162,17 +162,18 @@ export function getBookedDates(merged: MergedRange[]): string[] {
 }
 
 /**
- * Dates to grey out / block in the calendar UI.
+ * Dates that cannot be an ARRIVAL day — every occupied night.
  *
- * This is deliberately narrower than "every occupied night": a date that is
- * occupied by one booking but is *also* the checkout boundary of the
- * previous booking (i.e. two reservations sit back-to-back) must stay
- * pickable, because it's a perfectly valid checkout day for a new request
- * ending right before the next guest arrives. `evaluateBookingRange` is the
- * real authority on what's bookable — this is only a UX hint, so it's fine
- * for it to be a little permissive.
+ * A range's `end` is its checkout day, which is not an occupied night, so
+ * back-to-back arrivals (moving in the morning the last guest leaves) are
+ * already pickable and need no special case here.
+ *
+ * This is only the arrival-side constraint. Legal DEPARTURE days are a
+ * different set — you may check out on a day that is booked, as long as it's
+ * the first booked day after your arrival — which the calendar computes from
+ * `merged` directly. `evaluateBookingRange` remains the real authority on
+ * what's bookable; both of these are UX affordances in front of it.
  */
 export function getDisabledDates(merged: MergedRange[]): string[] {
-  const checkoutBoundaries = new Set(merged.map((r) => r.end));
-  return getBookedDates(merged).filter((d) => !checkoutBoundaries.has(d));
+  return getBookedDates(merged);
 }
