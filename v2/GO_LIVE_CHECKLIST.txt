@@ -67,28 +67,15 @@ STAGE 3 — CALENDAR SYNC (Airbnb / Booking.com iCal)
          NOTE the host is ical.booking.com/v1/export/... (not the admin.booking
          .com URL shown in .env.local.example).
 
-[ ] 3.2b *** THE ONE THING STILL BLOCKING STAGE 3 ***
-         Both URLs are ONLY in the local .env.local. They are NOT set in Vercel,
-         so https://www.cocosapartments.com/api/availability returns
-         {"merged":[]} — the LIVE SITE SHOWS EVERY NIGHT AS FREE, including
-         nights Airbnb has already sold (e.g. 2026-07-20→23, 07-28→30,
-         08-02→05, 08-22→24) and Booking.com has closed (2026-08-08→11).
-         Until this is fixed the site can take a double booking.
-
-         Fix (from the v2/ directory):
-           npm i -g vercel
-           vercel link
-           grep '^ICAL_URL_AIRBNB='  .env.local | cut -d= -f2- | tr -d '\n' \
-             | vercel env add ICAL_URL_AIRBNB production
-           grep '^ICAL_URL_BOOKING=' .env.local | cut -d= -f2- | tr -d '\n' \
-             | vercel env add ICAL_URL_BOOKING production
-           vercel --prod            # env vars only apply to a NEW deployment
-         (Or paste both into Vercel > Project > Settings > Environment
-          Variables > Production, then redeploy. Do NOT wrap them in quotes —
-          same trap as RESEND_FROM_EMAIL in 2.3.)
-
-         VERIFY afterwards — this must NOT come back empty:
+[x] 3.2b DONE (2026-07-23) — both iCal URLs added to the Vercel PRODUCTION
+         environment (ICAL_URL_AIRBNB, ICAL_URL_BOOKING) and deployed. Secrets
+         were piped from .env.local straight into `vercel env add` (never hit
+         shell history), no surrounding quotes. The live endpoint no longer
+         returns {"merged":[]}:
            curl -s https://www.cocosapartments.com/api/availability
+         now returns real ranges — 2026-07-20→23, 07-25→30, 08-02→05,
+         08-08→12, 08-22→24 (plus a long 2027-01-20→2028-01-23 block; see the
+         live-data NOTE below).
 
 [ ] 3.3  After deploy: in BOTH Airbnb and Booking.com, IMPORT this site's feed
            https://www.cocosapartments.com/api/calendar.ics
@@ -103,6 +90,16 @@ STAGE 3 — CALENDAR SYNC (Airbnb / Booking.com iCal)
 [ ] 3.4  Sanity-check on the live site once 3.2b is deployed: open the
          Availability section and confirm the nights above are greyed out and
          that picking a stay that runs THROUGH a booked block is impossible.
+         DATA LAYER CONFIRMED (2026-07-23): the /api/availability payload carries
+         the correct blocked ranges + disabledDates. What remains is the BROWSER
+         eyeball on the rendered calendar — a human step (can't be done here).
+
+NOTE (live-data finding, 2026-07-23): the feed currently contains a ~368-night
+block 2027-01-20 → 2028-01-23 coming from one of the platform feeds. If it's
+intentional (long-term let / closed season / dates not yet opened) it's correct;
+if not, it's a stale event in Airbnb or Booking.com silently killing a year of
+availability — check both platforms' Jan-2027 calendars and delete it there
+(clears here within ~30 min feed cache).
 
 NOTE (not a checklist item, just so it isn't a surprise): the Airbnb and
 Booking.com calendars are not synced to each other — Airbnb's reservations do
@@ -113,15 +110,13 @@ platforms can still double-book each other independently of this site.
 ------------------------------------------------------------------------
 STAGE 4 — SITE + SECRETS
 ------------------------------------------------------------------------
-[ ] 4.1  NEXT_PUBLIC_SITE_URL = https://www.cocosapartments.com
-         *** CONFIRMED MISSING IN PRODUCTION *** — the live sitemap and
-         robots.txt currently say "https://your-site.vercel.app" (the
-         placeholder fallback in content/siteConfig.ts). Consequences beyond
-         SEO: the owner "Approve & send payment link" button in the request
-         email is built as ${siteConfig.url}/api/booking/approve, so it points
-         at the placeholder host and CANNOT WORK. That is very likely why 6.4
-         is still untested. Set this at the same time as 3.2b and redeploy.
-         Verify:  curl -s https://www.cocosapartments.com/robots.txt
+[x] 4.1  NEXT_PUBLIC_SITE_URL = https://www.cocosapartments.com — SET in the
+         Vercel Production environment and deployed (2026-07-23). The live
+         robots.txt + sitemap now use the real domain (verified:
+         curl -s https://www.cocosapartments.com/robots.txt shows
+         "Sitemap: https://www.cocosapartments.com/sitemap.xml", not the
+         your-site.vercel.app placeholder). This also fixes the host in the
+         owner "Approve & send payment link" button, so 6.4 is now testable.
 [ ] 4.2  BOOKING_APPROVAL_SECRET = a long random value.
            Generate with:  openssl rand -base64 32
 [ ] 4.3  (Optional) NEXT_PUBLIC_ANALYTICS_DOMAIN for cookieless Plausible stats.
@@ -168,8 +163,9 @@ deployed HTTPS URL.
 [x] 6.1  Deploy to Vercel; point your domain at it (HTTPS auto).
 [ ] 6.2  Open the site; confirm it loads, EL/EN toggle works, calendar shows
          availability, and the map/analytics render (if configured).
-         BLOCKED until 3.2b — the calendar currently renders fully open
-         because the iCal URLs aren't in the Vercel environment.
+         UNBLOCKED (3.2b deployed) — /api/availability now serves the real
+         blocked ranges, so the calendar no longer renders fully open. Only the
+         human visual pass remains.
 [x] 6.3  Submit a booking request (tick the consent box). Confirm:
            - you (owner) get the request email WITH an "Approve" button;
            - the guest gets an acknowledgement email.
