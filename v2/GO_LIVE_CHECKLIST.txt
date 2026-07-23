@@ -292,6 +292,16 @@ deployed HTTPS URL.
          Confirmed working (test request from cocosapartments.com).
 [ ] 6.4  Click Approve > Confirm. Confirm the guest gets a Viva pay link.
 [ ] 6.5  Pay with a Viva DEMO test card. Confirm:
+         DEMO TEST CARDS (developer.viva.com/integration-reference/
+         test-cards-and-environments/) — CVV any 3 digits, expiry any future date:
+           4147 4630 1111 0133   Visa        -> SUCCESS
+           4147 4630 1111 0141   Visa        -> FAILURE (use this for 5.3's
+                                                Failure URL / 6.5 sad path)
+           5239 2907 0000 0101   Mastercard  -> SUCCESS
+         The demo amount must be >= 0.30€ or the payment won't go through.
+         Viva sends NO webhook for expired orders, cancelled transactions, or
+         payments that fail 3DS — so "no PAID email" after one of those is
+         expected behaviour, not a bug.
            - you land on /booking/success;
            - owner gets "PAID" email (with a "Send deposit hold link" button);
            - guest gets a receipt;
