@@ -174,16 +174,37 @@ STAGE 4 — SITE + SECRETS
 
 ------------------------------------------------------------------------
 STAGE 5 — PAYMENTS: VIVA DEMO (get the full flow working before real money)
+Only 5.3 and 5.6 remain, and BOTH are clicks inside the Viva DEMO portal —
+nothing left to build. Do them, then run `npm run viva:check` to prove it.
 ------------------------------------------------------------------------
 [x] 5.1  In the Viva DEMO portal, get Smart Checkout credentials:
            VIVA_CLIENT_ID, VIVA_CLIENT_SECRET   (Settings > API Access)
 [x] 5.2  Create/note a payment SOURCE and its numeric code:
            VIVA_SOURCE_CODE   (Sales > Websites/Apps)
-[ ] 5.3  On that source, set redirect URLs:            <-- NOT YET CONFIRMED
-           Success -> https://www.cocosapartments.com/booking/success
-           Failure -> https://www.cocosapartments.com/booking/failure
-         (Use the www. host — the bare domain 308-redirects to www, which can
-         break strict redirect matching.)
+[ ] 5.3  On that source, set redirect URLs:            <-- YOUR MOVE (portal)
+         Viva portal > Sales > Online payments > Websites/Apps > edit the source
+         used by VIVA_SOURCE_CODE, and set:
+           Protocol      https
+           Domain Name   www.cocosapartments.com     (no protocol, no trailing /)
+           Success URL   booking/success
+           Failure URL   booking/failure
+         NOTE the field shapes — Viva splits this into a Domain Name plus two
+         RELATIVE paths; it is not two absolute URLs. Viva's own plugin table
+         lists relative paths in these fields. If your portal build shows a
+         full-URL box instead, use the absolute forms:
+           https://www.cocosapartments.com/booking/success   (and /failure)
+         MUST be the www host: cocosapartments.com 308-redirects to www
+         (verified), and a 3xx can break Viva's strict redirect matching.
+         Both targets are already live and return HTTP 200 with no redirect
+         (verified 2026-07-23) — nothing to build, this is portal config only.
+         While you're in that dialog: upload the Company Logo (transparent PNG,
+         ≤100KB, ~128x128). It renders on the Viva payment page and is what
+         tells the guest the page is really yours.
+         HOW IT GETS TICKED: Viva exposes no read API for a source (GET
+         /api/sources -> 405, GET /api/sources/{code} -> 404, both verified), so
+         this cannot be confirmed from code. It is proven by 6.5 — pay a demo
+         order and see the browser land on /booking/success. `npm run viva:check`
+         creates that demo order for you and prints the link to pay.
 [x] 5.4  Set  VIVA_ENV = demo  and  VIVA_WEBHOOK_VERIFICATION_KEY = (from Viva).
          Verification key retrieved via
            GET https://demo.vivapayments.com/api/messages/config/token
@@ -195,14 +216,55 @@ STAGE 5 — PAYMENTS: VIVA DEMO (get the full flow working before real money)
          verified successfully once VIVA_WEBHOOK_VERIFICATION_KEY was set +
          deployed and the www. URL was used (the bare domain redirect made
          Viva's verifier fail).
+         RE-VERIFIED LIVE (2026-07-23):
+           curl -s https://www.cocosapartments.com/api/viva/webhook
+         returns HTTP 200 {"Key":"F69885…"} — so the key is live in prod and
+         Viva can re-verify the webhook at any time.
 [ ] 5.6  DEPOSIT (pre-auth) capture — needed to release/capture the damage hold
          FROM the site (otherwise you resolve holds in the Viva portal):
            VIVA_MERCHANT_ID, VIVA_API_KEY  (Payment API Basic-auth credentials)
-         Env vars are set, but double check in Viva: Settings > API Access >
+         Both ARE present in the Vercel Production env (verified 2026-07-23 via
+         `vercel env ls production`; values are stored sensitive and cannot be
+         read back, which is correct).
+         REMAINING: Viva portal > Settings > API Access >
            "Allow recurring payments and pre-auth captures via API"
-         is actually TICKED — this was seen unchecked earlier and not
-         explicitly re-confirmed after.        <-- VERIFY THIS CHECKBOX
+         must be TICKED — seen unchecked earlier, never re-confirmed.
+                                                <-- YOUR MOVE (portal)
+         Verify with `npm run viva:check`, which POSTs a capture at a
+         non-existent transaction id and reads the SHAPE of the rejection:
+           "The specified api action is disabled for the merchant …"
+                            -> the checkbox is OFF. Tick it, save, re-run.
+           404 / not-found  -> credentials + permission are good. Tick 5.6.
+           401 / 403        -> VIVA_MERCHANT_ID / VIVA_API_KEY are wrong, or
+                               belong to the other environment (demo vs live).
          Deposit amount lives in content/siteConfig.ts (deposit.amountEur).
+
+CODE FIX (2026-07-23) — found while working Stage 5, blocked 5.6 AND 6.6:
+lib/viva.ts sent the pre-auth CAPTURE and RELEASE calls to HOSTS.api
+(demo-api.vivapayments.com / api.vivapayments.com). Those two calls belong to
+Viva's LEGACY Payment API, which is served from a different host —
+demo.vivapayments.com / www.vivapayments.com. Verified by probe:
+  POST/DELETE /api/transactions/{id}  ->  401 on demo.vivapayments.com
+                                          (route exists, auth rejected)
+                                     ->  404 on demo-api.vivapayments.com
+                                          (route does not exist)
+So EVERY "Release" or "Capture" click would have failed with a 404 and shown
+the owner "Viva rejected the request". Fixed: HOSTS.payments now serves those
+two calls, and the capture body carries the documented amount + currencyCode +
+customerTrns. This is the same host trap already noted in 5.4 for
+/api/messages/config/token — same legacy API, same host.
+
+TOOL (2026-07-23): `npm run viva:check` (scripts/viva-selfcheck.mjs) verifies
+5.1–5.6 in one command against the real Viva account and the deployed site:
+OAuth creds, source code (by creating a 1.00€ DEMO pre-auth order), Payment
+API Basic auth, webhook verification key match, both redirect targets, and the
+pre-auth capture permission. It masks every secret, so its output is safe to
+paste. It refuses to create an order when VIVA_ENV=production.
+IT NEEDS THE VIVA_* VALUES LOCALLY — Vercel stores them sensitive and
+`vercel env pull` returns "[SENSITIVE]" for all of them, so copy the seven
+VIVA_* values from the Viva DEMO portal into v2/.env.local (gitignored). That
+same paste also makes the payment flow work on localhost. Re-run it in Stage 7
+against the LIVE credentials.
 
 ------------------------------------------------------------------------
 STAGE 6 — DEPLOY + END-TO-END TEST (on DEMO)
