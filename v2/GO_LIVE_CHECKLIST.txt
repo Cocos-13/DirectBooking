@@ -77,7 +77,7 @@ STAGE 3 — CALENDAR SYNC (Airbnb / Booking.com iCal)
          08-08→12, 08-22→24 (plus a long 2027-01-20→2028-01-23 block; see the
          live-data NOTE below).
 
-[ ] 3.3  After deploy: in BOTH Airbnb and Booking.com, IMPORT this site's feed
+[x] 3.3  After deploy: in BOTH Airbnb and Booking.com, IMPORT this site's feed
            https://www.cocosapartments.com/api/calendar.ics
          so a direct booking blocks those dates on the platforms too.
          (This closes the double-booking loop in both directions.)
@@ -87,7 +87,7 @@ STAGE 3 — CALENDAR SYNC (Airbnb / Booking.com iCal)
          It publishes ONLY direct bookings, never the platforms' own blocks,
          so there is no echo loop between Airbnb and Booking.com.
 
-[ ] 3.4  Sanity-check on the live site once 3.2b is deployed: open the
+[x] 3.4  Sanity-check on the live site once 3.2b is deployed: open the
          Availability section and confirm the nights above are greyed out and
          that picking a stay that runs THROUGH a booked block is impossible.
          DATA LAYER CONFIRMED (2026-07-23): the /api/availability payload carries
