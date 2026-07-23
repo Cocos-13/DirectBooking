@@ -117,11 +117,53 @@ STAGE 4 — SITE + SECRETS
          "Sitemap: https://www.cocosapartments.com/sitemap.xml", not the
          your-site.vercel.app placeholder). This also fixes the host in the
          owner "Approve & send payment link" button, so 6.4 is now testable.
-[ ] 4.2  BOOKING_APPROVAL_SECRET = a long random value.
+[x] 4.2  BOOKING_APPROVAL_SECRET = a long random value.
            Generate with:  openssl rand -base64 32
+         DONE (2026-07-23): set in the Vercel PRODUCTION env by the owner and
+         redeployed. A separate secret is also wired for LOCAL dev in .env.local
+         (gitignored, verified) so the Approve flow works on localhost. PROD
+         still needs its OWN value — the two are independent (each runtime
+         signs+verifies with its own key; they need NOT match). Set prod
+         without ever revealing the value on screen or in shell history:
+             openssl rand -base64 32 | tr -d '\n' | \
+               vercel env add BOOKING_APPROVAL_SECRET production
+         (run `vercel link` once first; NO surrounding quotes per 2.3). Then
+         redeploy. WHY IT'S A HARD BLOCKER: the owner email only shows an
+         "Approve" button when isApprovalConfigured() is true
+         (app/api/request/route.ts:98), and the PAID email's "Send deposit
+         hold link" button is gated the same way (app/api/viva/webhook
+         /route.ts:316,376). With no secret, no booking can ever be approved
+         or paid. This gates 6.4/6.5/6.6.
 [ ] 4.3  (Optional) NEXT_PUBLIC_ANALYTICS_DOMAIN for cookieless Plausible stats.
+         Wired (components/Analytics.tsx + middleware CSP). Unset = no analytics
+         script renders; site is unaffected. SKIP for go-live unless you want
+         stats — needs a Plausible domain you own.
 [ ] 4.4  (Optional) NEXT_PUBLIC_GOOGLE_MAPS_KEY for the branded static map
          (restrict the key to your domain via HTTP-referrer in Google Cloud).
+         VERIFIED READY (2026-07-23): code calls ONLY the Maps Static API
+         (components/LocationSection.tsx); CSP already allows it (img-src https:,
+         frame-src www.google.com in middleware.ts) — no code change needed.
+         Unset = keyless interactive embed that works fine; you only lose the
+         terracotta branded pin. Google requires a BILLING account even for the
+         free tier, so skip this if you don't want a card on file.
+         RUNBOOK (console.cloud.google.com):
+           1. Create/select a project.
+           2. APIs & Services > Library > enable "Maps Static API" ONLY
+              (NOT "Maps JavaScript API" — the code never uses it).
+           3. Credentials > Create credentials > API key.
+           4. RESTRICT the key (it is exposed client-side by design):
+              - Application restrictions > Websites (HTTP referrers), add:
+                  https://www.cocosapartments.com/*
+                  https://cocosapartments.com/*
+                  http://localhost:3000/*        (local dev, optional)
+              - API restrictions > Restrict key > "Maps Static API" only.
+           5. Set the key. NOTE: NEXT_PUBLIC_* is inlined at BUILD time, so it
+              MUST be set before the build and needs a REDEPLOY to take effect:
+                  printf '%s' 'THEKEY' | \
+                    vercel env add NEXT_PUBLIC_GOOGLE_MAPS_KEY production
+                  # then redeploy (rebuild). No surrounding quotes (per 2.3).
+              Local dev: add NEXT_PUBLIC_GOOGLE_MAPS_KEY=THEKEY to .env.local
+              and restart `npm run dev`.
 
 ------------------------------------------------------------------------
 STAGE 5 — PAYMENTS: VIVA DEMO (get the full flow working before real money)
