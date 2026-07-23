@@ -138,8 +138,15 @@ STAGE 4 — SITE + SECRETS
          Wired (components/Analytics.tsx + middleware CSP). Unset = no analytics
          script renders; site is unaffected. SKIP for go-live unless you want
          stats — needs a Plausible domain you own.
-[ ] 4.4  (Optional) NEXT_PUBLIC_GOOGLE_MAPS_KEY for the branded static map
+[x] 4.4  (Optional) NEXT_PUBLIC_GOOGLE_MAPS_KEY for the branded static map
          (restrict the key to your domain via HTTP-referrer in Google Cloud).
+         DONE + VERIFIED LIVE (2026-07-23): real AIza key set in Vercel prod
+         and redeployed; the live staticmap request returns HTTP 200 image/png
+         with the site referer. Coordinates were also corrected — the old
+         siteConfig.geo was a ~230m-off OSM street centroid; now the owner's
+         exact Google Maps building pin (38.242015, 21.7348596), which also
+         fixed the schema.org GeoCoordinates. "Open in Google Maps" now opens
+         the address "Αθανασίου Διάκου 32, Πάτρα 26222" instead of raw coords.
          VERIFIED READY (2026-07-23): code calls ONLY the Maps Static API
          (components/LocationSection.tsx); CSP already allows it (img-src https:,
          frame-src www.google.com in middleware.ts) — no code change needed.
