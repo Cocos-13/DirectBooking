@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SKIP_ORDER = process.argv.includes("--no-order");
+const ORDER_TIMEOUT_SEC = 30 * 60;
 
 // ---------------------------------------------------------------- env loading
 
@@ -134,10 +135,13 @@ if (!sourceCode) {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      amount: 100, // 1.00 EUR of demo money
-      customerTrns: "Stage 5 self-check (demo, do not pay)",
+      amount: 100, // 1.00 EUR of demo money (Viva demo needs >= 0.30 EUR)
+      customerTrns: "Stage 5 self-check (demo, TEST CARDS ONLY)",
       customer: { countryCode: "GR", requestLang: "en-GB" },
-      paymentTimeout: 300,
+      // 30 min. This is a link a HUMAN has to walk over to and pay: too short a
+      // timeout and the checkout 404s before they get there, which reads as a
+      // broken integration rather than an expired order.
+      paymentTimeout: ORDER_TIMEOUT_SEC,
       isPreAuth: true, // exercises the same path the damage deposit uses
       allowRecurring: false,
       maxInstallments: 0,
@@ -153,11 +157,25 @@ if (!sourceCode) {
   if (orderCode) {
     const url = `${HOSTS.payments}/web/checkout?ref=${orderCode}`;
     report("5.2", `Source code ${sourceCode} accepted; pre-auth order created`, "pass", `orderCode ${orderCode}`);
+    const expiresAt = new Date(Date.now() + ORDER_TIMEOUT_SEC * 1000);
     report("5.3", "Redirect URLs — needs your eyes (Viva exposes no read API)", "warn",
-      `Open this DEMO checkout and pay it with a Viva test card:\n` +
+      `Open this DEMO checkout:\n` +
       `  ${url}\n` +
+      `EXPIRES ${expiresAt.toLocaleTimeString()} (${ORDER_TIMEOUT_SEC / 60} min from now).\n` +
+      `After that the link 404s — that is an expired order, not a broken site.\n` +
+      `Re-run this script for a fresh one.\n` +
+      `\n` +
+      `*** TEST CARDS ONLY — NEVER a real card, even though this is demo. ***\n` +
+      `  4147 4630 1111 0133   any 3-digit CVV, any future expiry -> SUCCESS\n` +
+      `  4147 4630 1111 0141   same                               -> FAILURE\n` +
+      `\n` +
       `Then confirm the browser lands on ${env("NEXT_PUBLIC_SITE_URL") || "https://www.cocosapartments.com"}/booking/success\n` +
-      `That landing IS the proof that the source's Success URL is set correctly.`);
+      `That landing IS the proof that the source's Success URL is set correctly.\n` +
+      `\n` +
+      `EXPECTED SIDE EFFECT: paying this fires the real webhook at production,\n` +
+      `which cannot match "SELFCHECK" to a booking, so you WILL get one owner\n` +
+      `"unmatched payment — review in Viva" email. That is correct behaviour and\n` +
+      `is itself proof the webhook pipeline works. Ignore/delete that one email.`);
   } else {
     report("5.2", "Order creation FAILED — source code likely wrong", "fail",
       `HTTP ${r.status} — ${r.body.slice(0, 400)}`);
@@ -242,6 +260,16 @@ if (!merchantId || !apiKey) {
     body: JSON.stringify({ amount: 100, currencyCode: "978", customerTrns: "selfcheck probe" }),
   });
   const body = r.body.toLowerCase();
+  // The Payment API answers business errors with HTTP 200 and an envelope, so
+  // read ErrorCode/ErrorText rather than the status code alone.
+  let env200 = null;
+  try { env200 = JSON.parse(r.body); } catch { /* non-JSON */ }
+  const errText = env200?.ErrorText ?? env200?.errorText ?? null;
+  const errCode = env200?.ErrorCode ?? env200?.errorCode ?? null;
+  const statusId = env200?.StatusId ?? env200?.statusId ?? null;
+  const envelope = env200
+    ? `StatusId=${statusId} ErrorCode=${errCode} ErrorText=${errText ?? "(none)"}`
+    : r.body.slice(0, 300) || "(empty body)";
 
   if (body.includes("api action is disabled")) {
     report("5.6", "Pre-auth capture via API is DISABLED on this account", "fail",
@@ -252,9 +280,12 @@ if (!merchantId || !apiKey) {
     report("5.6", "Payment API rejected the credentials", "fail",
       `HTTP ${r.status} — ${r.body.slice(0, 300)}`);
   } else {
-    report("5.6", "Pre-auth capture is permitted (probe rejected only as not-found)", "pass",
-      `HTTP ${r.status} — ${r.body.slice(0, 200) || "(empty body)"}\n` +
-      "Credentials are accepted and the action is not disabled.");
+    report("5.6", "Pre-auth capture is permitted", "pass",
+      `HTTP ${r.status} — ${envelope}\n` +
+      "Reading: the endpoint authenticated us and processed the request, then\n" +
+      "failed it because the probe transaction id does not exist. It did NOT say\n" +
+      '"api action is disabled", so the API Access checkbox is on.\n' +
+      "This is an indirect probe — the direct proof is 6.6, releasing a real hold.");
   }
 }
 

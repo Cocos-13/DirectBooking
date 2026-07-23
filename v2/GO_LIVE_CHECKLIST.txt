@@ -174,8 +174,9 @@ STAGE 4 — SITE + SECRETS
 
 ------------------------------------------------------------------------
 STAGE 5 — PAYMENTS: VIVA DEMO (get the full flow working before real money)
-Only 5.3 and 5.6 remain, and BOTH are clicks inside the Viva DEMO portal —
-nothing left to build. Do them, then run `npm run viva:check` to prove it.
+Only 5.3 remains, and it is not a code task: pay a demo order and watch where
+the browser lands. `npm run viva:check` reports 7 PASS / 0 FAIL as of
+2026-07-24; 5.3 is the single "needs a human" line.
 ------------------------------------------------------------------------
 [x] 5.1  In the Viva DEMO portal, get Smart Checkout credentials:
            VIVA_CLIENT_ID, VIVA_CLIENT_SECRET   (Settings > API Access)
@@ -205,6 +206,17 @@ nothing left to build. Do them, then run `npm run viva:check` to prove it.
          this cannot be confirmed from code. It is proven by 6.5 — pay a demo
          order and see the browser land on /booking/success. `npm run viva:check`
          creates that demo order for you and prints the link to pay.
+         TWO TRAPS, both hit on the first attempt (2026-07-24):
+           - The checkout link EXPIRES. A Viva order past its paymentTimeout
+             serves a 404, which looks exactly like a broken integration but
+             isn't. viva:check now uses a 30-min timeout and prints the expiry;
+             if it 404s, just re-run for a fresh link.
+           - TEST CARDS ONLY. Demo Smart Checkout is a sandbox with no real
+             acquiring behind it, so a real card just errors out — but there is
+             no reason to ever type one in. Cards: see 6.5.
+         Paying the self-check order sends ONE owner "unmatched payment" email
+         (its merchantTrns is "SELFCHECK", which matches no booking). Expected —
+         and it doubles as proof the production webhook pipeline works.
 [x] 5.4  Set  VIVA_ENV = demo  and  VIVA_WEBHOOK_VERIFICATION_KEY = (from Viva).
          Verification key retrieved via
            GET https://demo.vivapayments.com/api/messages/config/token
@@ -220,23 +232,25 @@ nothing left to build. Do them, then run `npm run viva:check` to prove it.
            curl -s https://www.cocosapartments.com/api/viva/webhook
          returns HTTP 200 {"Key":"F69885…"} — so the key is live in prod and
          Viva can re-verify the webhook at any time.
-[ ] 5.6  DEPOSIT (pre-auth) capture — needed to release/capture the damage hold
+[x] 5.6  DEPOSIT (pre-auth) capture — needed to release/capture the damage hold
          FROM the site (otherwise you resolve holds in the Viva portal):
            VIVA_MERCHANT_ID, VIVA_API_KEY  (Payment API Basic-auth credentials)
-         Both ARE present in the Vercel Production env (verified 2026-07-23 via
-         `vercel env ls production`; values are stored sensitive and cannot be
-         read back, which is correct).
-         REMAINING: Viva portal > Settings > API Access >
+         Both present in the Vercel Production env (`vercel env ls production`;
+         values are stored sensitive and cannot be read back, which is correct).
+         DONE + VERIFIED (2026-07-24) via `npm run viva:check`, which POSTs a
+         capture at a non-existent transaction id and reads the rejection:
+           HTTP 200  StatusId=E  ErrorCode=404
+           ErrorText="Transaction 00000000-…-000000000000 not found"
+         i.e. the Payment API AUTHENTICATED us and PROCESSED the request, then
+         failed it only because that transaction doesn't exist. It did not
+         answer "The specified api action is disabled for the merchant …", so
+         the Settings > API Access checkbox
            "Allow recurring payments and pre-auth captures via API"
-         must be TICKED — seen unchecked earlier, never re-confirmed.
-                                                <-- YOUR MOVE (portal)
-         Verify with `npm run viva:check`, which POSTs a capture at a
-         non-existent transaction id and reads the SHAPE of the rejection:
-           "The specified api action is disabled for the merchant …"
-                            -> the checkbox is OFF. Tick it, save, re-run.
-           404 / not-found  -> credentials + permission are good. Tick 5.6.
-           401 / 403        -> VIVA_MERCHANT_ID / VIVA_API_KEY are wrong, or
-                               belong to the other environment (demo vs live).
+         is on. (401/403 would have meant wrong credentials, or credentials
+         from the other environment.)
+         This is an INDIRECT probe. Direct proof is 6.6 — releasing a real
+         demo hold. Re-run the same check in Stage 7 against LIVE credentials;
+         the checkbox is per-account and does NOT carry over from demo.
          Deposit amount lives in content/siteConfig.ts (deposit.amountEur).
 
 CODE FIX (2026-07-23) — found while working Stage 5, blocked 5.6 AND 6.6:
