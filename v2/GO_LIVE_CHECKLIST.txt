@@ -254,6 +254,15 @@ two calls, and the capture body carries the documented amount + currencyCode +
 customerTrns. This is the same host trap already noted in 5.4 for
 /api/messages/config/token — same legacy API, same host.
 
+CHECKED, NOT A BUG (2026-07-23): the webhook only accepts statusId "F"
+(app/api/viva/webhook/route.ts:81), which looked wrong for a pre-auth. Viva's
+status table confirms it is right: a successful pre-auth IS "F" (completed
+successfully) and is told apart by transactionTypeId 1 (Card pre-auth); "C"
+only appears LATER, on the original pre-auth once it has been captured, with
+the capture itself landing as a separate "F" transaction. Our code doesn't rely
+on transactionTypeId at all — it routes deposits by the "DEP|" merchantTrns
+marker — so the deposit webhook path is sound. Don't "fix" this in 6.6.
+
 TOOL (2026-07-23): `npm run viva:check` (scripts/viva-selfcheck.mjs) verifies
 5.1–5.6 in one command against the real Viva account and the deployed site:
 OAuth creds, source code (by creating a 1.00€ DEMO pre-auth order), Payment
