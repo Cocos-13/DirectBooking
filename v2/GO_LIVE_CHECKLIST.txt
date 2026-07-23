@@ -206,17 +206,34 @@ the browser lands. `npm run viva:check` reports 7 PASS / 0 FAIL as of
          this cannot be confirmed from code. It is proven by 6.5 — pay a demo
          order and see the browser land on /booking/success. `npm run viva:check`
          creates that demo order for you and prints the link to pay.
-         TWO TRAPS, both hit on the first attempt (2026-07-24):
-           - The checkout link EXPIRES. A Viva order past its paymentTimeout
-             serves a 404, which looks exactly like a broken integration but
-             isn't. viva:check now uses a 30-min timeout and prints the expiry;
-             if it 404s, just re-run for a fresh link.
-           - TEST CARDS ONLY. Demo Smart Checkout is a sandbox with no real
-             acquiring behind it, so a real card just errors out — but there is
-             no reason to ever type one in. Cards: see 6.5.
+         A PAID CHECKOUT LINK RETURNS 404. This is the trap that cost us two
+         rounds on 2026-07-24. Once an order reaches StateId 3 (Paid) its
+         /web/checkout link 404s forever — the link is consumed. From the
+         browser that is indistinguishable from an expired link, but it means
+         the OPPOSITE: the payment went through. Do not diagnose a 404 by eye —
+         ask the API:
+             npm run viva:check -- --status <orderCode>
+         It prints the StateId (0 Pending / 1 Expired / 2 Canceled / 3 Paid)
+         plus every transaction and whether it succeeded. `npm run viva:check`
+         also reports on the previous run's order automatically.
+         TEST CARDS ONLY — see 6.5. Demo is a sandbox with no real acquiring
+         behind it, so a real card produces a SIMULATED transaction, not a real
+         charge; there is still no reason to ever type one in.
          Paying the self-check order sends ONE owner "unmatched payment" email
          (its merchantTrns is "SELFCHECK", which matches no booking). Expected —
          and it doubles as proof the production webhook pipeline works.
+
+FINDING (2026-07-24) — 5.3 IS CURRENTLY FAILING, and this is exactly the fault
+the test exists to catch. Two self-check orders were paid on the demo source
+1015 and BOTH payments SUCCEEDED at Viva:
+  order 8349581154972608  StateId 3 Paid  txn d083330c…  StatusId F  NET_MASTER
+  order 1493674958172608  StateId 3 Paid  txn b55c323a…  StatusId F  NET_VISA
+The owner saw an error, then a 404, on both. Since the money side finished
+cleanly, what broke is the step AFTER payment: Viva redirecting to the source's
+Success URL. So on source 1015 that URL is missing or wrong. Fix it per the
+field list above, then pay one more self-check order and confirm the browser
+lands on /booking/success. Nothing in this repo needs changing — /booking/success
+and /booking/failure both serve 200 on the live site (re-verified after deploy).
 [x] 5.4  Set  VIVA_ENV = demo  and  VIVA_WEBHOOK_VERIFICATION_KEY = (from Viva).
          Verification key retrieved via
            GET https://demo.vivapayments.com/api/messages/config/token

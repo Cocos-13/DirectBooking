@@ -1,2 +1,3 @@
 .vercel
 .env*
+.viva-selfcheck.json

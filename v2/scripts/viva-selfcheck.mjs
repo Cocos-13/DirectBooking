@@ -13,13 +13,27 @@
 // plaintext credentials exist. Point it at the DEMO credentials for Stage 5 and
 // re-run it against the LIVE ones for Stage 7.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const SKIP_ORDER = process.argv.includes("--no-order");
 const ORDER_TIMEOUT_SEC = 30 * 60;
+// Remembers the last order this script created, so the next run can tell you
+// what became of it. Gitignored.
+const LAST_ORDER_FILE = resolve(ROOT, ".viva-selfcheck.json");
+
+const statusIdx = process.argv.indexOf("--status");
+const STATUS_ONLY = statusIdx !== -1 ? process.argv[statusIdx + 1] : null;
+
+// Viva order StateId enum.
+const ORDER_STATE = {
+  0: ["Pending", "created and still payable"],
+  1: ["Expired", "the payment window elapsed before anyone paid"],
+  2: ["Canceled", "cancelled before payment"],
+  3: ["Paid", "someone completed payment — the checkout link is now consumed"],
+};
 
 // ---------------------------------------------------------------- env loading
 
@@ -82,11 +96,81 @@ async function req(url, init = {}) {
   }
 }
 
+/**
+ * Explains what became of an order. This exists because a paid order's checkout
+ * link returns 404 — identical to an expired one from the browser, but meaning
+ * the opposite: the payment WORKED and consumed the link. Guessing between the
+ * two sent us down the wrong path once already.
+ */
+async function describeOrder(orderCode) {
+  const id = env("VIVA_MERCHANT_ID");
+  const key = env("VIVA_API_KEY");
+  if (!id || !key) return null;
+  const auth = { Authorization: `Basic ${basic(id, key)}` };
+
+  const o = await req(`${HOSTS.payments}/api/orders/${orderCode}`, { headers: auth });
+  let order = null;
+  try { order = JSON.parse(o.body); } catch { /* non-JSON */ }
+  if (!order || typeof order.StateId !== "number") {
+    return { orderCode, unknown: true, detail: `HTTP ${o.status} ${o.body.slice(0, 160)}` };
+  }
+
+  const t = await req(`${HOSTS.payments}/api/transactions?ordercode=${orderCode}`, { headers: auth });
+  let txns = [];
+  try {
+    const parsed = JSON.parse(t.body);
+    txns = parsed?.Transactions || (Array.isArray(parsed) ? parsed : []);
+  } catch { /* non-JSON */ }
+
+  return {
+    orderCode,
+    stateId: order.StateId,
+    expiration: order.ExpirationDate,
+    amount: order.RequestAmount,
+    // "F" = successful. BankId tells you which scheme actually ran.
+    txns: txns.map((x) => ({ id: x.TransactionId, status: x.StatusId, amount: x.Amount, bank: x.BankId, at: x.InsDate })),
+  };
+}
+
+function printOrder(info) {
+  if (!info) return;
+  if (info.unknown) {
+    console.log(`  order ${info.orderCode}: could not read — ${info.detail}`);
+    return;
+  }
+  const [name, meaning] = ORDER_STATE[info.stateId] ?? ["Unknown", `StateId ${info.stateId}`];
+  console.log(`  order ${info.orderCode}: ${C.b}${name}${C.x} — ${meaning}`);
+  console.log(`  ${C.d}expires ${info.expiration} · ${info.amount}€ requested${C.x}`);
+  for (const x of info.txns) {
+    const ok = x.status === "F";
+    console.log(`  ${ok ? C.g + "payment SUCCEEDED" + C.x : C.y + "transaction statusId=" + x.status + C.x} · ${x.amount}€ · ${x.bank} · ${x.at}`);
+  }
+  if (!info.txns.length) console.log(`  ${C.d}no transactions against this order${C.x}`);
+}
+
 // ----------------------------------------------------------------- the checks
+
+if (STATUS_ONLY) {
+  console.log(`\n${C.b}Order status${C.x} (${isProd ? "PRODUCTION" : "DEMO"})`);
+  printOrder(await describeOrder(STATUS_ONLY));
+  console.log("");
+  process.exit(0);
+}
 
 console.log(`\n${C.b}Viva Stage-5 self-check${C.x}`);
 console.log(`${C.d}VIVA_ENV=${env("VIVA_ENV") || "(unset → demo)"} → ${isProd ? "PRODUCTION (real money)" : "DEMO"}`);
 console.log(`accounts: ${HOSTS.accounts}\napi:      ${HOSTS.api}\npayments: ${HOSTS.payments}${C.x}\n`);
+
+// --- What happened to the order from the previous run? -----------------------
+{
+  let prev = null;
+  try { prev = JSON.parse(readFileSync(LAST_ORDER_FILE, "utf8")).orderCode; } catch { /* first run */ }
+  if (prev) {
+    console.log(`${C.b}Previous self-check order${C.x}`);
+    printOrder(await describeOrder(prev));
+    console.log("");
+  }
+}
 
 // --- 5.1 / 5.2  Smart Checkout OAuth credentials -----------------------------
 console.log(`${C.b}Smart Checkout (OAuth)${C.x}`);
@@ -158,19 +242,30 @@ if (!sourceCode) {
     const url = `${HOSTS.payments}/web/checkout?ref=${orderCode}`;
     report("5.2", `Source code ${sourceCode} accepted; pre-auth order created`, "pass", `orderCode ${orderCode}`);
     const expiresAt = new Date(Date.now() + ORDER_TIMEOUT_SEC * 1000);
+    try {
+      writeFileSync(LAST_ORDER_FILE, JSON.stringify({ orderCode, createdAt: new Date().toISOString() }));
+    } catch { /* best effort */ }
+
     report("5.3", "Redirect URLs — needs your eyes (Viva exposes no read API)", "warn",
-      `Open this DEMO checkout:\n` +
+      `Open this DEMO checkout, pay it, and WATCH WHERE THE BROWSER GOES:\n` +
       `  ${url}\n` +
-      `EXPIRES ${expiresAt.toLocaleTimeString()} (${ORDER_TIMEOUT_SEC / 60} min from now).\n` +
-      `After that the link 404s — that is an expired order, not a broken site.\n` +
-      `Re-run this script for a fresh one.\n` +
       `\n` +
       `*** TEST CARDS ONLY — NEVER a real card, even though this is demo. ***\n` +
       `  4147 4630 1111 0133   any 3-digit CVV, any future expiry -> SUCCESS\n` +
       `  4147 4630 1111 0141   same                               -> FAILURE\n` +
       `\n` +
-      `Then confirm the browser lands on ${env("NEXT_PUBLIC_SITE_URL") || "https://www.cocosapartments.com"}/booking/success\n` +
-      `That landing IS the proof that the source's Success URL is set correctly.\n` +
+      `PASS: the browser lands on ${env("NEXT_PUBLIC_SITE_URL") || "https://www.cocosapartments.com"}/booking/success\n` +
+      `FAIL: you get an error page or a 404 IMMEDIATELY AFTER paying. That means\n` +
+      `      the payment worked and the source's Success URL is missing/wrong —\n` +
+      `      it is the redirect that broke, not the payment.\n` +
+      `\n` +
+      `READ THIS BEFORE PANICKING ABOUT A 404:\n` +
+      `  Once an order is PAID its checkout link 404s forever — the link is\n` +
+      `  consumed. That looks identical to an expired link but means the\n` +
+      `  opposite. Re-run this script and it will tell you which one happened\n` +
+      `  ("Previous self-check order" at the top), or ask directly:\n` +
+      `      npm run viva:check -- --status ${orderCode}\n` +
+      `  This link otherwise expires ${expiresAt.toLocaleTimeString()} (${ORDER_TIMEOUT_SEC / 60} min).\n` +
       `\n` +
       `EXPECTED SIDE EFFECT: paying this fires the real webhook at production,\n` +
       `which cannot match "SELFCHECK" to a booking, so you WILL get one owner\n` +
