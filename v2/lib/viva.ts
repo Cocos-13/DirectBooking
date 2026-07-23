@@ -10,10 +10,17 @@ const isProd = process.env.VIVA_ENV === "production";
 const HOSTS = {
   // OAuth2 client-credentials token endpoint.
   accounts: isProd ? "https://accounts.vivapayments.com" : "https://demo-accounts.vivapayments.com",
-  // REST API (create order, retrieve transaction).
+  // Smart Checkout REST API, OAuth bearer auth (create order, retrieve transaction).
   api: isProd ? "https://api.vivapayments.com" : "https://demo-api.vivapayments.com",
   // Hosted Smart Checkout page the customer is redirected to.
   checkout: isProd ? "https://www.vivapayments.com" : "https://demo.vivapayments.com",
+  // Legacy Payment API (/api/...), Basic auth — pre-auth capture/cancel live
+  // here, NOT on HOSTS.api. This is a DIFFERENT host: `api.vivapayments.com`
+  // 404s on every /api/* path (verified), so pointing capture/release at it
+  // makes them fail silently-ish with a 404 body. Same trap as the webhook
+  // verification-key endpoint (/api/messages/config/token).
+  // https://developer.viva.com/tutorials/payments/handle-pre-authorizations/
+  payments: isProd ? "https://www.vivapayments.com" : "https://demo.vivapayments.com",
 };
 
 /** True only when the credentials needed to create a payment order exist. */
@@ -184,13 +191,17 @@ export async function capturePreauth(
   preauthTransactionId: string,
   amountCents: number
 ): Promise<PreauthActionResult> {
-  const res = await fetch(`${HOSTS.api}/api/transactions/${preauthTransactionId}`, {
+  const res = await fetch(`${HOSTS.payments}/api/transactions/${preauthTransactionId}`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${paymentApiBasicAuth()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ Amount: Math.round(amountCents) }),
+    body: JSON.stringify({
+      amount: Math.round(amountCents),
+      currencyCode: EUR_CURRENCY_CODE,
+      customerTrns: `Damage deposit capture (${(Math.round(amountCents) / 100).toFixed(2)} EUR)`,
+    }),
     cache: "no-store",
   });
   const detail = await res.text().catch(() => "");
@@ -214,7 +225,7 @@ export async function releasePreauth(
   if (sourceCode) params.set("sourceCode", sourceCode);
 
   const res = await fetch(
-    `${HOSTS.api}/api/transactions/${preauthTransactionId}/?${params.toString()}`,
+    `${HOSTS.payments}/api/transactions/${preauthTransactionId}/?${params.toString()}`,
     {
       method: "DELETE",
       headers: { Authorization: `Basic ${paymentApiBasicAuth()}` },

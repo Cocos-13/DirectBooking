@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "viva:check": "node scripts/viva-selfcheck.mjs"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.0",
