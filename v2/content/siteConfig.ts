@@ -15,10 +15,12 @@ export const siteConfig = {
     addressCountry: "GR",
   },
 
-  // Coordinates for Athanasiou Diakou 32, right on Psila Alonia square.
+  // Exact building point for Athanasiou Diakou 32, from the owner's Google Maps
+  // pin (verified 2026-07-23). Drives the map pin AND the schema.org
+  // GeoCoordinates in app/page.tsx — keep it precise.
   geo: {
-    latitude: 38.2406534,
-    longitude: 21.7327531,
+    latitude: 38.242015,
+    longitude: 21.7348596,
   },
 
   contact: {

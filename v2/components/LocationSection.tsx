@@ -45,9 +45,13 @@ export function LocationSection() {
   const { t } = useLanguage();
   const { theme } = useTheme();
   const { latitude, longitude } = siteConfig.geo;
-  const { streetAddress, addressLocality } = siteConfig.address;
+  const { streetAddress, addressLocality, postalCode } = siteConfig.address;
 
-  const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  // "Open in Google Maps" should read as the real street address, not raw
+  // coordinates. We search by the human address (postcode disambiguates the
+  // street); the static image below still drops its pin on the exact geo coords.
+  const mapsQuery = encodeURIComponent(`${streetAddress}, ${addressLocality} ${postalCode}`);
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
   const embedSrc = `https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`;
 
   // Static Maps needs a browser-key. When it's set we render a branded static
