@@ -33,6 +33,16 @@
 }
 
 html {
+  /* Safety net against sideways scrolling on phones. One element bleeding past
+     the right edge is enough to widen the layout viewport, which both lets the
+     page pan left/right and leaves the full-bleed hero short of the screen edge
+     once a visitor pinches out to compensate.
+     `clip` (not `hidden`) is deliberate: it does not create a scroll container,
+     so the sticky header keeps sticking and scroll-behavior below still applies.
+     Keep this on html — on `body` it makes that element a scrollport instead,
+     which breaks intrinsic sizing inside the reviews grid on desktop. */
+  overflow-x: clip;
+
   /* Smooth in-page navigation for both the header nav and the mobile drawer.
      Neutralized under prefers-reduced-motion by the rule below. */
   scroll-behavior: smooth;

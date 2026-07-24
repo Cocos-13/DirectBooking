@@ -54,6 +54,13 @@ function ArrowIcon({ dir, color }: { dir: "left" | "right"; color: string }) {
   );
 }
 
+const SIDE_CARD_SCALE = 0.85;
+// rotateY + perspective swing the card's near edge outside its scaled box, so
+// the painted result is wider than the maths above predicts. The excess grows
+// with the card, so reserve it as a fraction of the width rather than a fixed
+// number of pixels — measured at ~1.5% on a 360px phone and ~3% at 640px.
+const PERSPECTIVE_BULGE_RATIO = 0.05;
+
 // The horizontal offset of the side cards scales gently with container width.
 function calculateGap(width: number) {
   const minWidth = 1024;
@@ -63,6 +70,19 @@ function calculateGap(width: number) {
   if (width <= minWidth) return minGap;
   if (width >= maxWidth) return Math.max(minGap, maxGap + 0.06018 * (width - maxWidth));
   return minGap + (maxGap - minGap) * ((width - minWidth) / (maxWidth - minWidth));
+}
+
+// The side cards translate outward by `gap`. On a phone the container is the
+// full column width, so that offset pushed them past the page edge and gave the
+// whole document a horizontal scrollbar — which is what forced visitors to
+// pinch out. Cap the offset by the room that actually exists between the
+// container and the viewport edges; roomy (desktop) layouts keep the full gap.
+function fitGapToViewport(gap: number, el: HTMLElement) {
+  const rect = el.getBoundingClientRect();
+  const slack = Math.min(rect.left, document.documentElement.clientWidth - rect.right);
+  // A scaled-down card already sits this far inside each edge of the container.
+  const inset = (rect.width * (1 - SIDE_CARD_SCALE)) / 2;
+  return Math.max(0, Math.min(gap, inset + slack - rect.width * PERSPECTIVE_BULGE_RATIO));
 }
 
 export function CircularTestimonials({
@@ -85,7 +105,7 @@ export function CircularTestimonials({
   const [activeIndex, setActiveIndex] = useState(0);
   const [hoverPrev, setHoverPrev] = useState(false);
   const [hoverNext, setHoverNext] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(1200);
+  const [gap, setGap] = useState(() => calculateGap(1200));
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const autoplayIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -98,7 +118,8 @@ export function CircularTestimonials({
 
   useEffect(() => {
     function handleResize() {
-      if (imageContainerRef.current) setContainerWidth(imageContainerRef.current.offsetWidth);
+      const el = imageContainerRef.current;
+      if (el) setGap(fitGapToViewport(calculateGap(el.offsetWidth), el));
     }
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -137,7 +158,6 @@ export function CircularTestimonials({
   // Show three cards at a time: center (active), and the immediate left/right
   // peeking behind it; everything else is hidden.
   function getImageStyle(index: number): React.CSSProperties {
-    const gap = calculateGap(containerWidth);
     const maxStickUp = gap * 0.8;
     const isActive = index === activeIndex;
     const isLeft = (activeIndex - 1 + testimonialsLength) % testimonialsLength === index;
@@ -147,10 +167,10 @@ export function CircularTestimonials({
       return { zIndex: 3, opacity: 1, pointerEvents: "auto", transform: "translateX(0px) translateY(0px) scale(1) rotateY(0deg)", transition };
     }
     if (isLeft) {
-      return { zIndex: 2, opacity: 1, pointerEvents: "auto", transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(15deg)`, transition };
+      return { zIndex: 2, opacity: 1, pointerEvents: "auto", transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(${SIDE_CARD_SCALE}) rotateY(15deg)`, transition };
     }
     if (isRight) {
-      return { zIndex: 2, opacity: 1, pointerEvents: "auto", transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(-15deg)`, transition };
+      return { zIndex: 2, opacity: 1, pointerEvents: "auto", transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(${SIDE_CARD_SCALE}) rotateY(-15deg)`, transition };
     }
     return { zIndex: 1, opacity: 0, pointerEvents: "none", transition };
   }

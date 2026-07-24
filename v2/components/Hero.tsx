@@ -22,7 +22,7 @@ export function Hero() {
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-aegean-900/85 via-aegean-900/25 to-aegean-900/10" />
-        <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 px-4 pb-2 sm:px-8 sm:pb-12">
+        <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 px-4 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-8 sm:pb-12">
           <div className="mx-auto w-full max-w-5xl">
             <p className="mb-3 animate-fade-in-up text-xs font-semibold uppercase tracking-[0.2em] text-sand-100/90">
               {t.hero.kicker}
@@ -53,6 +53,14 @@ export function Hero() {
               </span>
             </div>
           </div>
+
+          {/* Clearance for the ContactFab, which floats in the bottom-right
+              corner on mobile (1.5rem up, 3.5rem tall) and used to sit on top
+              of the "from €72 / night" line. A shrinkable spacer rather than
+              bottom padding: on a short viewport — or once a mobile browser's
+              chrome eats into 100dvh — it collapses toward zero instead of
+              pushing the kicker up behind the header. */}
+          <div aria-hidden className="h-[5.5rem] shrink sm:hidden" />
         </div>
       </div>
     </section>
