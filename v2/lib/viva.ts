@@ -168,7 +168,13 @@ export async function retrieveTransaction(transactionId: string): Promise<VivaTr
 
   return {
     statusId: json.statusId,
-    amount: json.amount,
+    // Viva's API is asymmetric on amount units: order CREATION takes minor units
+    // (cents — see createPaymentOrder), but this Smart Checkout RETRIEVE returns
+    // MAJOR units (euros), e.g. 144 for a 144€ charge, not 14400. Normalize to
+    // cents here so VivaTransaction.amount is minor units for every consumer
+    // (the webhook's amount check, receipts, and the deposit-hold capture). This
+    // was the "Paid 1.44€ / Expected 144€" mismatch bug — a 100× under-read.
+    amount: Math.round(json.amount * 100),
     orderCode: json.orderCode ?? 0,
     email: json.email,
     fullName: json.fullName,
