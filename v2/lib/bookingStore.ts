@@ -122,6 +122,19 @@ export async function getBookingPii(
   return typeof v === "string" ? safeParse<{ guestName?: string; guestEmail?: string }>(v) : v;
 }
 
+/**
+ * Reopens dates by removing a confirmed booking: deletes the calendar/financial
+ * record from the hash AND its guest-PII key. Idempotent. Returns true if a
+ * booking was actually removed (false if the order code wasn't present).
+ */
+export async function deleteConfirmedBooking(orderCode: number | string): Promise<boolean> {
+  const c = getClient();
+  if (!c) return false;
+  const removed = await c.hdel(K.confirmed, String(orderCode));
+  await c.del(`${PREFIX.bpii}${orderCode}`).catch(() => {});
+  return removed > 0;
+}
+
 /** A single confirmed booking by order code, or null. Used for idempotency. */
 export async function getConfirmedBooking(
   orderCode: number | string
@@ -363,7 +376,10 @@ export type AuditEvent =
   | "deposit.link_sent"
   | "deposit.authorized"
   | "deposit.captured"
-  | "deposit.released";
+  | "deposit.released"
+  | "booking.reopened"
+  | "admin.login"
+  | "admin.login_failed";
 
 export async function audit(
   event: AuditEvent,
