@@ -234,6 +234,19 @@ Success URL. So on source 1015 that URL is missing or wrong. Fix it per the
 field list above, then pay one more self-check order and confirm the browser
 lands on /booking/success. Nothing in this repo needs changing — /booking/success
 and /booking/failure both serve 200 on the live site (re-verified after deploy).
+
+ROOT CAUSE CONFIRMED (2026-07-24, from the owner) — source 1015 was set to:
+    Domain Name  cocosapartments.com   (BARE — 308-redirects to www)
+    Success URL  https://cocosapartments.com/booking/success
+    Failure URL  https://cocosapartments.com/booking/failed   <-- TYPO
+Two faults: (1) the bare host adds a 308 hop Viva matches against strictly, and
+(2) the failure path is "failed", but the route is "failure" — there is NO
+/booking/failed page. Verified live: www/booking/failure = 200, www/booking/failed
+= 404. So a declined card lands the guest on a hard 404. The static landing pages
+cannot themselves error (no order lookup, no query-param dependency), which is how
+we know the fault is 100% the URL config. FIX: move Domain Name AND both URLs to
+the www host together (a URL/Domain mismatch is rejected by Viva), and spell the
+failure path "failure". Then re-test.
 [x] 5.4  Set  VIVA_ENV = demo  and  VIVA_WEBHOOK_VERIFICATION_KEY = (from Viva).
          Verification key retrieved via
            GET https://demo.vivapayments.com/api/messages/config/token
