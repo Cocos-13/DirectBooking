@@ -174,26 +174,28 @@ STAGE 4 — SITE + SECRETS
 
 ------------------------------------------------------------------------
 STAGE 5 — PAYMENTS: VIVA DEMO (get the full flow working before real money)
-Only 5.3 remains, and it is not a code task: pay a demo order and watch where
-the browser lands. `npm run viva:check` reports 7 PASS / 0 FAIL as of
-2026-07-24; 5.3 is the single "needs a human" line.
+COMPLETE (2026-07-24). All of 5.1–5.6 pass. A demo order was paid with the Visa
+success test card and the browser landed on /booking/success. `npm run viva:check`
+reports 7 PASS / 0 FAIL.
 ------------------------------------------------------------------------
 [x] 5.1  In the Viva DEMO portal, get Smart Checkout credentials:
            VIVA_CLIENT_ID, VIVA_CLIENT_SECRET   (Settings > API Access)
 [x] 5.2  Create/note a payment SOURCE and its numeric code:
            VIVA_SOURCE_CODE   (Sales > Websites/Apps)
-[ ] 5.3  On that source, set redirect URLs:            <-- YOUR MOVE (portal)
+[x] 5.3  On that source, set redirect URLs:            (DONE 2026-07-24)
          Viva portal > Sales > Online payments > Websites/Apps > edit the source
          used by VIVA_SOURCE_CODE, and set:
            Protocol      https
            Domain Name   www.cocosapartments.com     (no protocol, no trailing /)
            Success URL   booking/success
            Failure URL   booking/failure
-         NOTE the field shapes — Viva splits this into a Domain Name plus two
-         RELATIVE paths; it is not two absolute URLs. Viva's own plugin table
-         lists relative paths in these fields. If your portal build shows a
-         full-URL box instead, use the absolute forms:
-           https://www.cocosapartments.com/booking/success   (and /failure)
+         THE FIELDS ARE DOMAIN + RELATIVE PATH. Success/Failure URL must be the
+         BARE PATH only — literally "booking/success" and "booking/failure", with
+         NO https://, NO domain, NO leading slash. Viva concatenates Domain Name +
+         path itself. Putting a full URL in the path field is what broke it on
+         2026-07-24: Viva produced
+           https://www.cocosapartments.com/https:/www.cocosapartments.com/booking/success
+         (domain glued to the full URL) → 404. See RESOLVED note below.
          MUST be the www host: cocosapartments.com 308-redirects to www
          (verified), and a 3xx can break Viva's strict redirect matching.
          Both targets are already live and return HTTP 200 with no redirect
@@ -247,6 +249,16 @@ cannot themselves error (no order lookup, no query-param dependency), which is h
 we know the fault is 100% the URL config. FIX: move Domain Name AND both URLs to
 the www host together (a URL/Domain mismatch is rejected by Viva), and spell the
 failure path "failure". Then re-test.
+
+RESOLVED (2026-07-24) — after moving to www, the owner still 404'd. The address
+bar revealed the actual bug: a FULL URL had been typed into the Success/Failure
+URL fields, which Viva concatenates onto the Domain Name, yielding
+  https://www.cocosapartments.com/https:/www.cocosapartments.com/booking/success?t=…&s=…
+Fix was to reduce those fields to bare relative paths ("booking/success" /
+"booking/failure"). After that, a demo order paid with 4147 4630 1111 0133 landed
+cleanly on /booking/success. 5.3 PASSES. (Lesson: those fields are paths, never
+absolute URLs — an earlier note in this file that offered an "absolute form"
+fallback was wrong and has been removed.)
 [x] 5.4  Set  VIVA_ENV = demo  and  VIVA_WEBHOOK_VERIFICATION_KEY = (from Viva).
          Verification key retrieved via
            GET https://demo.vivapayments.com/api/messages/config/token
