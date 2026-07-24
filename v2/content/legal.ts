@@ -29,15 +29,15 @@ function orTodo(value: string, what: string): string {
 /** Lawyer/owner checklist surfaced on every legal page while in draft. */
 export const LEGAL_CHECKLIST: Record<Lang, string[]> = {
   el: [
-    "Συμπληρώστε τον ΑΜΑ (Αριθμός Μητρώου Ακινήτων) και το νόμιμο όνομα του υπευθύνου επεξεργασίας στο content/siteConfig.ts.",
-    "Ζητήστε από δικηγόρο να ελέγξει και να προσαρμόσει το περιεχόμενο (ευθύνη, ακυρώσεις, εγγύηση, φορολογικά).",
-    "Επιβεβαιώστε τη νόμιμη βάση επεξεργασίας, τους χρόνους διατήρησης και τους εκτελούντες την επεξεργασία (Resend, Viva, Upstash).",
+    "Ο δικηγόρος να ελέγξει και να εγκρίνει ή να διορθώσει τη συνταγμένη διατύπωση (ευθύνη, ακυρώσεις/επιστροφές, εγγύηση, φορολογικά, ανωτέρα βία). Το κείμενο είναι προσχέδιο, όχι νομική συμβουλή.",
+    "Επιβεβαίωση της νόμιμης βάσης, των χρόνων διατήρησης (12 μήνες στοιχεία επισκέπτη / 5 έτη φορολογικά) και των εκτελούντων την επεξεργασία (Resend, Viva, Upstash) με τις αντίστοιχες συμβάσεις DPA.",
+    "(Προαιρετικά) Συμπλήρωση ΑΦΜ στο content/siteConfig.ts, αν τιμολογείτε ως επιχείρηση.",
     "Θέστε siteConfig.legalDraft = false μόνο μετά τον νομικό έλεγχο.",
   ],
   en: [
-    "Fill in the ΑΜΑ (registry number) and the data-controller's legal name in content/siteConfig.ts.",
-    "Have a lawyer review and adapt the content (liability, cancellations, deposit, tax).",
-    "Confirm the lawful basis, retention periods, and processors listed (Resend, Viva, Upstash).",
+    "Have a lawyer review and approve or correct the drafted wording (liability, cancellation/refunds, deposit, tax, force majeure). The text is a draft, not legal advice.",
+    "Confirm the lawful basis, retention periods (12 months guest data / 5 years tax) and the processors (Resend, Viva, Upstash) against their DPAs.",
+    "(Optional) Fill in the tax ID (ΑΦΜ) in content/siteConfig.ts if you invoice as a business.",
     "Set siteConfig.legalDraft = false only after legal review.",
   ],
 };
@@ -84,7 +84,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           {
             heading: "Αποδέκτες / Εκτελούντες την επεξεργασία",
             body: [
-              "Resend (αποστολή email), Viva.com (πληρωμές), Upstash (αποθήκευση κράτησης). ⟪TODO: επιβεβαιώστε συμβάσεις επεξεργασίας & τοποθεσίες διακομιστών (ΕΕ/εκτός ΕΕ).⟫",
+              "Resend (αποστολή email), Viva.com (πληρωμές), Upstash (αποθήκευση κράτησης). Καθένας ενεργεί ως εκτελών την επεξεργασία βάσει γραπτής σύμβασης (DPA). Η Viva.com είναι εγκατεστημένη στην ΕΕ (Ελλάδα) και πιστοποιημένη κατά PCI-DSS. Η Resend και η Upstash ενδέχεται να επεξεργάζονται δεδομένα σε διακομιστές εκτός ΕΕ (ΗΠΑ)· όπου συμβαίνει, η διαβίβαση στηρίζεται στις Τυποποιημένες Συμβατικές Ρήτρες (SCC) της Ευρωπαϊκής Επιτροπής. Επιλέγουμε περιοχές ΕΕ όπου ο πάροχος τις προσφέρει.",
               "Airbnb/Booking.com: μόνο ημερομηνίες διαθεσιμότητας συγχρονίζονται μέσω iCal — χωρίς προσωπικά στοιχεία επισκέπτη.",
             ],
           },
@@ -92,7 +92,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
             heading: "Χρόνος διατήρησης",
             body: [
               "Στοιχεία επικοινωνίας επισκέπτη: 12 μήνες μετά την αναχώρηση, μετά διαγράφονται αυτόματα.",
-              "Φορολογικά/οικονομικά αρχεία: όσο απαιτεί ο νόμος. ⟪TODO: επιβεβαιώστε τη φορολογική περίοδο διατήρησης.⟫",
+              "Φορολογικά/οικονομικά αρχεία: 5 έτη από το τέλος του αντίστοιχου οικονομικού έτους, όπως απαιτεί η ελληνική φορολογική νομοθεσία.",
             ],
           },
           {
@@ -105,7 +105,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           {
             heading: "Cookies / τοπική αποθήκευση",
             body: [
-              "Δεν χρησιμοποιούμε cookies παρακολούθησης. Η ιστοσελίδα αποθηκεύει τοπικά μόνο τις προτιμήσεις σας (γλώσσα/θέμα). Τα στατιστικά (εφόσον ενεργά) είναι ανώνυμα και χωρίς cookies, οπότε δεν απαιτείται banner συγκατάθεσης. ⟪TODO: νομική επιβεβαίωση.⟫",
+              "Δεν χρησιμοποιούμε cookies παρακολούθησης. Η ιστοσελίδα αποθηκεύει τοπικά μόνο τις προτιμήσεις σας (γλώσσα/θέμα). Τα στατιστικά (εφόσον ενεργά) είναι ανώνυμα και χωρίς cookies, οπότε δεν απαιτείται banner συγκατάθεσης. Μπορείτε να διαγράψετε αυτές τις τοπικές προτιμήσεις οποιαδήποτε στιγμή από τις ρυθμίσεις του προγράμματος περιήγησής σας.",
             ],
           },
         ],
@@ -134,7 +134,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
             body: [
               "14+ ημέρες πριν το check-in: πλήρης επιστροφή. 7–13 ημέρες: 50%. Λιγότερο από 7 ημέρες: χωρίς επιστροφή.",
               "Οι επιστροφές γίνονται στην ίδια κάρτα που χρησιμοποιήθηκε, μέσω Viva.com — συνήθως εντός 5–10 εργάσιμων ημερών, ανάλογα με την τράπεζά σας.",
-              "⟪TODO: επιβεβαιώστε/προσαρμόστε με δικηγόρο και ευθυγραμμίστε με τη σελίδα κρατήσεων.⟫",
+              "Οι όροι αυτοί αντιστοιχούν στην πολιτική ακύρωσης που εμφανίζεται στη σελίδα κράτησης κατά την υποβολή του αιτήματός σας· η έκδοση που αποδεχθήκατε καταγράφεται μαζί με την κράτησή σας.",
             ],
           },
           {
@@ -146,7 +146,9 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           {
             heading: "Ευθύνη",
             body: [
-              "⟪TODO: όρια ευθύνης, ανωτέρα βία, ασφάλιση — απαιτείται νομική διατύπωση.⟫",
+              "Στον βαθμό που επιτρέπει ο νόμος, η ευθύνη μας για οποιαδήποτε αξίωση σχετική με τη διαμονή σας περιορίζεται στο συνολικό ποσό που καταβάλατε για την κράτηση. Δεν ευθυνόμαστε για έμμεσες ή επακόλουθες ζημίες.",
+              "Δεν φέρουμε ευθύνη για αδυναμία ή καθυστέρηση εκτέλεσης λόγω γεγονότων εκτός του εύλογου ελέγχου μας (ανωτέρα βία), όπως φυσικές καταστροφές, απεργίες, διακοπές παροχών ή συγκοινωνιών, ή κρατικά μέτρα.",
+              "Οι επισκέπτες είναι υπεύθυνοι για τα προσωπικά τους αντικείμενα και για κάθε ζημία που προκαλούν οι ίδιοι ή τα μέλη της παρέας τους στο κατάλυμα. Συνιστούμε στους επισκέπτες να διαθέτουν δική τους ταξιδιωτική/αστική ασφάλιση.",
             ],
           },
         ],
@@ -160,7 +162,8 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
             heading: "Βασικά",
             body: [
               `Μέγιστος αριθμός επισκεπτών: ${siteConfig.capacity.maxGuests}. Απαγορεύεται το κάπνισμα εντός. Ησυχία 23:00–08:00. Χωρίς πάρτι/εκδηλώσεις.`,
-              "⟪TODO: check-in/out ώρες, κατοικίδια, επιπλέον επισκέπτες — προσαρμόστε.⟫",
+              "Check-in από τις 15:00, check-out έως τις 12:00 (self check-in μέσω κλειδοθήκης· άλλες ώρες κατόπιν συνεννόησης). Ελάχιστη διαμονή 2 βράδια.",
+              "Δεν επιτρέπονται κατοικίδια. Διανυκτερεύουν μόνο οι επισκέπτες που δηλώθηκαν στην κράτηση· δεν επιτρέπονται επιπλέον μη δηλωμένοι επισκέπτες.",
             ],
           },
         ],
@@ -198,7 +201,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
         {
           heading: "Recipients / processors",
           body: [
-            "Resend (email delivery), Viva.com (payments), Upstash (booking storage). ⟪TODO: confirm data-processing agreements & server locations (EU/non-EU).⟫",
+            "Resend (email delivery), Viva.com (payments), Upstash (booking storage). Each acts as a data processor under a written data-processing agreement (DPA). Viva.com is EU-based (Greece) and PCI-DSS certified. Resend and Upstash may process data on servers outside the EU (United States); where they do, transfers rely on the European Commission's Standard Contractual Clauses (SCCs). We choose EU regions where the provider offers them.",
             "Airbnb/Booking.com: only availability dates are synced via iCal — no guest personal data.",
           ],
         },
@@ -206,7 +209,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           heading: "Retention",
           body: [
             "Guest contact data: 12 months after checkout, then automatically deleted.",
-            "Tax/financial records: as required by law. ⟪TODO: confirm the tax retention period.⟫",
+            "Tax/financial records: 5 years from the end of the relevant financial year, as required by Greek tax law.",
           ],
         },
         {
@@ -219,7 +222,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
         {
           heading: "Cookies / local storage",
           body: [
-            "We use no tracking cookies. The site stores only your language/theme preference locally. Analytics (if enabled) is anonymous and cookieless, so no consent banner is required. ⟪TODO: legal confirmation.⟫",
+            "We use no tracking cookies. The site stores only your language/theme preference locally. Analytics (if enabled) is anonymous and cookieless, so no consent banner is required. You can clear these local preferences at any time from your browser settings.",
           ],
         },
       ],
@@ -248,7 +251,7 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           body: [
             "14+ days before check-in: full refund. 7–13 days: 50%. Less than 7 days: non-refundable.",
             "Refunds are returned to the same card used, via Viva.com — typically within 5–10 business days, depending on your bank.",
-            "⟪TODO: confirm/adapt with a lawyer and keep aligned with the booking page.⟫",
+            "These terms mirror the cancellation policy shown on the booking page when you submit your request; the version you accepted is recorded with your booking.",
           ],
         },
         {
@@ -259,7 +262,11 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
         },
         {
           heading: "Liability",
-          body: ["⟪TODO: limitation of liability, force majeure, insurance — needs legal wording.⟫"],
+          body: [
+            "To the extent permitted by law, our liability for any claim relating to your stay is limited to the total amount you paid for the booking. We are not liable for indirect or consequential losses.",
+            "We are not responsible for any failure or delay caused by events beyond our reasonable control (force majeure), such as natural disasters, strikes, utility or transport disruptions, or government measures.",
+            "Guests are responsible for their own belongings and for any damage they, or members of their party, cause to the apartment. We recommend guests hold their own travel/liability insurance.",
+          ],
         },
       ],
     },
@@ -272,7 +279,8 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           heading: "Essentials",
           body: [
             `Maximum ${siteConfig.capacity.maxGuests} guests. No smoking indoors. Quiet hours 23:00–08:00. No parties/events.`,
-            "⟪TODO: check-in/out times, pets, extra guests — adapt.⟫",
+            "Check-in from 15:00, check-out by 12:00 (self check-in via lockbox; other times by arrangement). Minimum stay 2 nights.",
+            "No pets. Only the guests listed on the booking may stay overnight; extra unregistered guests are not allowed.",
           ],
         },
       ],
