@@ -109,6 +109,10 @@ export interface Dictionary {
     checkin: string;
     checkout: string;
     guests: string;
+    notGreekResident: string;
+    taxIdLabelGreek: string;
+    taxIdLabelForeign: string;
+    taxIdHint: string;
     message: string;
     messagePlaceholder: string;
     price: {
@@ -348,6 +352,10 @@ export const translations: Record<Lang, Dictionary> = {
       checkin: "Άφιξη",
       checkout: "Αναχώρηση",
       guests: "Αριθμός ατόμων",
+      notGreekResident: "Δεν είμαι Έλληνας φορολογικός κάτοικος",
+      taxIdLabelGreek: "ΑΦΜ",
+      taxIdLabelForeign: "Αριθμός διαβατηρίου / ταυτότητας",
+      taxIdHint: "Απαιτείται από την ΑΑΔΕ για τη δήλωση της βραχυχρόνιας μίσθωσης.",
       message: "Μήνυμα",
       messagePlaceholder: "Οτιδήποτε θέλετε να μας πείτε (προαιρετικό)",
       price: {
@@ -588,6 +596,10 @@ export const translations: Record<Lang, Dictionary> = {
       checkin: "Check-in",
       checkout: "Check-out",
       guests: "Number of guests",
+      notGreekResident: "I'm not a Greek tax resident",
+      taxIdLabelGreek: "ΑΦΜ (Greek Tax ID)",
+      taxIdLabelForeign: "Passport / ID number",
+      taxIdHint: "Required by the Greek tax authority (ΑΑΔΕ) to register this short-term stay.",
       message: "Message",
       messagePlaceholder: "Anything you'd like us to know (optional)",
       price: {

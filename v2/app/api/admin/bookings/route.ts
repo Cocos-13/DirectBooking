@@ -97,6 +97,9 @@ async function listPage(notice?: string, confirmCode?: string): Promise<Response
     .map((b) => {
       const amt = b.amountCents != null ? `${(b.amountCents / 100).toFixed(2)}€` : "—";
       const who = b.pii?.guestName ? escapeHtml(b.pii.guestName) : "<span class=muted>—</span>";
+      const taxId = b.pii?.taxId
+        ? `${escapeHtml(b.pii.taxId)}${b.pii.isForeign ? ' <span class="muted">(passport/ID)</span>' : ""}`
+        : "<span class=muted>—</span>";
       // Two-step reopen (no inline JS, so it survives the strict CSP): the
       // "Reopen" link re-renders this row as a confirm prompt whose POST does it.
       const control =
@@ -113,6 +116,7 @@ async function listPage(notice?: string, confirmCode?: string): Promise<Response
         <tr${confirmCode === b.id ? ' class="active"' : ""}>
           <td>${b.checkin} → ${b.checkout}</td>
           <td>${who}</td>
+          <td>${taxId}</td>
           <td>${amt}</td>
           <td class="muted">${escapeHtml(b.id)}</td>
           <td>${control}</td>
@@ -127,7 +131,7 @@ async function listPage(notice?: string, confirmCode?: string): Promise<Response
       bookings.length === 0
         ? `<p class="muted">No confirmed direct bookings. (Airbnb/Booking.com bookings are not listed here — they live in those platforms.)</p>`
         : `<table>
-            <tr><th>Dates</th><th>Guest</th><th>Paid</th><th>Order</th><th></th></tr>
+            <tr><th>Dates</th><th>Guest</th><th>ΑΦΜ / ID</th><th>Paid</th><th>Order</th><th></th></tr>
             ${rows}
           </table>
           <p class="muted">“Reopen” deletes the booking from this site only and frees the dates immediately. It does not refund the guest or notify Airbnb/Booking.com.</p>`

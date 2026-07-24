@@ -40,6 +40,7 @@ export async function GET(req: Request) {
       <h1>Approve this booking?</h1>
       <table>
         <tr><td>Guest</td><td><strong>${esc(booking.name)}</strong> (${esc(booking.email)})</td></tr>
+        <tr><td>${booking.isForeign ? "Passport/ID" : "ΑΦΜ"}</td><td>${esc(booking.taxId)}</td></tr>
         <tr><td>Dates</td><td>${booking.checkin} → ${booking.checkout} · ${nights} night${nights === 1 ? "" : "s"}</td></tr>
         <tr><td>Guests</td><td>${booking.guests}</td></tr>
         <tr><td>Total</td><td><strong>${quote.totalEur}€</strong> (full amount)</td></tr>
@@ -145,6 +146,8 @@ export async function POST(req: Request) {
     phone: booking.phone,
     guests: booking.guests,
     lang: booking.lang,
+    isForeign: booking.isForeign,
+    taxId: booking.taxId,
     holdId,
     createdAt: new Date().toISOString(),
   }).catch((err) => console.error("[booking/approve] savePendingOrder failed:", err));

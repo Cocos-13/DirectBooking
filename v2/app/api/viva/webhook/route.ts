@@ -169,6 +169,8 @@ export async function POST(req: Request) {
       checkout,
       guestName,
       guestEmail,
+      isForeign: pending?.isForeign,
+      taxId: pending?.taxId,
       amountCents: tx.amount,
       createdAt: new Date().toISOString(),
     });
@@ -200,6 +202,7 @@ export async function POST(req: Request) {
           <p><strong>Amount:</strong> ${amountEur}€</p>
           <p><strong>Dates:</strong> ${checkin} → ${checkout}</p>
           <p><strong>Guest:</strong> ${escapeHtml(guestName)} (${escapeHtml(guestEmail || "—")})</p>
+          <p><strong>${pending?.isForeign ? "Passport/ID" : "ΑΦΜ"}:</strong> ${escapeHtml(pending?.taxId || "—")}</p>
           <p><strong>Viva order:</strong> ${orderCode}</p>
           ${depositButton}
         `,

@@ -19,6 +19,7 @@ export function BookingForm({ range, rangeValid }: Props) {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
+  const [isForeign, setIsForeign] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,6 +40,8 @@ export function BookingForm({ range, rangeValid }: Props) {
           email: formData.get("email"),
           phone: formData.get("phone"),
           guests: formData.get("guests"),
+          isForeign,
+          taxId: formData.get("taxId"),
           message: formData.get("message"),
           website: formData.get("website"), // honeypot
           checkin: format(range.from, "yyyy-MM-dd"),
@@ -58,6 +61,8 @@ export function BookingForm({ range, rangeValid }: Props) {
 
       setStatus("success");
       form.reset();
+      setConsent(false);
+      setIsForeign(false);
     } catch {
       setErrorMessage(t.form.errorGeneric);
       setStatus("error");
@@ -198,6 +203,27 @@ export function BookingForm({ range, rangeValid }: Props) {
               </option>
             ))}
           </select>
+        </div>
+      </div>
+
+      <div>
+        <label className="flex items-center gap-2 text-sm text-aegean-900 dark:text-ink-text">
+          <input
+            type="checkbox"
+            checked={isForeign}
+            onChange={(e) => setIsForeign(e.target.checked)}
+            className="h-4 w-4 shrink-0 rounded border-sand-300 text-terracotta-500 focus:ring-terracotta-400 dark:border-ink-border dark:bg-ink-bg"
+          />
+          <span>{t.form.notGreekResident}</span>
+        </label>
+        <div className="mt-2">
+          <Field
+            label={isForeign ? t.form.taxIdLabelForeign : t.form.taxIdLabelGreek}
+            name="taxId"
+            required
+            autoComplete="off"
+          />
+          <p className="mt-1 text-xs text-aegean-900/60 dark:text-ink-muted">{t.form.taxIdHint}</p>
         </div>
       </div>
 

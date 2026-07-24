@@ -81,6 +81,10 @@ export interface ConfirmedBooking {
   checkout: string; // YYYY-MM-DD, exclusive
   guestName?: string;
   guestEmail?: string;
+  // ΑΑΔΕ stay-registration ID: Greek TIN (ΑΦΜ) or, for foreigners, passport/ID
+  // number. PII — travels with guestName/guestEmail into the bpii: key below.
+  isForeign?: boolean;
+  taxId?: string;
   amountCents?: number; // amount actually captured, for reconciliation
   createdAt: string; // ISO timestamp
 }
@@ -96,14 +100,14 @@ export async function saveConfirmedBooking(
 ): Promise<void> {
   const c = getClient();
   if (!c) return;
-  const { guestName, guestEmail, ...nonPii } = booking;
+  const { guestName, guestEmail, isForeign, taxId, ...nonPii } = booking;
   // The durable calendar/financial record carries no PII.
   await c.hset(K.confirmed, { [String(orderCode)]: nonPii });
   // Guest PII lives in its own key with a retention TTL (auto-purged).
-  if (guestName || guestEmail) {
+  if (guestName || guestEmail || taxId) {
     await c.set(
       `${PREFIX.bpii}${orderCode}`,
-      { guestName, guestEmail },
+      { guestName, guestEmail, isForeign, taxId },
       { ex: retentionTtlSec(booking.checkout) }
     );
   }
@@ -112,14 +116,16 @@ export async function saveConfirmedBooking(
 /** Guest PII for a booking, while still within the retention window (else null). */
 export async function getBookingPii(
   orderCode: number | string
-): Promise<{ guestName?: string; guestEmail?: string } | null> {
+): Promise<{ guestName?: string; guestEmail?: string; isForeign?: boolean; taxId?: string } | null> {
   const c = getClient();
   if (!c) return null;
-  const v = await c.get<{ guestName?: string; guestEmail?: string } | string>(
-    `${PREFIX.bpii}${orderCode}`
-  );
+  const v = await c.get<
+    { guestName?: string; guestEmail?: string; isForeign?: boolean; taxId?: string } | string
+  >(`${PREFIX.bpii}${orderCode}`);
   if (!v) return null;
-  return typeof v === "string" ? safeParse<{ guestName?: string; guestEmail?: string }>(v) : v;
+  return typeof v === "string"
+    ? safeParse<{ guestName?: string; guestEmail?: string; isForeign?: boolean; taxId?: string }>(v)
+    : v;
 }
 
 /**
@@ -277,6 +283,8 @@ export interface PendingOrder {
   phone?: string;
   guests: number;
   lang: "el" | "en";
+  isForeign?: boolean;
+  taxId?: string;
   holdId?: string;
   createdAt: string; // ISO
 }

@@ -10,24 +10,33 @@ import { isVivaConfigured } from "@/lib/viva";
 import { isApprovalConfigured, signBooking } from "@/lib/bookingToken";
 import { siteConfig } from "@/content/siteConfig";
 
-const RequestSchema = z.object({
-  name: z.string().trim().min(1, "required").max(200),
-  email: z.string().trim().email().max(200),
-  phone: z.string().trim().max(50).optional().or(z.literal("")),
-  checkin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
-  checkout: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
-  guests: z.coerce.number().int().min(1).max(5),
-  message: z.string().trim().max(2000).optional().or(z.literal("")),
-  lang: z.enum(["el", "en"]).default("el"),
-  // Explicit acceptance of Terms/House-Rules/Privacy. Must be literally true —
-  // a missing/false value fails validation, so the server never processes a
-  // request without recorded consent (defense-in-depth behind the UI checkbox).
-  consent: z.literal(true),
-  policyVersion: z.string().trim().max(40).optional(),
-  // Honeypot: real visitors never fill this (it's visually hidden). Bots
-  // that blindly fill every field will trip it.
-  website: z.string().max(0).optional().or(z.literal("")),
-});
+const RequestSchema = z
+  .object({
+    name: z.string().trim().min(1, "required").max(200),
+    email: z.string().trim().email().max(200),
+    phone: z.string().trim().max(50).optional().or(z.literal("")),
+    checkin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
+    checkout: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "invalid date"),
+    guests: z.coerce.number().int().min(1).max(5),
+    message: z.string().trim().max(2000).optional().or(z.literal("")),
+    lang: z.enum(["el", "en"]).default("el"),
+    // Explicit acceptance of Terms/House-Rules/Privacy. Must be literally true —
+    // a missing/false value fails validation, so the server never processes a
+    // request without recorded consent (defense-in-depth behind the UI checkbox).
+    consent: z.literal(true),
+    policyVersion: z.string().trim().max(40).optional(),
+    // ΑΑΔΕ short-term-let stay registration requires the guest's Greek TIN
+    // (ΑΦΜ) or, for non-residents, their passport/ID number.
+    isForeign: z.coerce.boolean().default(false),
+    taxId: z.string().trim().min(1, "required").max(50),
+    // Honeypot: real visitors never fill this (it's visually hidden). Bots
+    // that blindly fill every field will trip it.
+    website: z.string().max(0).optional().or(z.literal("")),
+  })
+  .refine((data) => data.isForeign || /^\d{9}$/.test(data.taxId), {
+    message: "invalid ΑΦΜ",
+    path: ["taxId"],
+  });
 
 export async function POST(req: Request) {
   let body: unknown;
@@ -104,6 +113,8 @@ export async function POST(req: Request) {
       checkout: data.checkout,
       guests: data.guests,
       lang: data.lang,
+      isForeign: data.isForeign,
+      taxId: data.taxId,
     });
     const approveUrl = `${siteConfig.url}/api/booking/approve?token=${encodeURIComponent(token)}`;
     approveBlock = `
@@ -141,6 +152,7 @@ export async function POST(req: Request) {
         <p><strong>Name:</strong> ${escapeHtml(data.name)}</p>
         <p><strong>Email:</strong> ${escapeHtml(data.email)}</p>
         <p><strong>Phone:</strong> ${escapeHtml(data.phone || "—")}</p>
+        <p><strong>${data.isForeign ? "Passport/ID" : "ΑΦΜ"}:</strong> ${escapeHtml(data.taxId)}</p>
         <p><strong>Language:</strong> ${data.lang}</p>
         <p><strong>Message:</strong><br/>${escapeHtml(data.message || "—").replace(/\n/g, "<br/>")}</p>
         ${approveBlock}

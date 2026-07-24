@@ -118,6 +118,10 @@ export interface BookingPayload {
   checkout: string; // YYYY-MM-DD
   guests: number;
   lang: "el" | "en";
+  // Required for the owner's ΑΑΔΕ (short-term-let) stay registration: the
+  // Greek TIN (ΑΦΜ) for tax residents, or passport/ID number for foreigners.
+  isForeign: boolean;
+  taxId: string;
 }
 
 export function signBooking(payload: BookingPayload, ttlSeconds: number = DEFAULT_TTL_SECONDS) {
