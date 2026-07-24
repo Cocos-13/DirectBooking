@@ -152,6 +152,8 @@ export interface Dictionary {
     disclaimer: string;
     alsoOn: string;
     rights: string;
+    contactLabel: string;
+    securePayments: string;
   };
 }
 
@@ -393,6 +395,8 @@ export const translations: Record<Lang, Dictionary> = {
       disclaimer: "Οι τιμές και η διαθεσιμότητα υπόκεινται σε επιβεβαίωση.",
       alsoOn: "Θα μας βρείτε επίσης στο",
       rights: "Με επιφύλαξη παντός δικαιώματος.",
+      contactLabel: "Επικοινωνία",
+      securePayments: "Ασφαλείς πληρωμές με",
     },
   },
   en: {
@@ -631,6 +635,8 @@ export const translations: Record<Lang, Dictionary> = {
       disclaimer: "Prices and availability are subject to confirmation.",
       alsoOn: "You'll also find us on",
       rights: "All rights reserved.",
+      contactLabel: "Contact",
+      securePayments: "Secure payments by",
     },
   },
 };

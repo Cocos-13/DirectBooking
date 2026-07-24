@@ -2,10 +2,13 @@
 
 import { useLanguage } from "./LanguageProvider";
 import { siteConfig } from "@/content/siteConfig";
+import { contactLinks } from "@/lib/contact";
+import { VivaBadge } from "./VivaBadge";
 
 export function Footer() {
   const { t, lang } = useLanguage();
   const year = new Date().getFullYear();
+  const contact = contactLinks();
 
   const legalLinks =
     lang === "el"
@@ -59,15 +62,37 @@ export function Footer() {
           ))}
         </nav>
 
+        <p className="mt-4">
+          <span className="font-semibold text-aegean-900 dark:text-ink-text">
+            {t.footer.contactLabel}:
+          </span>{" "}
+          <a
+            href={contact.mailto}
+            className="font-medium text-aegean-600 hover:underline dark:text-aegean-200"
+          >
+            {contact.email}
+          </a>
+          {" · "}
+          <a
+            href={contact.tel}
+            className="font-medium text-aegean-600 hover:underline dark:text-aegean-200"
+          >
+            {contact.phoneDisplay}
+          </a>
+        </p>
+
         {ama && (
           <p className="mt-3 text-xs text-aegean-900/50 dark:text-ink-muted">
             {lang === "el" ? "Αρ. Μητρώου Ακινήτου (ΑΜΑ)" : "Property registry no. (ΑΜΑ)"}: {ama}
           </p>
         )}
 
-        <p className="mt-3">
-          © {year} {siteConfig.name}. {t.footer.rights}
-        </p>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-sand-200 pt-4 dark:border-ink-border">
+          <p>
+            © {year} {siteConfig.name}. {t.footer.rights}
+          </p>
+          <VivaBadge />
+        </div>
       </div>
     </footer>
   );

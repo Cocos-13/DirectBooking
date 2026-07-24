@@ -123,9 +123,17 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
             ],
           },
           {
-            heading: "Πολιτική ακύρωσης",
+            heading: "Παράδοση της κράτησης",
+            body: [
+              "Πρόκειται για υπηρεσία διαμονής — δεν αποστέλλονται φυσικά προϊόντα. Αμέσως μετά την πληρωμή λαμβάνετε email επιβεβαίωσης με την απόδειξη και τα στοιχεία της κράτησης.",
+              `Η «παράδοση» είναι η πρόσβαση στο κατάλυμα κατά την ημέρα άφιξης (check-in) στη διεύθυνση ${addressLine}. Λεπτομερείς οδηγίες άφιξης και κλειδιών αποστέλλονται με email πριν την άφιξη.`,
+            ],
+          },
+          {
+            heading: "Πολιτική ακύρωσης & επιστροφών",
             body: [
               "14+ ημέρες πριν το check-in: πλήρης επιστροφή. 7–13 ημέρες: 50%. Λιγότερο από 7 ημέρες: χωρίς επιστροφή.",
+              "Οι επιστροφές γίνονται στην ίδια κάρτα που χρησιμοποιήθηκε, μέσω Viva.com — συνήθως εντός 5–10 εργάσιμων ημερών, ανάλογα με την τράπεζά σας.",
               "⟪TODO: επιβεβαιώστε/προσαρμόστε με δικηγόρο και ευθυγραμμίστε με τη σελίδα κρατήσεων.⟫",
             ],
           },
@@ -229,9 +237,17 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           ],
         },
         {
-          heading: "Cancellation policy",
+          heading: "Delivery of your booking",
+          body: [
+            "This is an accommodation service — no physical goods are shipped. Immediately after payment you receive a confirmation email with your receipt and booking details.",
+            `“Delivery” is access to the apartment on your arrival date (check-in) at ${addressLine}. Detailed arrival and key instructions are emailed before arrival.`,
+          ],
+        },
+        {
+          heading: "Cancellation & refund policy",
           body: [
             "14+ days before check-in: full refund. 7–13 days: 50%. Less than 7 days: non-refundable.",
+            "Refunds are returned to the same card used, via Viva.com — typically within 5–10 business days, depending on your bank.",
             "⟪TODO: confirm/adapt with a lawyer and keep aligned with the booking page.⟫",
           ],
         },
