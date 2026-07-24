@@ -17,8 +17,8 @@
    the ink surface instead of glowing as light-blue tiles. Day text inherits
    the body's dark:text-ink-text. */
 .dark {
-  --rdp-background-color: #2c231c; /* ink-raised */
-  --rdp-background-color-dark: #3c3025; /* ink-border */
+  --rdp-background-color: #282a2d; /* ink-raised */
+  --rdp-background-color-dark: #383b3f; /* ink-border */
 }
 
 .rdp {
