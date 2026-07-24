@@ -431,7 +431,7 @@ export function Reviews() {
                     sr-only twin below. */}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute left-1/2 top-[52%] z-0 -translate-x-1/2 -translate-y-full select-none whitespace-nowrap font-wordmark text-[clamp(2.25rem,10.5vw,7.5rem)] uppercase leading-none tracking-[0.06em] text-black/45 dark:text-ink-text/45 [-webkit-mask-image:linear-gradient(to_bottom,black_20%,transparent_80%)] [mask-image:linear-gradient(to_bottom,black_20%,transparent_80%)]"
+                  className="pointer-events-none absolute left-1/2 top-[40%] z-0 -translate-x-1/2 -translate-y-full select-none whitespace-nowrap font-wordmark text-[clamp(2.25rem,10.5vw,7.5rem)] uppercase leading-none tracking-[0.06em] text-black/45 dark:text-ink-text/45 [-webkit-mask-image:linear-gradient(to_bottom,black_20%,transparent_80%)] [mask-image:linear-gradient(to_bottom,black_20%,transparent_90%)]"
                 >
                   Superhost
                 </span>
