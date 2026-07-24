@@ -21,9 +21,9 @@ const TESTIMONIAL_COLORS = {
     arrowHoverBackground: "#a94f32", // terracotta-600
   },
   dark: {
-    name: "#e9f1f2", // ink-text
-    designation: "#a3bcc1", // ink-muted
-    testimony: "#cddbdd", // slightly dimmed ink-text
+    name: "#f3ece1", // ink-text
+    designation: "#bcab97", // ink-muted
+    testimony: "#e0d5c6", // slightly dimmed ink-text
     arrowBackground: "#cc6440", // terracotta-500 (brand accent holds up on dark)
     arrowForeground: "#ffffff",
     arrowHoverBackground: "#e3805a", // terracotta-400

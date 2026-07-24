@@ -38,19 +38,19 @@ const config: Config = {
           100: "#f4efe4",
           200: "#e8dfc9",
         },
-        // Dark-mode "ink" palette — the mirror of the sand/aegean light scheme.
-        // Deep desaturated aegean tones so dark mode still reads as the same
-        // warm-coast brand rather than a generic slate-grey theme. Semantic
-        // names (bg/surface/raised/border/text/muted/faint) map 1:1 onto the
-        // roles the light palette fills with sand-50/white/sand-200/aegean-900.
+        // Dark-mode "ink" palette — warm espresso/stone neutrals (not the old
+        // navy/aegean-tinted scale) so terracotta and aegean accents pop
+        // against a warm dark base instead of blending into a blue-black.
+        // Semantic names (bg/surface/raised/border/text/muted/faint) map 1:1
+        // onto the roles the light palette fills with sand-50/white/sand-200/aegean-900.
         ink: {
-          bg: "#0c2024", // page background — one step below aegean-900
-          surface: "#14323a", // cards / raised panels
-          raised: "#1c414a", // hover / elevated surfaces
-          border: "#274d55", // borders + dividers
-          text: "#e9f1f2", // primary text
-          muted: "#a3bcc1", // secondary text
-          faint: "#6f8c92", // tertiary / disabled text
+          bg: "#181310", // page background — near-black warm espresso
+          surface: "#221b16", // cards / raised panels
+          raised: "#2c231c", // hover / elevated surfaces
+          border: "#3c3025", // borders + dividers
+          text: "#f3ece1", // primary text — warm off-white
+          muted: "#bcab97", // secondary text
+          faint: "#8a7862", // tertiary / disabled text
         },
       },
       fontFamily: {
