@@ -38,19 +38,19 @@ const config: Config = {
           100: "#f4efe4",
           200: "#e8dfc9",
         },
-        // Dark-mode "ink" palette — warm espresso/stone neutrals (not the old
-        // navy/aegean-tinted scale) so terracotta and aegean accents pop
-        // against a warm dark base instead of blending into a blue-black.
+        // Dark-mode "ink" palette — true neutral graphite (no brown, no navy
+        // tint) so terracotta and aegean stay the only color in the dark UI
+        // and read as clean accents against a flat charcoal base.
         // Semantic names (bg/surface/raised/border/text/muted/faint) map 1:1
         // onto the roles the light palette fills with sand-50/white/sand-200/aegean-900.
         ink: {
-          bg: "#181310", // page background — near-black warm espresso
-          surface: "#221b16", // cards / raised panels
-          raised: "#2c231c", // hover / elevated surfaces
-          border: "#3c3025", // borders + dividers
-          text: "#f3ece1", // primary text — warm off-white
-          muted: "#bcab97", // secondary text
-          faint: "#8a7862", // tertiary / disabled text
+          bg: "#17181a", // page background — near-black neutral graphite
+          surface: "#1f2123", // cards / raised panels
+          raised: "#282a2d", // hover / elevated surfaces
+          border: "#383b3f", // borders + dividers
+          text: "#f1f2f3", // primary text — neutral off-white
+          muted: "#aeb2b6", // secondary text
+          faint: "#797d81", // tertiary / disabled text
         },
       },
       fontFamily: {
