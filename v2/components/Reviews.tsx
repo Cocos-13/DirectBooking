@@ -448,7 +448,7 @@ export function Reviews() {
 
           {/* Scale cue — five stars make it read as "out of 5" at a glance,
               in any language. sr-only text spells the scale out for readers. */}
-          <div className="relative -mt-10 sm:-mt-8">
+          <div className="relative -mt-6 sm:-mt-15">
             <StarRating value={airbnbScore} />
             <span className="sr-only">
               {airbnbScore.toFixed(2)} {t.reviews.ratingScale}
