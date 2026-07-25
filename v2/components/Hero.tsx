@@ -10,14 +10,7 @@ export function Hero() {
 
   return (
     <section id="top" className="relative">
-      {/* Pulled up by the header's height and grown by the same amount, so
-          the image extends upward to fill in behind the glassy header
-          instead of starting right below it — the bottom edge (and every
-          section after it) lands exactly where it did before.
-          object-bottom keeps the crop anchored to the bottom of the photo,
-          so the added height only reveals more of the top; nothing about
-          the framing you already see shifts. */}
-      <div className="relative -mt-16 h-[100dvh] min-h-[calc(420px+4rem)] w-full overflow-hidden bg-aegean-900">
+      <div className="relative h-[calc(100dvh-4rem)] min-h-[420px] w-full overflow-hidden bg-aegean-900">
         {heroImage && (
           <Image
             src={heroImage.src}
@@ -25,7 +18,7 @@ export function Hero() {
             fill
             priority
             sizes="100vw"
-            className="object-cover object-bottom opacity-90"
+            className="object-cover opacity-90"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-aegean-900/85 via-aegean-900/25 to-aegean-900/10" />
