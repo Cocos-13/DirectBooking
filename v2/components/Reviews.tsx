@@ -21,9 +21,9 @@ const TESTIMONIAL_COLORS = {
     arrowHoverBackground: "#a94f32", // terracotta-600
   },
   dark: {
-    name: "#e9f1f2", // ink-text
-    designation: "#a3bcc1", // ink-muted
-    testimony: "#cddbdd", // slightly dimmed ink-text
+    name: "#f1f2f3", // ink-text
+    designation: "#aeb2b6", // ink-muted
+    testimony: "#dadcde", // slightly dimmed ink-text
     arrowBackground: "#cc6440", // terracotta-500 (brand accent holds up on dark)
     arrowForeground: "#ffffff",
     arrowHoverBackground: "#e3805a", // terracotta-400
@@ -431,7 +431,7 @@ export function Reviews() {
                     sr-only twin below. */}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute left-1/2 top-[42%] z-0 -translate-x-1/2 -translate-y-full select-none whitespace-nowrap font-wordmark text-[clamp(2.25rem,10.5vw,7.5rem)] uppercase leading-none tracking-[0.06em] text-black/45 dark:text-ink-text/45 [-webkit-mask-image:linear-gradient(to_bottom,black_20%,transparent_80%)] [mask-image:linear-gradient(to_bottom,black_20%,transparent_80%)]"
+                  className="pointer-events-none absolute left-1/2 top-[40%] z-0 -translate-x-1/2 -translate-y-full select-none whitespace-nowrap font-wordmark text-[clamp(2.25rem,10.5vw,7.5rem)] uppercase leading-none tracking-[0.06em] text-black/20 dark:text-ink-text/20 [-webkit-mask-image:linear-gradient(to_bottom,black_20%,transparent_90%)] [mask-image:linear-gradient(to_bottom,black_20%,transparent_90%)]"
                 >
                   Superhost
                 </span>
@@ -448,7 +448,7 @@ export function Reviews() {
 
           {/* Scale cue — five stars make it read as "out of 5" at a glance,
               in any language. sr-only text spells the scale out for readers. */}
-          <div className="relative -mt-6 sm:-mt-8">
+          <div className="relative -mt-8 sm:-mt-16">
             <StarRating value={airbnbScore} />
             <span className="sr-only">
               {airbnbScore.toFixed(2)} {t.reviews.ratingScale}
@@ -461,9 +461,11 @@ export function Reviews() {
         </div>
       </Reveal>
 
-      {/* Individual reviews — animated circular carousel (21st.dev) */}
+      {/* Individual reviews — animated circular carousel (21st.dev). Extra
+          top space separates it as its own group from the rating anchor
+          (Superhost + score + stars) above. */}
       <Reveal delay={120}>
-        <div className="mt-10 flex justify-center">
+        <div className="mt-28 flex justify-center sm:mt-36">
           <CircularTestimonials
             testimonials={testimonials}
             autoplay
