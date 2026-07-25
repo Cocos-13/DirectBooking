@@ -448,7 +448,7 @@ export function Reviews() {
 
           {/* Scale cue — five stars make it read as "out of 5" at a glance,
               in any language. sr-only text spells the scale out for readers. */}
-          <div className="relative -mt-6 sm:-mt-14">
+          <div className="relative -mt-8 sm:-mt-16">
             <StarRating value={airbnbScore} />
             <span className="sr-only">
               {airbnbScore.toFixed(2)} {t.reviews.ratingScale}
@@ -461,9 +461,11 @@ export function Reviews() {
         </div>
       </Reveal>
 
-      {/* Individual reviews — animated circular carousel (21st.dev) */}
+      {/* Individual reviews — animated circular carousel (21st.dev). Extra
+          top space separates it as its own group from the rating anchor
+          (Superhost + score + stars) above. */}
       <Reveal delay={120}>
-        <div className="mt-10 flex justify-center">
+        <div className="mt-20 flex justify-center sm:mt-28">
           <CircularTestimonials
             testimonials={testimonials}
             autoplay
