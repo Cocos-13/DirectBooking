@@ -7,7 +7,7 @@ import { siteConfig } from "@/content/siteConfig";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 h-16 border-b border-sand-200 bg-sand-50/90 backdrop-blur dark:border-ink-border dark:bg-ink-bg/85">
+    <header className="sticky top-0 z-50 h-16 border-b border-sand-200/40 bg-sand-50/55 backdrop-blur-xl dark:border-ink-border/40 dark:bg-ink-bg/55">
       <div className="mx-auto flex h-full max-w-5xl items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-2">
           {/* Hamburger + slide-out drawer — the site's navigation at every breakpoint. */}
