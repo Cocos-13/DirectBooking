@@ -398,12 +398,12 @@ function StarRating({ value, outOf = 5 }: { value: number; outOf?: number }) {
 }
 
 export function Reviews() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { theme } = useTheme();
   const { airbnbScore, airbnbReviewCount, airbnbIsSuperhost } = siteConfig.ratings;
 
   const testimonials = siteConfig.reviews.map((review, i) => ({
-    quote: review.text,
+    quote: lang === "el" ? review.textEl : review.textEn,
     name: review.name,
     designation: t.reviews.guestLabel,
     src: DEMO_AVATARS[i % DEMO_AVATARS.length],
