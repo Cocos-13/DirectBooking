@@ -23,7 +23,7 @@ export function isValidYmd(value: string): boolean {
   return !Number.isNaN(d.getTime()) && format(d, "yyyy-MM-dd") === value;
 }
 
-function addDaysYmd(ymd: string, days: number): string {
+export function addDaysYmd(ymd: string, days: number): string {
   return format(addDays(parseISO(ymd), days), "yyyy-MM-dd");
 }
 
@@ -38,6 +38,10 @@ export function mergeBusyRanges(ranges: BusyRange[]): MergedRange[] {
 
   const sorted = [...ranges]
     .map((r) => ({ start: r.start, end: r.end }))
+    // Drop degenerate events (end on or before start). A zero-night VEVENT
+    // blocks nothing, but left in the timeline it still acts as a wall that
+    // caps how far a stay may run — so it would silently shorten real stays.
+    .filter((r) => r.end > r.start)
     .sort((a, b) => a.start.localeCompare(b.start));
 
   const merged: MergedRange[] = [];
@@ -76,7 +80,7 @@ export function isDateRangeFree(checkin: string, checkout: string, merged: Merge
  * calendar UI already prevents most bad picks (an attacker posts JSON straight
  * to the API, bypassing the UI):
  *  - `today`      — property-local "today"; defaults to Europe/Athens.
- *  - `horizonDays`— reject check-ins further out than the published horizon.
+ *  - `horizonDays`— reject stays that fall outside the published horizon.
  */
 export function evaluateBookingRange(
   checkin: string,
@@ -96,8 +100,15 @@ export function evaluateBookingRange(
   if (checkin < today) {
     return { ok: false, reason: "past-date" };
   }
-  if (opts.horizonDays != null && checkin > addDaysYmd(today, opts.horizonDays)) {
-    return { ok: false, reason: "too-far" };
+  if (opts.horizonDays != null) {
+    // Both ends, not just the arrival: the calendar can't offer a departure
+    // past the horizon either, and without this bound a request posted
+    // straight at the API could start inside the window and then run years
+    // past the end of it (nothing is booked out there to collide with).
+    const lastBookableDay = addDaysYmd(today, opts.horizonDays);
+    if (checkin > lastBookableDay || checkout > lastBookableDay) {
+      return { ok: false, reason: "too-far" };
+    }
   }
 
   if (!isDateRangeFree(checkin, checkout, merged)) {

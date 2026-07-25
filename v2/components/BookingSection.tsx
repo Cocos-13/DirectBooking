@@ -83,6 +83,8 @@ export function BookingSection() {
             <AvailabilityCalendar
               merged={data.merged}
               disabledDates={data.disabledDates}
+              today={data.today}
+              horizonDays={data.horizonDays}
               selected={range}
               onSelect={handleSelect}
             />
