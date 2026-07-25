@@ -465,7 +465,7 @@ export function Reviews() {
           top space separates it as its own group from the rating anchor
           (Superhost + score + stars) above. */}
       <Reveal delay={120}>
-        <div className="mt-20 flex justify-center sm:mt-28">
+        <div className="mt-28 flex justify-center sm:mt-36">
           <CircularTestimonials
             testimonials={testimonials}
             autoplay
