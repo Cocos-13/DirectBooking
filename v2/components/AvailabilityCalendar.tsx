@@ -53,7 +53,7 @@ export function AvailabilityCalendar({
   }
 
   return (
-    <div>
+    <div className="inline-block">
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-aegean-900/70 dark:text-ink-muted">
         <LegendDot className="bg-sand-200 dark:bg-ink-raised" label={t.calendar.legendAvailable} />
         <LegendDot className="bg-aegean-700 dark:bg-aegean-400" label={t.calendar.legendBooked} />
