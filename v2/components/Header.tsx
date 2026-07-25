@@ -19,7 +19,7 @@ export function Header() {
           would otherwise swallow clicks on the page underneath. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-44 bg-sand-50/10 backdrop-blur-sm [mask-image:linear-gradient(to_bottom,black_0%,black_40%,rgba(0,0,0,0.55)_58%,rgba(0,0,0,0.22)_78%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_40%,rgba(0,0,0,0.55)_58%,rgba(0,0,0,0.22)_78%,transparent_100%)] dark:bg-ink-bg/30"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-44 bg-sand-50/10 backdrop-blur-md [mask-image:linear-gradient(to_bottom,black_0%,black_40%,rgba(0,0,0,0.55)_58%,rgba(0,0,0,0.22)_78%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_0%,black_40%,rgba(0,0,0,0.55)_58%,rgba(0,0,0,0.22)_78%,transparent_100%)] dark:bg-ink-bg/30"
       />
       <div className="relative mx-auto flex h-full max-w-5xl items-center justify-between gap-4 px-4">
         <div className="flex items-center gap-2">
