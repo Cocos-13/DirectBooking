@@ -10,26 +10,41 @@ export function Hero() {
 
   return (
     <section id="top" className="relative">
-      {/* Pulled up by the header's height and grown by the same amount
-          (-mt-16 + h-[100dvh] instead of h-[calc(100dvh-4rem)]), so the
-          photo extends upward to fill in behind the glassy header. Verified
-          against the raw file (public/images/living-room.jpg) in isolation:
-          with object-position "bottom", growing the box's height while its
-          width stays fixed keeps the bottom edge pixel-identical to the
-          h-[calc(100dvh-4rem)] version and only reveals more of the top
-          (previously cropped) — nothing about the framing you already see
-          shifts, and every section below the fold lands exactly where it
-          did before. */}
+      {/* Starts at the very top of the viewport and runs behind the glass
+          header instead of below it: -mt-16 cancels the header's 64px of
+          flow, and h-[100dvh] (was h-[calc(100dvh-4rem)]) puts the bottom
+          edge back exactly where it was, so nothing below the fold moves.
+
+          Growing the box must not re-crop the photo. object-cover takes its
+          scale from the *image element's* box, not the section's, so the
+          image gets its own box: 4rem taller than the hero and anchored to
+          the hero's top, spending the extra 4rem entirely above the old top
+          edge — precisely the strip the header now floats over. The photo
+          therefore keeps its previous size and position to the pixel, and
+          the only new thing on screen is 4rem of its formerly-cropped top.
+
+          That upper bound is only right while object-cover is driven by
+          width (landscape: the photo is cropped top and bottom, so there IS
+          hidden top to reveal). On portrait viewports it's driven by height
+          — the full photo height already shows, nothing is cropped off the
+          top — so the clamp collapses the box back to the hero's own height,
+          keeping the photo's bottom edge pinned to the hero's bottom and the
+          scale-up to the minimum needed to cover. 75vw is the crossover
+          point: viewport width x 1200/1600, living-room.jpg's 4:3 aspect.
+          The 100% lower bound is what guarantees the box always covers the
+          hero, so this can never open a gap under the header. */}
       <div className="relative -mt-16 h-[100dvh] min-h-[484px] w-full overflow-hidden bg-aegean-900">
         {heroImage && (
-          <Image
-            src={heroImage.src}
-            alt={t.hero.tagline}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-bottom opacity-90"
-          />
+          <div className="absolute inset-x-0 top-0 h-[clamp(100%,75vw,calc(100%_+_4rem))]">
+            <Image
+              src={heroImage.src}
+              alt={t.hero.tagline}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover opacity-90"
+            />
+          </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-aegean-900/85 via-aegean-900/25 to-aegean-900/10" />
         <div className="absolute inset-0 flex flex-col items-start justify-end gap-3 px-4 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:px-8 sm:pb-12">
