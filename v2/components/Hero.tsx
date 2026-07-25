@@ -10,7 +10,17 @@ export function Hero() {
 
   return (
     <section id="top" className="relative">
-      <div className="relative h-[calc(100dvh-4rem)] min-h-[420px] w-full overflow-hidden bg-aegean-900">
+      {/* Pulled up by the header's height and grown by the same amount
+          (-mt-16 + h-[100dvh] instead of h-[calc(100dvh-4rem)]), so the
+          photo extends upward to fill in behind the glassy header. Verified
+          against the raw file (public/images/living-room.jpg) in isolation:
+          with object-position "bottom", growing the box's height while its
+          width stays fixed keeps the bottom edge pixel-identical to the
+          h-[calc(100dvh-4rem)] version and only reveals more of the top
+          (previously cropped) — nothing about the framing you already see
+          shifts, and every section below the fold lands exactly where it
+          did before. */}
+      <div className="relative -mt-16 h-[100dvh] min-h-[484px] w-full overflow-hidden bg-aegean-900">
         {heroImage && (
           <Image
             src={heroImage.src}
@@ -18,7 +28,7 @@ export function Hero() {
             fill
             priority
             sizes="100vw"
-            className="object-cover opacity-90"
+            className="object-cover object-bottom opacity-90"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-aegean-900/85 via-aegean-900/25 to-aegean-900/10" />
