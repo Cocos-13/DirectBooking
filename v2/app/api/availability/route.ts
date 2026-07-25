@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getRawBusyRanges } from "@/lib/ical";
 import {
   MIN_NIGHTS,
+  addDaysYmd,
   getDisabledDates,
-  getOrphanGapNights,
   mergeBusyRanges,
   propertyToday,
 } from "@/lib/availability";
@@ -26,14 +26,20 @@ export async function GET() {
     const raw = await getRawBusyRanges();
     const merged = mergeBusyRanges(raw);
 
+    // Blocked nights past the booking window can't be picked anyway (the
+    // picker stops at the horizon), and the platforms publish multi-month
+    // "not available" blocks out there — shipping them would roughly double
+    // this payload for nothing.
+    const today = propertyToday();
+    const lastBookableDay = addDaysYmd(today, siteConfig.calendarHorizonDays);
+
     return NextResponse.json(
       {
         merged,
-        disabledDates: getDisabledDates(merged),
-        orphanGapNights: getOrphanGapNights(merged),
+        disabledDates: getDisabledDates(merged).filter((d) => d <= lastBookableDay),
         // The property-local clock and booking window the server will enforce,
         // so the browser validates against exactly the same rules it does.
-        today: propertyToday(),
+        today,
         horizonDays: siteConfig.calendarHorizonDays,
         minNights: MIN_NIGHTS,
         generatedAt: new Date().toISOString(),

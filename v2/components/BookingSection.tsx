@@ -16,7 +16,6 @@ import type { MergedRange } from "@/lib/types";
 interface AvailabilityResponse {
   merged: MergedRange[];
   disabledDates: string[];
-  orphanGapNights: string[];
   /** Property-local "today" and booking window, as the server will enforce them. */
   today: string;
   horizonDays: number;
@@ -84,7 +83,8 @@ export function BookingSection() {
             <AvailabilityCalendar
               merged={data.merged}
               disabledDates={data.disabledDates}
-              orphanGapNights={data.orphanGapNights}
+              today={data.today}
+              horizonDays={data.horizonDays}
               selected={range}
               onSelect={handleSelect}
             />

@@ -100,11 +100,21 @@ Add that URL as an **imported** calendar:
 The picker works in two phases, because the legal days differ per end of the
 stay — see `components/AvailabilityCalendar.tsx`:
 
-- **Arrival** — any day that is not an occupied night. A booking's *checkout*
-  day is not occupied, so you can arrive the morning the last guest leaves.
-- **Departure** — any day after arrival, **up to and including** the first
-  booked day that follows. You may check out the day the next guest checks in;
-  you may not book straight through them.
+- **Arrival** — any day that is not an occupied night *and* still has room for
+  the 2-night minimum in front of it. A booking's *checkout* day is not
+  occupied, so you can arrive the morning the last guest leaves; but the night
+  right before a booking (and the last days of the 365-day window) can't start
+  a legal stay, so they are disabled rather than offered and then rejected.
+  That is also what closes 1-night gaps between two bookings: they are left
+  unsold, since nobody can sleep a single night there.
+- **Departure** — no earlier than the 2-night minimum allows, and no later than
+  the first booked day that follows. You may check out the day the next guest
+  checks in; you may not book straight through them.
+
+Both ends are anchored to the **property's** Europe/Athens clock, not the
+visitor's: `/api/availability` publishes `today` and `horizonDays`, and the
+picker uses those, so a guest browsing from another timezone is offered exactly
+the days the server will accept.
 
 `evaluateBookingRange()` in `lib/availability.ts` is the authority and re-runs
 server-side in `/api/request` and `/api/booking/approve` (with the property's

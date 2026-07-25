@@ -8,19 +8,29 @@ import { Reveal } from "./Reveal";
 // Category icons — inline so there's no icon-library dependency. Each is a
 // 24×24 line glyph that inherits the surrounding text color via currentColor.
 const ICONS: Record<string, ReactNode> = {
-  kitchen: (
+  bathroom: (
+    <path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7Z" />
+  ),
+  bedroomLaundry: (
     <>
-      <path d="M3 2v7c0 1.1.9 2 2 2a2 2 0 0 0 2-2V2" />
-      <path d="M7 2v20" />
-      <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+      <path d="M2 4v16" />
+      <path d="M2 8h18a2 2 0 0 1 2 2v10" />
+      <path d="M2 17h20" />
+      <path d="M6 8V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" />
     </>
   ),
-  comfort: (
+  entertainment: (
     <>
-      <path d="M12 20h.01" />
-      <path d="M2 8.82a15 15 0 0 1 20 0" />
-      <path d="M5 12.86a10 10 0 0 1 14 0" />
-      <path d="M8.5 16.43a5 5 0 0 1 7 0" />
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="m17 2-5 5-5-5" />
+    </>
+  ),
+  heatingCooling: (
+    <>
+      <path d="M12 2v20" />
+      <path d="m4.93 4.93 14.14 14.14" />
+      <path d="M2 12h20" />
+      <path d="m4.93 19.07 14.14-14.14" />
     </>
   ),
   safety: (
@@ -29,10 +39,31 @@ const ICONS: Record<string, ReactNode> = {
       <path d="m9 12 2 2 4-4" />
     </>
   ),
-  access: (
+  internetOffice: (
+    <>
+      <path d="M12 20h.01" />
+      <path d="M2 8.82a15 15 0 0 1 20 0" />
+      <path d="M5 12.86a10 10 0 0 1 14 0" />
+      <path d="M8.5 16.43a5 5 0 0 1 7 0" />
+    </>
+  ),
+  kitchenDining: (
+    <>
+      <path d="M3 2v7c0 1.1.9 2 2 2a2 2 0 0 0 2-2V2" />
+      <path d="M7 2v20" />
+      <path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />
+    </>
+  ),
+  parkingFacilities: (
     <>
       <path d="M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.42-.59l.81-.81a6.5 6.5 0 1 0-4-4z" />
       <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
+    </>
+  ),
+  services: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
     </>
   ),
 };

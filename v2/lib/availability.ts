@@ -23,7 +23,7 @@ export function isValidYmd(value: string): boolean {
   return !Number.isNaN(d.getTime()) && format(d, "yyyy-MM-dd") === value;
 }
 
-function addDaysYmd(ymd: string, days: number): string {
+export function addDaysYmd(ymd: string, days: number): string {
   return format(addDays(parseISO(ymd), days), "yyyy-MM-dd");
 }
 
@@ -38,6 +38,10 @@ export function mergeBusyRanges(ranges: BusyRange[]): MergedRange[] {
 
   const sorted = [...ranges]
     .map((r) => ({ start: r.start, end: r.end }))
+    // Drop degenerate events (end on or before start). A zero-night VEVENT
+    // blocks nothing, but left in the timeline it still acts as a wall that
+    // caps how far a stay may run — so it would silently shorten real stays.
+    .filter((r) => r.end > r.start)
     .sort((a, b) => a.start.localeCompare(b.start));
 
   const merged: MergedRange[] = [];
@@ -66,11 +70,9 @@ export function isDateRangeFree(checkin: string, checkout: string, merged: Merge
 
 /**
  * Core availability rule for v1:
- *  - Minimum stay is 2 nights.
- *  - Exception: a 1-night stay is allowed only if it exactly fills a
- *    1-night gap between two already-booked ranges (the "orphan gap" rule
- *    mirrored from the PriceLabs setup). A 1-night stay at the edge of the
- *    calendar (nothing booked on one side) does NOT qualify.
+ *  - Minimum stay is 2 nights, with no exceptions. 1-night gaps between two
+ *    bookings are simply left unsold rather than being offered as a special
+ *    case.
  *  - Same-day-turnover weekday restrictions are intentionally NOT enforced
  *    here — handled manually at confirmation time.
  *
@@ -78,7 +80,7 @@ export function isDateRangeFree(checkin: string, checkout: string, merged: Merge
  * calendar UI already prevents most bad picks (an attacker posts JSON straight
  * to the API, bypassing the UI):
  *  - `today`      — property-local "today"; defaults to Europe/Athens.
- *  - `horizonDays`— reject check-ins further out than the published horizon.
+ *  - `horizonDays`— reject stays that fall outside the published horizon.
  */
 export function evaluateBookingRange(
   checkin: string,
@@ -98,54 +100,26 @@ export function evaluateBookingRange(
   if (checkin < today) {
     return { ok: false, reason: "past-date" };
   }
-  if (opts.horizonDays != null && checkin > addDaysYmd(today, opts.horizonDays)) {
-    return { ok: false, reason: "too-far" };
+  if (opts.horizonDays != null) {
+    // Both ends, not just the arrival: the calendar can't offer a departure
+    // past the horizon either, and without this bound a request posted
+    // straight at the API could start inside the window and then run years
+    // past the end of it (nothing is booked out there to collide with).
+    const lastBookableDay = addDaysYmd(today, opts.horizonDays);
+    if (checkin > lastBookableDay || checkout > lastBookableDay) {
+      return { ok: false, reason: "too-far" };
+    }
   }
 
   if (!isDateRangeFree(checkin, checkout, merged)) {
     return { ok: false, reason: "not-available" };
   }
 
-  const nights = nightsBetween(checkin, checkout);
-
-  if (nights >= MIN_NIGHTS) {
-    return { ok: true };
+  if (nightsBetween(checkin, checkout) < MIN_NIGHTS) {
+    return { ok: false, reason: "min-stay" };
   }
 
-  if (nights === 1 && isOrphanGap(checkin, checkout, merged)) {
-    return { ok: true };
-  }
-
-  return { ok: false, reason: "min-stay" };
-}
-
-/**
- * True if [checkin, checkout) is exactly the 1-night gap sitting between
- * two existing busy ranges (i.e. bounded on both sides — not a dangling
- * edge before the first booking or after the last one).
- */
-function isOrphanGap(checkin: string, checkout: string, merged: MergedRange[]): boolean {
-  const sorted = [...merged].sort((a, b) => a.start.localeCompare(b.start));
-  for (let i = 0; i < sorted.length - 1; i++) {
-    const prevEnd = sorted[i].end;
-    const nextStart = sorted[i + 1].start;
-    if (prevEnd === checkin && nextStart === checkout && nightsBetween(prevEnd, nextStart) === 1) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/** Every 1-night gap currently open between two bookings, as its check-in date. */
-export function getOrphanGapNights(merged: MergedRange[]): string[] {
-  const sorted = [...merged].sort((a, b) => a.start.localeCompare(b.start));
-  const singles: string[] = [];
-  for (let i = 0; i < sorted.length - 1; i++) {
-    const prevEnd = sorted[i].end;
-    const nextStart = sorted[i + 1].start;
-    if (nightsBetween(prevEnd, nextStart) === 1) singles.push(prevEnd);
-  }
-  return singles;
+  return { ok: true };
 }
 
 /** Every individual night (YYYY-MM-DD) currently occupied by a booking. */
@@ -162,7 +136,11 @@ export function getBookedDates(merged: MergedRange[]): string[] {
 }
 
 /**
- * Dates that cannot be an ARRIVAL day — every occupied night.
+ * Dates that cannot be an ARRIVAL day: every occupied night, plus every free
+ * night that sits too close in front of the next booking to fit the 2-night
+ * minimum (with MIN_NIGHTS = 2 that's the single night before a booking
+ * starts, which covers 1-night gaps between two bookings). Offering those as
+ * check-in dates would only ever lead to a "min-stay" rejection.
  *
  * A range's `end` is its checkout day, which is not an occupied night, so
  * back-to-back arrivals (moving in the morning the last guest leaves) are
@@ -175,5 +153,15 @@ export function getBookedDates(merged: MergedRange[]): string[] {
  * what's bookable; both of these are UX affordances in front of it.
  */
 export function getDisabledDates(merged: MergedRange[]): string[] {
-  return getBookedDates(merged);
+  const booked = new Set(getBookedDates(merged));
+  const disabled = new Set(booked);
+
+  for (const r of merged) {
+    for (let back = 1; back < MIN_NIGHTS; back++) {
+      const day = addDaysYmd(r.start, -back);
+      if (!booked.has(day)) disabled.add(day);
+    }
+  }
+
+  return [...disabled].sort();
 }

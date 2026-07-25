@@ -1,15 +1,18 @@
 "use client";
 
 import { DayPicker, type DateRange, type Matcher } from "react-day-picker";
-import { parseISO, startOfToday, addDays, format, isSameDay, min as minDate } from "date-fns";
+import { parseISO, addDays, format, isSameDay, min as minDate } from "date-fns";
+import { el, enUS } from "date-fns/locale";
 import { useLanguage } from "./LanguageProvider";
-import { siteConfig } from "@/content/siteConfig";
+import { MIN_NIGHTS } from "@/lib/availability";
 import type { MergedRange } from "@/lib/types";
 
 interface Props {
   merged: MergedRange[];
   disabledDates: string[];
-  orphanGapNights: string[];
+  /** Property-local "today" (YYYY-MM-DD) — the same clock the server books by. */
+  today: string;
+  horizonDays: number;
   selected: DateRange | undefined;
   onSelect: (range: DateRange | undefined) => void;
 }
@@ -17,38 +20,54 @@ interface Props {
 export function AvailabilityCalendar({
   merged,
   disabledDates,
-  orphanGapNights,
+  today: propertyToday,
+  horizonDays,
   selected,
   onSelect,
 }: Props) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
-  const orphan = orphanGapNights.map((d) => parseISO(d));
-  const today = startOfToday();
-  const horizon = addDays(today, siteConfig.calendarHorizonDays);
+  // Deliberately the property's clock, not the visitor's. A guest browsing
+  // from a timezone behind Greece would otherwise be offered a night that has
+  // already started in Patras (and be rejected as "past-date" on submit), and
+  // one ahead of it would lose a night that is still bookable here.
+  const today = parseISO(propertyToday);
+  const horizon = addDays(today, horizonDays);
+  // Latest arrival that still leaves room for the minimum stay inside the
+  // booking window — without this the final days of the calendar are pickable
+  // as a check-in that can never reach a legal check-out.
+  const latestArrival = addDays(horizon, -MIN_NIGHTS);
 
   // The picker runs in two phases, because the set of legal days is different
   // for each end of the stay. Using one "booked nights are disabled" set for
-  // both — as this used to — made the two most valuable stays unbookable:
-  // checking out on the day the next guest checks in, and the 1-night gaps
-  // this calendar goes out of its way to highlight in terracotta.
+  // both — as this used to — made the most valuable stay of all unbookable:
+  // checking out on the day the next guest checks in.
   const from = selected?.from;
   const pickingCheckout = !!(from && !selected?.to);
 
   let disabled: Matcher[];
   if (pickingCheckout && from) {
-    // Departure: any day after arrival, up to and including the first day
-    // that's already booked — you may check out as the next guest checks in,
-    // but you can't book straight through them. `from` itself stays enabled
-    // so clicking it again clears the selection.
+    // Departure: no earlier than the 2-night minimum allows, and no later than
+    // the first day that's already booked — you may check out as the next
+    // guest checks in, but you can't book straight through them. `from` itself
+    // stays enabled so clicking it again clears the selection.
     const checkinYmd = format(from, "yyyy-MM-dd");
     const nextBusy = merged.find((r) => r.start > checkinYmd);
     const latestCheckout = nextBusy ? minDate([parseISO(nextBusy.start), horizon]) : horizon;
-    disabled = [{ before: from }, { after: latestCheckout }];
+    const earliestCheckout = addDays(from, MIN_NIGHTS);
+    disabled = [
+      (day: Date) => !isSameDay(day, from) && day < earliestCheckout,
+      { after: latestCheckout },
+    ];
   } else {
-    // Arrival: every occupied night is off limits. (A booking's checkout day
-    // is not an occupied night, so back-to-back arrivals stay selectable.)
-    disabled = [{ before: today }, { after: horizon }, ...disabledDates.map((d) => parseISO(d))];
+    // Arrival: every occupied night is off limits, plus the nights that can't
+    // fit the minimum stay in front of them. (A booking's checkout day is not
+    // an occupied night, so back-to-back arrivals stay selectable.)
+    disabled = [
+      { before: today },
+      { after: latestArrival },
+      ...disabledDates.map((d) => parseISO(d)),
+    ];
   }
 
   return (
@@ -56,7 +75,6 @@ export function AvailabilityCalendar({
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-aegean-900/70 dark:text-ink-muted">
         <LegendDot className="bg-sand-200 dark:bg-ink-raised" label={t.calendar.legendAvailable} />
         <LegendDot className="bg-aegean-700 dark:bg-aegean-400" label={t.calendar.legendBooked} />
-        <LegendDot className="bg-terracotta-400" label={t.calendar.legendOneNight} />
       </div>
 
       <DayPicker
@@ -74,14 +92,13 @@ export function AvailabilityCalendar({
           // a fresh check-in instead of extending the existing stay
           // (matches Booking.com's picker behavior).
           if (selected?.from && selected?.to) {
-            onSelect({ from: selectedDay, to: undefined });
+            onSelect(selectedDay ? { from: selectedDay, to: undefined } : undefined);
             return;
           }
           onSelect(range);
         }}
         disabled={disabled}
-        modifiers={{ orphan }}
-        modifiersClassNames={{ orphan: "rdp-orphan" }}
+        locale={lang === "el" ? el : enUS}
         numberOfMonths={1}
         fromDate={today}
         toDate={horizon}
