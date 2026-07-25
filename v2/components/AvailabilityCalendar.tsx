@@ -85,19 +85,33 @@ export function AvailabilityCalendar({
         toDate={horizon}
       />
 
-      <p className="mt-3 text-xs font-medium text-aegean-900/80 dark:text-ink-text/80">
-        {pickingCheckout ? t.calendar.pickCheckout : t.calendar.pickCheckin}
-      </p>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs font-medium text-aegean-900/80 dark:text-ink-text/80">
+          {pickingCheckout ? t.calendar.pickCheckout : t.calendar.pickCheckin}
+        </p>
 
-      {selected?.from && (
-        <button
-          type="button"
-          onClick={() => onSelect(undefined)}
-          className="mt-2 text-xs font-medium text-terracotta-600 underline underline-offset-2 hover:text-terracotta-700 dark:text-terracotta-400 dark:hover:text-terracotta-300"
-        >
-          {t.calendar.clearDates}
-        </button>
-      )}
+        {selected?.from && (
+          <button
+            type="button"
+            onClick={() => onSelect(undefined)}
+            className="flex items-center gap-1.5 rounded-full border border-terracotta-400/30 bg-terracotta-50 px-3.5 py-1.5 text-xs font-semibold text-terracotta-600 transition-colors hover:border-terracotta-400/50 hover:bg-terracotta-100 dark:border-terracotta-400/30 dark:bg-terracotta-400/10 dark:text-terracotta-400 dark:hover:bg-terracotta-400/20"
+          >
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              className="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.25}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+            {t.calendar.clearDates}
+          </button>
+        )}
+      </div>
 
       <p className="mt-3 text-xs text-aegean-900/60 dark:text-ink-muted">{t.calendar.minStayNotice}</p>
     </div>
