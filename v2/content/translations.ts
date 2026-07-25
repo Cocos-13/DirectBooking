@@ -91,7 +91,6 @@ export interface Dictionary {
     subtitle: string;
     legendBooked: string;
     legendAvailable: string;
-    legendOneNight: string;
     minStayNotice: string;
     pickCheckin: string;
     pickCheckout: string;
@@ -362,8 +361,7 @@ export const translations: Record<Lang, Dictionary> = {
       subtitle: "Ενημερώνεται αυτόματα από τα ημερολόγια Airbnb και Booking.com.",
       legendBooked: "Κρατημένο",
       legendAvailable: "Διαθέσιμο",
-      legendOneNight: "Διαθέσιμο για 1 διανυκτέρευση",
-      minStayNotice: "Ελάχιστη διαμονή 2 διανυκτερεύσεις, εκτός αν καλύπτει ακριβώς ένα κενό 1 βραδιάς ανάμεσα σε δύο κρατήσεις.",
+      minStayNotice: "Ελάχιστη διαμονή 2 διανυκτερεύσεις.",
       pickCheckin: "Επιλέξτε ημερομηνία άφιξης.",
       pickCheckout: "Τώρα επιλέξτε ημερομηνία αναχώρησης.",
       clearDates: "Καθαρισμός ημερομηνιών",
@@ -631,8 +629,7 @@ export const translations: Record<Lang, Dictionary> = {
       subtitle: "Updates automatically from the Airbnb and Booking.com calendars.",
       legendBooked: "Booked",
       legendAvailable: "Available",
-      legendOneNight: "Available for 1 night",
-      minStayNotice: "2-night minimum stay, unless it exactly fills a 1-night gap between two bookings.",
+      minStayNotice: "2-night minimum stay.",
       pickCheckin: "Pick your arrival date.",
       pickCheckout: "Now pick your departure date.",
       clearDates: "Clear dates",

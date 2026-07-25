@@ -25,13 +25,6 @@
   margin: 0;
 }
 
-/* Highlights a free single night that exactly fills a 1-night gap between
-   two bookings — the "orphan gap" exception to the 2-night minimum. */
-.rdp-orphan:not([aria-disabled="true"]) {
-  border-radius: 9999px;
-  box-shadow: inset 0 0 0 2px #e3805a; /* terracotta-400 */
-}
-
 html {
   /* Safety net against sideways scrolling on phones. One element bleeding past
      the right edge is enough to widen the layout viewport, which both lets the

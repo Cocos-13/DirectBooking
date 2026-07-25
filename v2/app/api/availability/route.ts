@@ -3,7 +3,6 @@ import { getRawBusyRanges } from "@/lib/ical";
 import {
   MIN_NIGHTS,
   getDisabledDates,
-  getOrphanGapNights,
   mergeBusyRanges,
   propertyToday,
 } from "@/lib/availability";
@@ -30,7 +29,6 @@ export async function GET() {
       {
         merged,
         disabledDates: getDisabledDates(merged),
-        orphanGapNights: getOrphanGapNights(merged),
         // The property-local clock and booking window the server will enforce,
         // so the browser validates against exactly the same rules it does.
         today: propertyToday(),
