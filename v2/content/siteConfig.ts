@@ -108,7 +108,7 @@ export const siteConfig = {
       textEl:
         "Μείναμε πέντε ημέρες την Πρωτοχρονιά στο διαμέρισμα με τον σύζυγό μου και τα δίδυμα αγόρια μας (28 μηνών) και η εμπειρία μας ήταν εξαιρετική. Το σπίτι ήταν πεντακάθαρο, ζεστό, πλήρως εξοπλισμένο και ιδιαίτερα πρακτικό. Ο Κωνσταντίνος ήταν εξαιρετικός οικοδεσπότης: πολύ φιλικός, άμεσος και ευγενικός. Το συστήνουμε ανεπιφύλακτα, ειδικά σε οικογένειες.",
       textEn:
-        "We stayed five days over New Year's Eve in the apartment with my husband and our twin boys (28 months), and our experience was excellent. The house was spotless, warm, fully equipped and very practical, which is very important when travelling with small children. Konstantinos was an excellent host: very friendly, direct and polite. We highly recommend it, especially to families.",
+        "We stayed five days over New Year's in the apartment with my husband and our twin boys (28 months), and our experience was excellent. The house was spotless, warm, fully equipped and very practical. Konstantinos was an excellent host: very friendly, direct and polite. We highly recommend it, especially to families.",
     },
     {
       name: "Paulina",
