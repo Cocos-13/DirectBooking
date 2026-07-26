@@ -98,32 +98,50 @@ export const siteConfig = {
     airbnbIsSuperhost: true,
   },
 
-  // Quoted verbatim from Airbnb guest reviews — left in their original
-  // language rather than translated, since they're direct quotes.
+  // Quoted from Airbnb guest reviews, translated into both site languages.
+  // Some quotes are cropped to their most relevant parts — both language
+  // versions are cropped to the same content so switching languages doesn't
+  // change what's being said, only how.
   reviews: [
     {
       name: "Errietta",
-      text: "Μείναμε πέντε ημέρες την Πρωτοχρονιά στο διαμέρισμα με τον σύζυγό μου και τα δίδυμα αγόρια μας (28 μηνών) και η εμπειρία μας ήταν εξαιρετική. Το σπίτι ήταν πεντακάθαρο, ζεστό, πλήρως εξοπλισμένο και ιδιαίτερα πρακτικό. Ο Κωνσταντίνος ήταν εξαιρετικός οικοδεσπότης: πολύ φιλικός, άμεσος και ευγενικός. Το συστήνουμε ανεπιφύλακτα, ειδικά σε οικογένειες.",
+      textEl:
+        "Μείναμε πέντε ημέρες την Πρωτοχρονιά στο διαμέρισμα με τον σύζυγό μου και τα δίδυμα αγόρια μας (28 μηνών) και η εμπειρία μας ήταν εξαιρετική. Το σπίτι ήταν πεντακάθαρο, ζεστό, πλήρως εξοπλισμένο και ιδιαίτερα πρακτικό. Ο Κωνσταντίνος ήταν εξαιρετικός οικοδεσπότης: πολύ φιλικός, άμεσος και ευγενικός. Το συστήνουμε ανεπιφύλακτα, ειδικά σε οικογένειες.",
+      textEn:
+        "We stayed five days over New Year's Eve in the apartment with my husband and our twin boys (28 months), and our experience was excellent. The house was spotless, warm, fully equipped and very practical, which is very important when travelling with small children. Konstantinos was an excellent host: very friendly, direct and polite. We highly recommend it, especially to families.",
     },
     {
       name: "Paulina",
-      text: "We had a great stay! The place was clean, comfortable, and exactly as described. The host was friendly, responsive, and made check-in easy. We'd happily stay here again and highly recommend it to others! 👌🏽",
+      textEl:
+        "Είχαμε μια υπέροχη διαμονή! Ο χώρος ήταν καθαρός, άνετος και ακριβώς όπως περιγραφόταν. Ο οικοδεσπότης ήταν φιλικός, ανταποκρινόταν γρήγορα και έκανε την άφιξη εύκολη. Θα μείναμε ξανά εδώ με χαρά και το προτείνουμε ανεπιφύλακτα σε άλλους! 👌🏽",
+      textEn:
+        "We had a great stay! The place was clean, comfortable, and exactly as described. The host was friendly, responsive, and made check-in easy. We'd happily stay here again and highly recommend it to others! 👌🏽",
     },
     {
       name: "Juela",
-      text: "Ενα από τα καλύτερα καταλύματα που έχω επισκεφθεί, ο χώρος ήταν πεντακάθαρος και εξαιρετικά τακτοποιημένος, ο δε οικοδεσπότης ευγενέστατος και πολύ φιλικός παρέχοντας λεπτομερείς οδηγίες για ό,τι χρειαζόμασταν. Ευελπιστώ να μείνω ξανά σύντομα!",
+      textEl:
+        "Ενα από τα καλύτερα καταλύματα που έχω επισκεφθεί, ο χώρος ήταν πεντακάθαρος και εξαιρετικά τακτοποιημένος, ο δε οικοδεσπότης ευγενέστατος και πολύ φιλικός παρέχοντας λεπτομερείς οδηγίες για ό,τι χρειαζόμασταν. Ευελπιστώ να μείνω ξανά σύντομα!",
+      textEn:
+        "One of the best places I've ever visited, the place was spotless and extremely tidy, and the host was very kind and very friendly, providing detailed instructions for everything we needed. I hope to stay again soon!",
     },
     {
       name: "Athanasia",
-      text: "Μείναμε με την οικογένειά μου στο κατάλυμα του Κωνσταντίνου και μείναμε κατενθουσιασμένοι! Ο χώρος ήταν πεντακάθαρος, όμορφος και πολύ προσεγμένος. Ο Κωνσταντίνος ήταν εξαιρετικός οικοδεσπότης – ευγενικός, εξυπηρετικός και πάντα άμεσος στην επικοινωνία.",
+      textEl:
+        "Μείναμε με την οικογένειά μου στο κατάλυμα του Κωνσταντίνου και μείναμε κατενθουσιασμένοι! Ο χώρος ήταν πεντακάθαρος, όμορφος και πολύ προσεγμένος. Ο Κωνσταντίνος ήταν εξαιρετικός οικοδεσπότης – ευγενικός, εξυπηρετικός και πάντα άμεσος στην επικοινωνία.",
+      textEn:
+        "My family and I stayed at Konstantinos' accommodation and we were thrilled! The space was sparkling clean, beautiful and very well-kept. Konstantinos was an excellent host - kind, helpful and always direct in communication.",
     },
     {
       name: "Tasos",
-      text: "Εξαιρετικός",
+      textEl: "Εξαιρετικός",
+      textEn: "Exceptional",
     },
     {
       name: "James",
-      text: "Great space to stay in Patras. The flat was easy to get to, clean and had everything needed. The location was ideal, and lots to do around.",
+      textEl:
+        "Υπέροχος χώρος για διαμονή στην Πάτρα. Η πρόσβαση στο διαμέρισμα ήταν εύκολη, ήταν καθαρό και είχε όλα όσα χρειαζόμασταν. Η τοποθεσία ήταν ιδανική και υπήρχαν πολλά να κάνεις τριγύρω.",
+      textEn:
+        "Great space to stay in Patras. The flat was easy to get to, clean and had everything needed. The location was ideal, and lots to do around.",
     },
   ],
 
