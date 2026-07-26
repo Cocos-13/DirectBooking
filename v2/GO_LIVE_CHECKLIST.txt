@@ -94,6 +94,17 @@ STAGE 3 — CALENDAR SYNC (Airbnb / Booking.com iCal)
          the correct blocked ranges + disabledDates. What remains is the BROWSER
          eyeball on the rendered calendar — a human step (can't be done here).
 
+STALE AS OF 2026-07-25 — commit 8bbbbb2 ("book on the property clock, close the
+horizon dead end") changed the availability logic itself AFTER the 2026-07-23
+confirmation above: the picker now runs on the property's (Athens) clock
+instead of the visitor's, both check-in AND check-out are bounded by the
+horizon (was check-in only), zero-night iCal events no longer silently cap how
+far a stay can run, and /api/availability now filters disabledDates past the
+horizon (387 -> 204 dates). The 2026-07-23 data-layer confirmation predates
+this change and no longer covers current behavior — 3.4's human eyeball pass
+and 6.2 below should be re-run against the current deployed code, not treated
+as already covered.
+
 NOTE (live-data finding, 2026-07-23): the feed currently contains a ~368-night
 block 2027-01-20 → 2028-01-23 coming from one of the platform feeds. If it's
 intentional (long-term let / closed season / dates not yet opened) it's correct;
@@ -342,6 +353,12 @@ deployed HTTPS URL.
          UNBLOCKED (3.2b deployed) — /api/availability now serves the real
          blocked ranges, so the calendar no longer renders fully open. Only the
          human visual pass remains.
+         RE-CHECK NEEDED (see 3.4 STALE note) — the calendar logic changed on
+         2026-07-25 (commit 8bbbbb2) after this item was last looked at:
+         property-clock picker, horizon bound on both check-in/check-out, and
+         disabledDates now trimmed to the horizon. Do the human eyeball pass
+         against the CURRENT deployed code, including a guest browsing from a
+         timezone behind Europe/Athens.
 [x] 6.3  Submit a booking request (tick the consent box). Confirm:
            - you (owner) get the request email WITH an "Approve" button;
            - the guest gets an acknowledgement email.
