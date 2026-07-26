@@ -111,6 +111,12 @@ stay — see `components/AvailabilityCalendar.tsx`:
   the first booked day that follows. You may check out the day the next guest
   checks in; you may not book straight through them.
 
+From 768px up the picker shows **two months side by side** (Booking.com style),
+so a stay that straddles a month boundary can be picked without paging; below
+that it falls back to one month, which is all that fits on a phone. Navigation
+still steps one month at a time, keeping the month you were just looking at on
+screen while you reach for the second date.
+
 Both ends are anchored to the **property's** Europe/Athens clock, not the
 visitor's: `/api/availability` publishes `today` and `horizonDays`, and the
 picker uses those, so a guest browsing from another timezone is offered exactly

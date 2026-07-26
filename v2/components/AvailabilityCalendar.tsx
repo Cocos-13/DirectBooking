@@ -1,11 +1,17 @@
 "use client";
 
+import { useCallback, useSyncExternalStore } from "react";
 import { DayPicker, type DateRange, type Matcher } from "react-day-picker";
 import { parseISO, addDays, format, isSameDay, min as minDate } from "date-fns";
 import { el, enUS } from "date-fns/locale";
 import { useLanguage } from "./LanguageProvider";
 import { MIN_NIGHTS } from "@/lib/availability";
 import type { MergedRange } from "@/lib/types";
+
+/** Two 280px months plus their 2em gutter and the picker's own padding need
+ *  ~624px; below that they'd wrap or overflow, so phones get a single month.
+ *  Kept in sync with the `.rdp-months` centering rule in app/globals.css. */
+const TWO_MONTH_QUERY = "(min-width: 768px)";
 
 interface Props {
   merged: MergedRange[];
@@ -26,6 +32,7 @@ export function AvailabilityCalendar({
   onSelect,
 }: Props) {
   const { t, lang } = useLanguage();
+  const twoMonths = useMediaQuery(TWO_MONTH_QUERY);
 
   // Deliberately the property's clock, not the visitor's. A guest browsing
   // from a timezone behind Greece would otherwise be offered a night that has
@@ -99,7 +106,10 @@ export function AvailabilityCalendar({
         }}
         disabled={disabled}
         locale={lang === "el" ? el : enUS}
-        numberOfMonths={1}
+        numberOfMonths={twoMonths ? 2 : 1}
+        // Paging one month at a time (rather than two) keeps the month you were
+        // just looking at on screen, so a stay that straddles the seam stays
+        // visible while you reach for the second date.
         fromDate={today}
         toDate={horizon}
       />
@@ -120,6 +130,30 @@ export function AvailabilityCalendar({
 
       <p className="mt-3 text-xs text-aegean-900/60 dark:text-ink-muted">{t.calendar.minStayNotice}</p>
     </div>
+  );
+}
+
+/**
+ * Subscribes to a media query. `useSyncExternalStore` rather than
+ * state-in-an-effect so the very first client render already knows the width:
+ * this component only mounts once `/api/availability` has answered, well after
+ * hydration, so there is no server snapshot to match and no reason to paint a
+ * one-month calendar for a frame before widening it.
+ */
+function useMediaQuery(query: string) {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const mql = window.matchMedia(query);
+      mql.addEventListener("change", onChange);
+      return () => mql.removeEventListener("change", onChange);
+    },
+    [query]
+  );
+
+  return useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(query).matches,
+    () => false // server: assume narrow, the layout that fits everywhere
   );
 }
 

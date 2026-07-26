@@ -2,7 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* These must be declared on `.rdp` itself, not on `:root`: react-day-picker's
+   own stylesheet sets them inside its `.rdp` block, which wins over `:root` for
+   everything in the picker no matter the import order. Declared here they only
+   have to out-order that stylesheet, which they do (layout.tsx imports it
+   first) — on `:root` they were silently ignored and the calendar kept the
+   library's default #0000ff. */
+.rdp {
   --rdp-cell-size: 40px;
   --rdp-accent-color: #367e8a; /* aegean-500 */
   --rdp-background-color: #dcedef; /* aegean-100 */
@@ -10,19 +16,26 @@
   --rdp-background-color-dark: #204e57; /* aegean-700 */
   --rdp-outline: 2px solid var(--rdp-accent-color);
   --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+
+  margin: 0;
 }
 
 /* Dark-mode calendar: keep the aegean accent for selected days (it reads well
    on both themes) but darken the plain hover/range backgrounds so they sit on
    the ink surface instead of glowing as light-blue tiles. Day text inherits
    the body's dark:text-ink-text. */
-.dark {
+.dark .rdp {
   --rdp-background-color: #282a2d; /* ink-raised */
   --rdp-background-color-dark: #383b3f; /* ink-border */
 }
 
-.rdp {
-  margin: 0;
+/* Two months side by side (see TWO_MONTH_QUERY in AvailabilityCalendar) leave
+   ~110px of slack in the max-w-3xl booking column; centring them keeps the pair
+   under the section heading instead of hanging off its left edge. */
+@media (min-width: 768px) {
+  .rdp-months {
+    justify-content: center;
+  }
 }
 
 html {
