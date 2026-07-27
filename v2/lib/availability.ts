@@ -56,6 +56,25 @@ export function mergeBusyRanges(ranges: BusyRange[]): MergedRange[] {
   return merged;
 }
 
+/**
+ * Inverse of `getBookedDates`: collapses individual nights back into half-open
+ * ranges, so a run of separately-stored nights (the owner's manual blocks) can
+ * be published as a handful of iCal events instead of one VEVENT per night.
+ * Input need not be sorted or unique.
+ */
+export function datesToRanges(dates: string[]): MergedRange[] {
+  const sorted = [...new Set(dates)].sort();
+  const ranges: MergedRange[] = [];
+  for (const day of sorted) {
+    const last = ranges[ranges.length - 1];
+    // `last.end` is the morning after the previous night — if this night starts
+    // exactly then, the two are contiguous and extend the same range.
+    if (last && last.end === day) last.end = addDaysYmd(day, 1);
+    else ranges.push({ start: day, end: addDaysYmd(day, 1) });
+  }
+  return ranges;
+}
+
 export function nightsBetween(checkin: string, checkout: string): number {
   return differenceInCalendarDays(parseISO(checkout), parseISO(checkin));
 }
@@ -136,32 +155,52 @@ export function getBookedDates(merged: MergedRange[]): string[] {
 }
 
 /**
- * Dates that cannot be an ARRIVAL day: every occupied night, plus every free
- * night that sits too close in front of the next booking to fit the 2-night
- * minimum (with MIN_NIGHTS = 2 that's the single night before a booking
- * starts, which covers 1-night gaps between two bookings). Offering those as
- * check-in dates would only ever lead to a "min-stay" rejection.
+ * The days the calendar greys out: those that can be **neither** an arrival nor
+ * a departure, so no legal stay touches them at all.
  *
- * A range's `end` is its checkout day, which is not an occupied night, so
- * back-to-back arrivals (moving in the morning the last guest leaves) are
- * already pickable and need no special case here.
+ * Deliberately *not* "every occupied night". The day a booking starts is still
+ * a legal checkout (you sleep the night before and leave in the morning), and
+ * the day it ends is still a legal check-in. Blocking a whole booking made the
+ * days on either side of it look dead too, so a guest looking at a booking on
+ * 8–12 saw the 7th and 8th greyed out and concluded that a stay ending on the
+ * 8th was impossible — when it is exactly the handover we most want to sell.
  *
- * This is only the arrival-side constraint. Legal DEPARTURE days are a
- * different set — you may check out on a day that is booked, as long as it's
- * the first booked day after your arrival — which the calendar computes from
- * `merged` directly. `evaluateBookingRange` remains the real authority on
- * what's bookable; both of these are UX affordances in front of it.
+ * So for a booking on the 10th–14th only the 11th, 12th and 13th go dark: you
+ * can still check out on the 10th and check in on the 14th. Short gaps between
+ * two bookings fall out of the same rule — a single free night can't host the
+ * 2-night minimum from either side, so it blocks itself without a special case.
+ *
+ * `evaluateBookingRange` remains the authority. This set only marks days that
+ * are hopeless on their own; a guest can still pick an illegal *pair* of open
+ * days (straddling a booking, or too short) and is told why, which is far
+ * easier to act on than a day that is silently missing.
  */
-export function getDisabledDates(merged: MergedRange[]): string[] {
-  const booked = new Set(getBookedDates(merged));
-  const disabled = new Set(booked);
+export function getBlockedDates(
+  merged: MergedRange[],
+  opts: { today?: string; horizonDays: number }
+): string[] {
+  const today = opts.today ?? propertyToday();
+  const lastBookableDay = addDaysYmd(today, opts.horizonDays);
 
-  for (const r of merged) {
-    for (let back = 1; back < MIN_NIGHTS; back++) {
-      const day = addDaysYmd(r.start, -back);
-      if (!booked.has(day)) disabled.add(day);
+  const bookedNights = new Set(getBookedDates(merged));
+  /** MIN_NIGHTS free nights in a row starting on `night` — the shortest legal stay. */
+  const fitsMinStay = (night: string) => {
+    for (let i = 0; i < MIN_NIGHTS; i++) {
+      if (bookedNights.has(addDaysYmd(night, i))) return false;
     }
+    return true;
+  };
+
+  const blocked: string[] = [];
+  for (let day = today; day <= lastBookableDay; day = addDaysYmd(day, 1)) {
+    // As an arrival: the minimum stay must fit ahead of it, checkout included,
+    // inside the published window — the same bound the server applies.
+    const canArrive = addDaysYmd(day, MIN_NIGHTS) <= lastBookableDay && fitsMinStay(day);
+    // As a departure: the same nights behind it, with an arrival not in the past.
+    const earliestArrival = addDaysYmd(day, -MIN_NIGHTS);
+    const canDepart = earliestArrival >= today && fitsMinStay(earliestArrival);
+    if (!canArrive && !canDepart) blocked.push(day);
   }
 
-  return [...disabled].sort();
+  return blocked;
 }

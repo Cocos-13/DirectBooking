@@ -1,12 +1,10 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { DayPicker, type DateRange, type Matcher } from "react-day-picker";
-import { parseISO, addDays, format, isSameDay, min as minDate } from "date-fns";
+import { parseISO, addDays, isSameDay } from "date-fns";
 import { el, enUS } from "date-fns/locale";
 import { useLanguage } from "./LanguageProvider";
-import { MIN_NIGHTS } from "@/lib/availability";
-import type { MergedRange } from "@/lib/types";
 
 /** Two 280px months plus their 2em gutter and the picker's own padding need
  *  ~624px; below that they'd wrap or overflow, so phones get a single month.
@@ -14,7 +12,7 @@ import type { MergedRange } from "@/lib/types";
 const TWO_MONTH_QUERY = "(min-width: 768px)";
 
 interface Props {
-  merged: MergedRange[];
+  /** Days no legal stay can touch — see `getBlockedDates`. */
   disabledDates: string[];
   /** Property-local "today" (YYYY-MM-DD) — the same clock the server books by. */
   today: string;
@@ -24,7 +22,6 @@ interface Props {
 }
 
 export function AvailabilityCalendar({
-  merged,
   disabledDates,
   today: propertyToday,
   horizonDays,
@@ -40,57 +37,44 @@ export function AvailabilityCalendar({
   // one ahead of it would lose a night that is still bookable here.
   const today = parseISO(propertyToday);
   const horizon = addDays(today, horizonDays);
-  // Latest arrival that still leaves room for the minimum stay inside the
-  // booking window — without this the final days of the calendar are pickable
-  // as a check-in that can never reach a legal check-out.
-  const latestArrival = addDays(horizon, -MIN_NIGHTS);
 
-  // The picker runs in two phases, because the set of legal days is different
-  // for each end of the stay. Using one "booked nights are disabled" set for
-  // both — as this used to — made the most valuable stay of all unbookable:
-  // checking out on the day the next guest checks in.
+  const blocked = useMemo(() => disabledDates.map((d) => parseISO(d)), [disabledDates]);
+
+  // One set of off-limits days, the same before and after a check-in is picked.
+  // This used to narrow in two phases — legal arrivals, then legal departures
+  // for that arrival — which is more precise but reads as a moving target: a
+  // guest looking for 5–8 August saw only the 5th and 6th open and concluded
+  // the place was free for one night, when the 8th was open all along as a
+  // checkout. A fixed set means grey always says the same thing: nothing can
+  // happen on this day. An illegal *pair* of open days is still possible, and
+  // BookingSection answers that with a reason instead of a silent refusal.
   const from = selected?.from;
   const pickingCheckout = !!(from && !selected?.to);
 
-  let disabled: Matcher[];
-  if (pickingCheckout && from) {
-    // Departure: no earlier than the 2-night minimum allows, and no later than
-    // the first day that's already booked — you may check out as the next
-    // guest checks in, but you can't book straight through them. `from` itself
-    // stays enabled so clicking it again clears the selection.
-    const checkinYmd = format(from, "yyyy-MM-dd");
-    const nextBusy = merged.find((r) => r.start > checkinYmd);
-    const latestCheckout = nextBusy ? minDate([parseISO(nextBusy.start), horizon]) : horizon;
-    const earliestCheckout = addDays(from, MIN_NIGHTS);
-    disabled = [
-      (day: Date) => !isSameDay(day, from) && day < earliestCheckout,
-      { after: latestCheckout },
-    ];
-  } else {
-    // Arrival: every occupied night is off limits, plus the nights that can't
-    // fit the minimum stay in front of them. (A booking's checkout day is not
-    // an occupied night, so back-to-back arrivals stay selectable.)
-    disabled = [
-      { before: today },
-      { after: latestArrival },
-      ...disabledDates.map((d) => parseISO(d)),
-    ];
-  }
+  const disabled: Matcher[] = [{ before: today }, { after: horizon }, ...blocked];
 
   return (
     <div>
       <div className="mb-3 flex flex-wrap gap-4 text-xs text-aegean-900/70 dark:text-ink-muted">
-        <LegendDot className="bg-sand-200 dark:bg-ink-raised" label={t.calendar.legendAvailable} />
-        <LegendDot className="bg-aegean-700 dark:bg-aegean-400" label={t.calendar.legendBooked} />
+        {/* The two swatches are the two cell fills the calendar actually uses,
+            so the key can be matched against the grid by eye. */}
+        <LegendDot
+          className="bg-white ring-1 ring-inset ring-sand-200 dark:bg-ink-surface dark:ring-ink-border"
+          label={t.calendar.legendAvailable}
+        />
+        <LegendDot className="bg-sand-200 dark:bg-ink-border" label={t.calendar.legendBooked} />
       </div>
 
       <DayPicker
         mode="range"
         selected={selected}
         onSelect={(range, selectedDay) => {
-          // Clicking the arrival date again clears the stay — with the
-          // departure-phase matchers in place, earlier days are disabled, so
-          // this is the only way back out of a half-finished selection.
+          // Clicking the arrival date again clears the stay. Left to itself the
+          // picker would hand back a same-day range of zero nights, which is
+          // just an error message for something the guest plainly meant as
+          // "undo". Clicking any *earlier* open day is left alone: that builds
+          // the range backwards, which is a useful way in now that the days
+          // before an arrival stay open.
           if (from && !selected?.to && selectedDay && isSameDay(selectedDay, from)) {
             onSelect(undefined);
             return;
@@ -105,6 +89,11 @@ export function AvailabilityCalendar({
           onSelect(range);
         }}
         disabled={disabled}
+        // Marks the booked days apart from the other disabled ones. Without it
+        // a night someone else has bought looks exactly like a day in the past,
+        // and the "Booked" key below points at nothing on screen.
+        modifiers={{ booked: blocked }}
+        modifiersClassNames={{ booked: "day-booked" }}
         locale={lang === "el" ? el : enUS}
         numberOfMonths={twoMonths ? 2 : 1}
         // Paging one month at a time (rather than two) keeps the month you were

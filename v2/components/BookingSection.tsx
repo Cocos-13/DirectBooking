@@ -81,7 +81,6 @@ export function BookingSection() {
         <>
           <div className="mt-8">
             <AvailabilityCalendar
-              merged={data.merged}
               disabledDates={data.disabledDates}
               today={data.today}
               horizonDays={data.horizonDays}

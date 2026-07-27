@@ -29,6 +29,24 @@
   --rdp-background-color-dark: #383b3f; /* ink-border */
 }
 
+/* Booked days (getBlockedDates) are filled and struck through so "someone else
+   has this" reads differently from "this is in the past" — react-day-picker
+   fades both to the same .rdp-day_disabled otherwise, and the legend's Booked
+   swatch would point at nothing on screen. The doubled class outranks that
+   rule's opacity without !important. */
+.day-booked.rdp-day_disabled {
+  background-color: #e8dfc9; /* sand-200 */
+  color: #132f35; /* aegean-900 */
+  opacity: 0.75;
+  text-decoration: line-through;
+}
+
+.dark .day-booked.rdp-day_disabled {
+  background-color: #383b3f; /* ink-border */
+  color: #f1f2f3; /* ink-text */
+  opacity: 0.7;
+}
+
 /* Two months side by side (see TWO_MONTH_QUERY in AvailabilityCalendar) leave
    ~110px of slack in the max-w-3xl booking column; centring them keeps the pair
    under the section heading instead of hanging off its left edge. */
