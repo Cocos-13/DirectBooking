@@ -108,9 +108,9 @@ const config: Config = {
         "photo-in-left": "photo-in-left 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
         "testimonial-in": "testimonial-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both",
         "blur-in": "blur-in 0.4s ease-out both",
-        // Two passes — one is over before a guest who was looking at the
-        // calendar has moved their eyes down to the line.
-        shake: "shake 0.55s ease-in-out 2",
+        // One pass. The keyframes already oscillate three times inside it, so
+        // it still reads as a shake rather than a single nudge.
+        shake: "shake 0.55s ease-in-out",
       },
     },
   },
