@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import crypto from "crypto";
+import { propertyToday } from "./availability";
 
 // Persistent state for this site's OWN direct bookings and the machinery that
 // keeps them safe: confirmed bookings, short-lived date holds (so two guests
@@ -18,6 +19,7 @@ import crypto from "crypto";
 const K = {
   confirmed: "directBookings", // hash: orderCode -> non-PII booking (dates/amount)
   holds: "holds", // hash: holdId -> Hold (no PII)
+  manualBlocks: "manualBlocks", // hash: YYYY-MM-DD -> ManualBlock (no PII)
   audit: "auditLog", // list (no raw PII)
 } as const;
 
@@ -269,6 +271,95 @@ export async function deleteHold(holdId: string | undefined | null): Promise<voi
 }
 
 // ---------------------------------------------------------------------------
+// Manual blocks — nights the owner closed by hand from the admin calendar,
+// exactly like blocking a date on Airbnb or the Booking.com extranet. The
+// motivating case is a cleaning buffer: a booking ends on the 14th and there
+// isn't time to turn the flat around the same day, so the 14th gets blocked and
+// the next guest can only arrive on the 15th.
+//
+// Stored one field PER NIGHT rather than as ranges. A night is the unit the
+// owner actually thinks in ("close the 14th"), and it makes both directions
+// idempotent: blocking a night twice is a no-op, and freeing one night out of
+// the middle of a blocked week needs no range-splitting. Consecutive nights are
+// merged back into ranges only where a range is the right shape — the published
+// iCal feed.
+//
+// Convention: blocking day D blocks the NIGHT of D, i.e. the half-open range
+// [D, D+1). So D is no longer a legal arrival, but it is still a legal
+// departure — the same rule that governs a real booking's checkout day.
+// ---------------------------------------------------------------------------
+
+export interface ManualBlock {
+  createdAt: string; // ISO
+  note?: string;
+}
+
+/** Hard cap on how many nights one admin action may touch. */
+export const MAX_BLOCK_DATES = 400;
+
+/**
+ * Owner-blocked nights, newest state, as a `YYYY-MM-DD -> ManualBlock` map.
+ * Nights that have already passed are dropped from the result and pruned from
+ * the store opportunistically, so the hash can't grow without bound.
+ */
+export async function getManualBlocks(today = propertyToday()): Promise<Record<string, ManualBlock>> {
+  const c = getClient();
+  if (!c) return {};
+
+  const all = await c.hgetall<Record<string, ManualBlock | string>>(K.manualBlocks);
+  if (!all) return {};
+
+  const out: Record<string, ManualBlock> = {};
+  const stale: string[] = [];
+  for (const [date, value] of Object.entries(all)) {
+    // A blocked night is spent once the day after it has arrived.
+    if (date < today) {
+      stale.push(date);
+      continue;
+    }
+    const parsed = typeof value === "string" ? safeParse<ManualBlock>(value) : value;
+    out[date] = parsed ?? { createdAt: "" };
+  }
+  if (stale.length) c.hdel(K.manualBlocks, ...stale).catch(() => {});
+  return out;
+}
+
+/** Just the blocked nights, sorted ascending. */
+export async function getManualBlockDates(today = propertyToday()): Promise<string[]> {
+  return Object.keys(await getManualBlocks(today)).sort();
+}
+
+/**
+ * Blocks each of `dates` (YYYY-MM-DD nights). Returns how many were newly
+ * blocked — nights already blocked are left with their original `createdAt`, so
+ * re-blocking never rewrites history. Caller is responsible for validating the
+ * date strings; this refuses to write more than MAX_BLOCK_DATES at once.
+ */
+export async function blockDates(dates: string[], note?: string): Promise<number> {
+  const c = getClient();
+  if (!c || dates.length === 0) return 0;
+  if (dates.length > MAX_BLOCK_DATES) return 0;
+
+  const existing = await getManualBlocks();
+  const fresh = dates.filter((d) => !(d in existing));
+  if (fresh.length === 0) return 0;
+
+  const createdAt = new Date().toISOString();
+  const payload: Record<string, ManualBlock> = {};
+  for (const d of fresh) payload[d] = note ? { createdAt, note } : { createdAt };
+  await c.hset(K.manualBlocks, payload);
+  return fresh.length;
+}
+
+/** Frees each of `dates`. Returns how many were actually blocked beforehand. */
+export async function unblockDates(dates: string[]): Promise<number> {
+  const c = getClient();
+  if (!c || dates.length === 0) return 0;
+  if (dates.length > MAX_BLOCK_DATES) return 0;
+  return c.hdel(K.manualBlocks, ...dates);
+}
+
+// ---------------------------------------------------------------------------
 // Pending orders — recorded when a payment order is created, so the webhook
 // can look the order up by its authoritative Viva order code and verify the
 // paid amount against what we intended to charge (never trusting the wire).
@@ -386,6 +477,8 @@ export type AuditEvent =
   | "deposit.captured"
   | "deposit.released"
   | "booking.reopened"
+  | "dates.blocked"
+  | "dates.unblocked"
   | "admin.login"
   | "admin.login_failed";
 

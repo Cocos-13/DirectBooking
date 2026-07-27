@@ -5,7 +5,7 @@ directions** using iCal feeds.
 
 ```
 Airbnb / Booking.com  --export .ics-->  this site   (inbound: block their bookings)
-this site  --/api/calendar.ics-->  Airbnb / Booking.com   (outbound: block direct bookings)
+this site  --/api/calendar.ics-->  Airbnb / Booking.com   (outbound: block direct bookings + manual blocks)
 ```
 
 ## Inbound — show platform bookings on this site

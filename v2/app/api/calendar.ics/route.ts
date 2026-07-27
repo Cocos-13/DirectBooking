@@ -1,40 +1,66 @@
-import { getConfirmedBookings } from "@/lib/bookingStore";
-import { propertyToday } from "@/lib/availability";
+import { getConfirmedBookings, getManualBlockDates } from "@/lib/bookingStore";
+import { datesToRanges, propertyToday } from "@/lib/availability";
 import { siteConfig } from "@/content/siteConfig";
 
-// Published iCal feed of this site's OWN direct bookings. The owner imports
-// this URL into Airbnb and Booking.com ("Import calendar") so a direct
-// booking blocks those dates on the platforms too. Empty (but valid) when the
-// store isn't configured or holds no bookings.
+// Published iCal feed of everything THIS SITE closes off: its own direct
+// bookings, plus the nights the owner blocked by hand in the admin calendar.
+// The owner imports this URL into Airbnb and Booking.com ("Import calendar"),
+// so both a direct booking and a manual block close those dates on the
+// platforms too. Empty (but valid) when the store isn't configured.
 //
-// Always regenerated so it reflects the latest bookings; a short CDN cache
-// keeps polling platforms from hitting the store on every request.
+// Still no echo loop: both sources originate here. Ranges imported FROM the
+// platforms (`getRawBusyRanges`) must never be published back — see CALENDAR.md.
+//
+// Always regenerated so it reflects the latest state; a short CDN cache keeps
+// polling platforms from hitting the store on every request.
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const all = await getConfirmedBookings().catch(() => []);
+  const [all, blockedNights] = await Promise.all([
+    getConfirmedBookings().catch(() => []),
+    getManualBlockDates().catch(() => [] as string[]),
+  ]);
 
   // Only publish stays that haven't ended yet. Past bookings can't affect
   // anyone's availability, and emitting them forever would grow the feed
   // without bound — the platforms re-download this file every few hours.
   const today = propertyToday();
   const bookings = all.filter((b) => b.checkout >= today);
+  // Consecutive blocked nights become one event rather than one per night:
+  // a fortnight closed for renovation is 1 VEVENT, not 14.
+  const blocks = datesToRanges(blockedNights);
 
   const host = safeHost(siteConfig.url);
   const stamp = icalStamp(new Date());
 
-  const events = bookings.map((b) =>
-    [
-      "BEGIN:VEVENT",
-      `UID:direct-${icalText(String(b.id))}@${host}`,
-      `DTSTAMP:${stamp}`,
-      `DTSTART;VALUE=DATE:${icalDate(b.checkin)}`,
-      `DTEND;VALUE=DATE:${icalDate(b.checkout)}`,
-      "SUMMARY:Booked (direct)",
-      "TRANSP:OPAQUE",
-      "END:VEVENT",
-    ].join("\r\n")
-  );
+  const events = [
+    ...bookings.map((b) =>
+      [
+        "BEGIN:VEVENT",
+        `UID:direct-${icalText(String(b.id))}@${host}`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART;VALUE=DATE:${icalDate(b.checkin)}`,
+        `DTEND;VALUE=DATE:${icalDate(b.checkout)}`,
+        "SUMMARY:Booked (direct)",
+        "TRANSP:OPAQUE",
+        "END:VEVENT",
+      ].join("\r\n")
+    ),
+    ...blocks.map((r) =>
+      [
+        "BEGIN:VEVENT",
+        // Keyed by start date: stable for as long as the run itself is, and
+        // unique within the feed since merged runs can't share a first night.
+        `UID:block-${icalDate(r.start)}@${host}`,
+        `DTSTAMP:${stamp}`,
+        `DTSTART;VALUE=DATE:${icalDate(r.start)}`,
+        `DTEND;VALUE=DATE:${icalDate(r.end)}`,
+        "SUMMARY:Blocked (owner)",
+        "TRANSP:OPAQUE",
+        "END:VEVENT",
+      ].join("\r\n")
+    ),
+  ];
 
   const calendar = [
     "BEGIN:VCALENDAR",
@@ -42,7 +68,7 @@ export async function GET() {
     `PRODID:-//${icalText(siteConfig.name)}//Direct Booking//EN`,
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    `X-WR-CALNAME:${icalText(siteConfig.name)} - direct bookings`,
+    `X-WR-CALNAME:${icalText(siteConfig.name)} - direct bookings & blocks`,
     // Hint to importers how often this is worth re-reading. Airbnb and
     // Booking.com use their own schedule regardless, but it costs nothing.
     "REFRESH-INTERVAL;VALUE=DURATION:PT1H",

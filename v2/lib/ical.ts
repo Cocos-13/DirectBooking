@@ -1,8 +1,13 @@
 import ical from "node-ical";
 import { unstable_cache } from "next/cache";
 import type { BusyRange, IcalSource } from "./types";
-import { propertyToday } from "./availability";
-import { getActiveHolds, getConfirmedBookings, isStoreConfigured } from "./bookingStore";
+import { addDaysYmd, propertyToday } from "./availability";
+import {
+  getActiveHolds,
+  getConfirmedBookings,
+  getManualBlockDates,
+  isStoreConfigured,
+} from "./bookingStore";
 
 // How long a fetched copy of each platform iCal feed may be reused before
 // re-fetching. Keeps us well clear of any rate limits and avoids hitting
@@ -94,12 +99,12 @@ const getPlatformBusyRanges = unstable_cache(
   { revalidate: REVALIDATE_SECONDS, tags: ["availability"] }
 );
 
-/** This site's own paid bookings + live pay-link holds. Never cached. */
+/** This site's own paid bookings + live pay-link holds + owner blocks. Never cached. */
 async function getDirectBusyRanges(): Promise<BusyRange[]> {
   // Config-gated: with no store there is nothing to read.
   if (!isStoreConfigured()) return [];
 
-  const [bookings, holds] = await Promise.all([
+  const [bookings, holds, blocks] = await Promise.all([
     // Paid direct bookings — blocked on this site immediately, without waiting
     // for Airbnb/Booking.com to re-import our published feed.
     getConfirmedBookings().catch((err) => {
@@ -113,11 +118,21 @@ async function getDirectBusyRanges(): Promise<BusyRange[]> {
       console.error("[ical] hold read failed:", err);
       return [];
     }),
+    // Nights the owner closed by hand in the admin calendar (cleaning buffers,
+    // personal use). Read live like the two above: the owner blocks a night
+    // precisely because they need it gone from the site *now*.
+    getManualBlockDates().catch((err) => {
+      console.error("[ical] manual block read failed:", err);
+      return [] as string[];
+    }),
   ]);
 
   return [
     ...bookings.map((b): BusyRange => ({ start: b.checkin, end: b.checkout, source: "direct" })),
-    ...holds.map((h): BusyRange => ({ start: h.checkin, end: h.checkout, source: "direct" })),
+    ...holds.map((h): BusyRange => ({ start: h.checkin, end: h.checkout, source: "hold" })),
+    // One blocked night = the half-open range [D, D+1), so the merge/overlap
+    // machinery downstream treats it exactly like a 1-night booking.
+    ...blocks.map((d): BusyRange => ({ start: d, end: addDaysYmd(d, 1), source: "manual" })),
   ];
 }
 
