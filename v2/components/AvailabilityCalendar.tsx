@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { DayPicker, type DateRange, type Matcher } from "react-day-picker";
 import { parseISO, addDays, isSameDay } from "date-fns";
 import { el, enUS } from "date-fns/locale";
@@ -19,6 +19,9 @@ interface Props {
   horizonDays: number;
   selected: DateRange | undefined;
   onSelect: (range: DateRange | undefined) => void;
+  /** Bumped by BookingSection each time the guest picks a stay under the
+   *  minimum — see `alerting` below. */
+  minStayAlert: number;
 }
 
 export function AvailabilityCalendar({
@@ -27,9 +30,22 @@ export function AvailabilityCalendar({
   horizonDays,
   selected,
   onSelect,
+  minStayAlert,
 }: Props) {
   const { t, lang } = useLanguage();
   const twoMonths = useMediaQuery(TWO_MONTH_QUERY);
+
+  // The 2-night rule is already stated once, under the calendar. Picking a
+  // single night flashes *that* line red instead of printing a second message
+  // that says the same thing in more words: the guest is sent to where the
+  // rule lives rather than being handed a new one to read.
+  const [alerting, setAlerting] = useState(false);
+  useEffect(() => {
+    if (minStayAlert === 0) return; // nothing tried yet
+    setAlerting(true);
+    const timer = setTimeout(() => setAlerting(false), 2600);
+    return () => clearTimeout(timer);
+  }, [minStayAlert]);
 
   // Deliberately the property's clock, not the visitor's. A guest browsing
   // from a timezone behind Greece would otherwise be offered a night that has
@@ -117,7 +133,28 @@ export function AvailabilityCalendar({
         </button>
       )}
 
-      <p className="mt-3 text-xs text-aegean-900/60 dark:text-ink-muted">{t.calendar.minStayNotice}</p>
+      {/* `key` remounts the line on every bump so the shake replays even when
+          a second short stay is picked while the first flash is still lit —
+          re-adding a class React already sees on the element would not.
+          The colour carries the message on its own under
+          prefers-reduced-motion, where globals.css cancels the animation. */}
+      <p
+        key={minStayAlert}
+        className={
+          alerting
+            ? "mt-3 animate-shake text-xs font-semibold text-red-600 dark:text-red-400"
+            : "mt-3 text-xs text-aegean-900/60 transition-colors dark:text-ink-muted"
+        }
+      >
+        {t.calendar.minStayNotice}
+      </p>
+      {/* Nothing on screen changes wording, so a screen reader would otherwise
+          get no signal at all that the pick was refused. */}
+      {alerting && (
+        <span role="alert" className="sr-only">
+          {t.form.errorMinStay}
+        </span>
+      )}
     </div>
   );
 }

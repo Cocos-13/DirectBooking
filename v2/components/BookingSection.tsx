@@ -11,7 +11,7 @@ import { BookingForm } from "./BookingForm";
 import { ContactBlock } from "./ContactChannels";
 import { VivaBadge } from "./VivaBadge";
 import { evaluateBookingRange } from "@/lib/availability";
-import type { MergedRange } from "@/lib/types";
+import type { BookingRejectionReason, MergedRange } from "@/lib/types";
 
 interface AvailabilityResponse {
   merged: MergedRange[];
@@ -26,7 +26,13 @@ export function BookingSection() {
   const [data, setData] = useState<AvailabilityResponse | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [range, setRange] = useState<DateRange | undefined>();
-  const [rangeError, setRangeError] = useState<string | null>(null);
+  // The reason, not a rendered string: a too-short stay must still block the
+  // form, but it is answered by flashing the calendar's own minimum-stay line
+  // rather than by printing a message here.
+  const [rangeIssue, setRangeIssue] = useState<BookingRejectionReason | null>(null);
+  // A counter, not a flag — the calendar keys its flash off the change, so a
+  // second one-night pick re-triggers it while the first is still showing.
+  const [minStayAlert, setMinStayAlert] = useState(0);
 
   useEffect(() => {
     // `no-store` so a back/forward navigation can't resurrect a stale copy of
@@ -42,7 +48,7 @@ export function BookingSection() {
 
   function handleSelect(newRange: DateRange | undefined) {
     setRange(newRange);
-    setRangeError(null);
+    setRangeIssue(null);
 
     if (newRange?.from && newRange?.to && data) {
       const checkin = format(newRange.from, "yyyy-MM-dd");
@@ -55,13 +61,8 @@ export function BookingSection() {
         horizonDays: data.horizonDays,
       });
       if (!evaluation.ok) {
-        setRangeError(
-          evaluation.reason === "min-stay"
-            ? t.form.errorMinStay
-            : evaluation.reason === "not-available"
-              ? t.form.errorNotAvailable
-              : t.form.errorInvalid
-        );
+        setRangeIssue(evaluation.reason);
+        if (evaluation.reason === "min-stay") setMinStayAlert((n) => n + 1);
       }
     }
   }
@@ -86,10 +87,17 @@ export function BookingSection() {
               horizonDays={data.horizonDays}
               selected={range}
               onSelect={handleSelect}
+              minStayAlert={minStayAlert}
             />
           </div>
 
-          {rangeError && <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">{rangeError}</p>}
+          {/* Every reason but the minimum stay, which the calendar answers in
+              place. The others name a problem the standing text does not. */}
+          {rangeIssue && rangeIssue !== "min-stay" && (
+            <p className="mt-3 text-sm font-medium text-red-600 dark:text-red-400">
+              {rangeIssue === "not-available" ? t.form.errorNotAvailable : t.form.errorInvalid}
+            </p>
+          )}
 
           <div className="mt-8 rounded-2xl border border-sand-200 bg-white p-5 shadow-elev-1 dark:border-ink-border dark:bg-ink-surface dark:shadow-none">
             <p className="text-sm font-semibold text-aegean-900 dark:text-ink-text">{t.bookingRecap.heading}</p>
@@ -115,7 +123,7 @@ export function BookingSection() {
           </div>
 
           <div className="mt-6">
-            <BookingForm range={range} rangeValid={!!(range?.from && range?.to && !rangeError)} />
+            <BookingForm range={range} rangeValid={!!(range?.from && range?.to && !rangeIssue)} />
           </div>
 
           <div className="mt-3 flex justify-center">

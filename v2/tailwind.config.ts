@@ -93,6 +93,14 @@ const config: Config = {
           "0%": { filter: "blur(10px)", opacity: "0", transform: "translateY(5px)" },
           "100%": { filter: "blur(0)", opacity: "1", transform: "translateY(0)" },
         },
+        // Draws the eye back to a rule the guest just broke (the 2-night
+        // minimum) without moving anything else on the page. Small amplitude:
+        // enough to register as "look here", not enough to read as a glitch.
+        shake: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "15%, 45%, 75%": { transform: "translateX(-4px)" },
+          "30%, 60%, 90%": { transform: "translateX(4px)" },
+        },
       },
       animation: {
         "fade-in-up": "fade-in-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both",
@@ -100,6 +108,9 @@ const config: Config = {
         "photo-in-left": "photo-in-left 0.55s cubic-bezier(0.22, 1, 0.36, 1) both",
         "testimonial-in": "testimonial-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both",
         "blur-in": "blur-in 0.4s ease-out both",
+        // Two passes — one is over before a guest who was looking at the
+        // calendar has moved their eyes down to the line.
+        shake: "shake 0.55s ease-in-out 2",
       },
     },
   },
