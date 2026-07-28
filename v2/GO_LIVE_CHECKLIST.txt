@@ -346,6 +346,12 @@ against the LIVE credentials.
 STAGE 6 — DEPLOY + END-TO-END TEST (on DEMO)
 Viva webhooks and redirects cannot reach localhost, so this must be on the
 deployed HTTPS URL.
+STATUS (2026-07-28): the STAY payment is fully proven — 6.3/6.4/6.5 pass, happy
+AND sad path, money + emails owner-verified. Remaining: 6.6 (deposit pre-auth
+release/capture — the last untested money path), 6.7 (rate-limit browser check),
+6.2 (calendar eyeball pass, not payment-related). Stage 7 should not start until
+6.6 passes: the live Viva account's pre-auth permission is a separate switch, and
+you do not want the first release/capture attempt to be a real guest's €200.
 ------------------------------------------------------------------------
 [x] 6.1  Deploy to Vercel; point your domain at it (HTTPS auto).
 [ ] 6.2  Open the site; confirm it loads, EL/EN toggle works, calendar shows
@@ -363,8 +369,16 @@ deployed HTTPS URL.
            - you (owner) get the request email WITH an "Approve" button;
            - the guest gets an acknowledgement email.
          Confirmed working (test request from cocosapartments.com).
-[ ] 6.4  Click Approve > Confirm. Confirm the guest gets a Viva pay link.
-[ ] 6.5  Pay with a Viva DEMO test card. Confirm:
+[x] 6.4  Click Approve > Confirm. Confirm the guest gets a Viva pay link.
+         DONE (2026-07-28, owner-confirmed): Approve > Confirm creates the Viva
+         order and the guest receives the pay link.
+[x] 6.5  Pay with a Viva DEMO test card. Confirm:
+         DONE (2026-07-28, owner-confirmed): BOTH paths tested on DEMO — the
+         happy path (paid > /booking/success > owner PAID email > guest receipt)
+         and the sad path (declined card > /booking/failure). Money movements
+         and all emails verified correct by the owner. This also re-proves 5.3
+         (source redirect URLs) and 5.5 (webhook delivery) end-to-end.
+         STILL UNPROVEN BY THIS TEST: the deposit pre-auth lifecycle — see 6.6.
          DEMO TEST CARDS (developer.viva.com/integration-reference/
          test-cards-and-environments/) — CVV any 3 digits, expiry any future date:
            4147 4630 1111 0133   Visa        -> SUCCESS
@@ -382,18 +396,96 @@ deployed HTTPS URL.
 [ ] 6.6  Deposit: click "Send deposit hold link", authorize the hold as the
          guest, then use the "Release / Capture" email link to RELEASE it.
          Confirm the guest gets the release email.
+         *** THIS IS NOW THE ONLY UNTESTED MONEY PATH. *** 6.5 passed, so the
+         charge side is proven; the pre-auth side has never run end-to-end.
+         Exact steps (all on DEMO, from the PAID email of the 6.5 booking):
+           a. Open the owner PAID email > "Send €200 deposit hold link" >
+              review page opens (GET) > press Confirm (POST).
+           b. Open the guest email, authorize with 4147 4630 1111 0133.
+              It is a HOLD, not a charge — the demo card is never really debited.
+           c. Owner gets a "Release / Capture" email. Click it > RELEASE.
+           d. Confirm the guest gets the release email, and that the Viva demo
+              portal shows the pre-auth as cancelled/voided (not captured).
+         WHAT THIS IS ACTUALLY TESTING (why it can't be skipped): the two calls
+         behind Release/Capture go to the LEGACY Payment API on a DIFFERENT host
+         (HOSTS.payments, lib/viva.ts:23) with DIFFERENT credentials (Basic auth,
+         VIVA_MERCHANT_ID + VIVA_API_KEY). Both the host fix (2026-07-23) and
+         5.6's permission check were verified only INDIRECTLY — 5.6 probed a
+         non-existent transaction id and read the rejection. Step (c) is the
+         first and only direct proof that a real hold can be released.
+         IF RELEASE FAILS with "Viva rejected the request": check Settings >
+         API Access > "Allow recurring payments and pre-auth captures via API"
+         is ticked on the DEMO account, then re-run `npm run viva:check`.
+         Do NOT "fix" the webhook's statusId "F" check if you go looking — a
+         successful pre-auth really is "F" (see the CHECKED, NOT A BUG note above).
+         Optional but worth doing once: repeat with CAPTURE for a partial amount
+         (e.g. €50) on a second hold, so you've seen both outcomes before a real
+         guest's money is involved. Capture is the path that takes real money —
+         it is the one you least want to first exercise in production.
 [ ] 6.7  Abuse checks: submit the request form ~6 times fast -> you should get
          a "too many requests" message (rate limiting works).
+         Do this in the BROWSER on the live site. Expected: the first 4 go
+         through (the per-email cap is 4/hour — you will receive 4 owner request
+         emails + 4 guest acks, which is normal for this test), then a
+         "too many requests" message. The per-IP caps are 5/10min and 40/day
+         (app/api/request/route.ts:63-67).
+         NOT PRE-VERIFIABLE FROM HERE (2026-07-28): a scripted probe against the
+         live endpoint is indistinguishable from a flood and was blocked by the
+         agent sandbox, so the limiter's live behaviour has not been machine-
+         checked. Your browser test is the proof. Note the limiter runs AFTER
+         schema validation, so malformed requests never consume the counter.
 
 ------------------------------------------------------------------------
 STAGE 7 — GO LIVE (switch DEMO -> PRODUCTION Viva)
 ------------------------------------------------------------------------
-[ ] 7.1  Repeat Stage 5 with LIVE Viva credentials (production portal).
-[ ] 7.2  Set VIVA_ENV = production and swap in the live VIVA_* values +
-         VIVA_MERCHANT_ID / VIVA_API_KEY + live webhook + redirect URLs.
-[ ] 7.3  Redeploy.
-[ ] 7.4  Do ONE small REAL transaction end-to-end; confirm the PAID email +
-         receipt + calendar block; then refund it from the Viva portal.
+NOTHING CARRIES OVER FROM DEMO. The live account is a separate account: new
+credentials, new source, new webhook, new verification key, and the pre-auth
+API permission is a per-account switch that must be ticked again. Every value
+below is a DIFFERENT string from the demo one you are currently running on.
+
+[ ] 7.1  Repeat Stage 5 in the LIVE portal (www.vivapayments.com), in order:
+         a. Settings > API Access > Smart Checkout credentials
+            -> new VIVA_CLIENT_ID, VIVA_CLIENT_SECRET
+         b. Sales > Online payments > Websites/Apps > create the source
+            -> new VIVA_SOURCE_CODE. On that source set EXACTLY:
+                 Protocol      https
+                 Domain Name   www.cocosapartments.com
+                 Success URL   booking/success      <- bare relative path
+                 Failure URL   booking/failure      <- bare relative path
+            BARE PATHS, no https://, no domain, no leading slash. A full URL
+            here is what broke 5.3 twice (Viva glues Domain + path). "failure",
+            never "failed". Upload the company logo in the same dialog.
+         c. Payment API credentials -> VIVA_MERCHANT_ID, VIVA_API_KEY
+         d. Settings > API Access > tick "Allow recurring payments and pre-auth
+            captures via API". PER-ACCOUNT — being on in demo means nothing.
+            Without it the deposit Release/Capture buttons fail in production.
+         e. Verification key:
+              GET https://www.vivapayments.com/api/messages/config/token
+              (Basic auth: Merchant ID / API key. NOT api.vivapayments.com —
+               that host 404s on this path, same trap as 5.4.)
+            -> new VIVA_WEBHOOK_VERIFICATION_KEY
+         f. Add the webhook -> https://www.cocosapartments.com/api/viva/webhook
+            event "Transaction Payment Created" (1796). Set the key env var and
+            redeploy BEFORE saving the webhook, or Viva's verifier fails.
+[ ] 7.2  Swap the Vercel PRODUCTION env in one pass (all 7 values change):
+           VIVA_ENV=production, VIVA_CLIENT_ID, VIVA_CLIENT_SECRET,
+           VIVA_SOURCE_CODE, VIVA_WEBHOOK_VERIFICATION_KEY,
+           VIVA_MERCHANT_ID, VIVA_API_KEY
+         Mixed demo/live values authenticate against the wrong environment and
+         fail with 401s, so do not swap them piecemeal. No surrounding quotes
+         (per 2.3). `npm run viva:check` REFUSES to create orders when
+         VIVA_ENV=production, so it can no longer prove the source config —
+         7.4 is the only proof. Keep the demo values somewhere safe first if
+         you ever want to re-test on demo.
+[ ] 7.3  Redeploy (env changes only take effect on a NEW deployment).
+[ ] 7.4  Do ONE small REAL transaction end-to-end with a real card; confirm the
+         PAID email + guest receipt + the dates going blocked on the calendar;
+         then refund it from the Viva portal.
+[ ] 7.5  Do ONE real DEPOSIT hold and RELEASE it (the 6.6 flow, live). This is
+         separate from 7.4 and uses different credentials and a different host,
+         so 7.4 passing does not prove it. Release it immediately — an
+         unreleased hold sits on your own card. Do this BEFORE the first real
+         guest, not on their money.
 
 ------------------------------------------------------------------------
 STAGE 8 — LEGAL / COMPLIANCE  (do NOT skip — this is real risk)
