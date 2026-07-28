@@ -210,6 +210,22 @@ STAGE 4 — SITE + SECRETS
               Local dev: add NEXT_PUBLIC_GOOGLE_MAPS_KEY=THEKEY to .env.local
               and restart `npm run dev`.
 
+[ ] 4.5  *** UPGRADE VERCEL FROM HOBBY TO PRO BEFORE TAKING REAL PAYMENTS ***
+         Found 2026-07-28: the project sits on the HOBBY plan (shown next to
+         the project name). Vercel restricts Hobby to NON-COMMERCIAL personal
+         use; commercial usage — "any Deployment used for the financial gain
+         of anyone involved" — requires Pro or Enterprise. A site taking real
+         card payments for real bookings is squarely commercial.
+         THE RISK IS NOT A FINE, IT IS SUSPENSION: losing the deployment takes
+         down the payment flow, the Viva webhook and the calendar feed at once,
+         mid-season, with guest money already in flight.
+         Blocks Stage 7, not Stage 6 — demo payments move no real money.
+         Pro is ~$20/month. Secondary benefit: Hobby caps cron jobs at 2 and
+         DAILY ONLY (fired anywhere within the given hour), which 10.2 is
+         designed around; Pro removes that constraint if the design ever needs
+         finer timing.
+         Refs: vercel.com/docs/plans/hobby · vercel.com/docs/limits/fair-use-guidelines
+
 ------------------------------------------------------------------------
 STAGE 5 — PAYMENTS: VIVA DEMO (get the full flow working before real money)
 COMPLETE (2026-07-24). All of 5.1–5.6 pass. A demo order was paid with the Visa
@@ -503,6 +519,12 @@ Every value below is a DIFFERENT string from the demo one you are running on.
          Nothing else is blocked while you wait: 6.7, 6.2 and Stage 8 are
          independent, and the site sits safely on DEMO credentials (no real money
          can move) until 7.2 swaps them.
+         WHILE YOU HAVE THEIR ATTENTION, ask these two as well — 10.2's design
+         is blocked on them and neither is clearly documented:
+           - How long does a Smart Checkout pre-authorization stay CAPTURABLE,
+             and does it differ by card type (debit vs credit)?
+           - When capturing LESS than the authorized amount, is the remainder
+             released automatically, or is a separate release call needed?
 [ ] 7.1  Once 7.0 is APPROVED, repeat Stage 5 in the LIVE portal, in order:
          a. Settings > API Access > Smart Checkout credentials
             -> new VIVA_CLIENT_ID, VIVA_CLIENT_SECRET
@@ -580,7 +602,60 @@ STAGE 10 — OPTIONAL / RECOMMENDED NEXT (Phase 4 — not blockers)
 ------------------------------------------------------------------------
 [ ] 10.1 Guest EMAIL VERIFICATION before the owner approves (reduces fake/typo
          bookings and stolen-card risk).
-[ ] 10.2 Automatic near-checkout DEPOSIT REMINDER (so 9.2 isn't manual).
+[ ] 10.2 AUTO-RELEASE THE DEPOSIT (replaces 9.2's manual habit).
+         SPEC AGREED 2026-07-28 with the owner. NOT YET BUILT — deliberately
+         held until Viva answers the pre-auth question below, because that
+         answer is the one input that could change the 48h number.
+
+         WHY THIS IS SAFE TO AUTOMATE: a pre-auth is not money we hold. Doing
+         nothing already frees it (holds expire on their own), so a LATE
+         auto-release costs nothing. An EARLY one costs the whole deposit —
+         once released, capture is gone forever. The design leans late on
+         purpose.
+
+         BEHAVIOUR:
+           - Anchor: checkout at 12:00 Europe/Athens (owner-confirmed;
+             check-in 15:00). Add checkinTime/checkoutTime to siteConfig —
+             they are currently written down nowhere.
+           - T+0   checkout. The existing owner decision email (Release full /
+                   Capture N€) is unchanged apart from showing the deadline.
+           - T+~25h nudge: "auto-releasing tomorrow unless you act". Lands just
+                   after the owner's inspection window (same day, rarely next).
+           - T+~49h auto-release; guest gets the existing release email.
+           - "Extend 24h" button, MAX TWO extensions (48h -> 96h ceiling).
+             Capped on purpose: an unbounded extend silently walks the hold
+             past the point where it can still be captured, i.e. it disarms
+             the deposit while looking like it protects it. Past 96h you have
+             a real dispute — capture something instead of extending.
+           - Any manual release/capture cancels the automation.
+
+         IMPLEMENTATION NOTES (decided, so the build doesn't re-litigate them):
+           - ONE daily cron ~13:00 Athens. It is a SWEEPER, not a timer: it
+             acts on whatever is DUE per a stored autoReleaseAt timestamp.
+             That makes it immune to Vercel's ±1h cron jitter, to DST (a fixed
+             UTC cron drifts an hour against Athens twice a year), and to a
+             missed run — the next day's run catches up.
+           - Hobby allows 2 crons, DAILY ONLY, fired anywhere within the given
+             hour. This design fits inside that. (See 4.5 — the plan itself is
+             a separate blocker.)
+           - Cron endpoint MUST be secret-protected (CRON_SECRET + header
+             check). An unauthenticated one is a "release every deposit"
+             button for anyone who finds the URL.
+           - KV has no way to LIST deposits today (stored per order code with
+             no index). Add a due-index (sorted set scored by autoReleaseAt).
+           - Guard: compute the hold's AGE and, if the scheduled release falls
+             outside the safe capture window, release early and say why. This
+             also surfaces the long-stay hole — a 7-night booking's hold is
+             ~9 days old at checkout and may already be uncapturable.
+           - If capture credentials are missing, the automation disables
+             itself rather than pretending to act.
+
+         BLOCKED ON — ask Viva (add to the 7.0 onboarding email):
+           a. How long does a Smart Checkout pre-authorization stay
+              CAPTURABLE, and does it differ by card type (debit vs credit)?
+           b. When capturing LESS than the authorized amount, is the remainder
+              released automatically, or is a separate release call needed?
+         Neither is clearly documented, and both change the design.
 [ ] 10.3 A privacy-friendly CAPTCHA (Cloudflare Turnstile) on the request form,
          only if you actually see spam/abuse.
 [ ] 10.4 Optional: phone verification, smart-lock code automation on payment.
