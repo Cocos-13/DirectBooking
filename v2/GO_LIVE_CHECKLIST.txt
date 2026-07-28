@@ -105,12 +105,39 @@ this change and no longer covers current behavior — 3.4's human eyeball pass
 and 6.2 below should be re-run against the current deployed code, not treated
 as already covered.
 
-NOTE (live-data finding, 2026-07-23): the feed currently contains a ~368-night
-block 2027-01-20 → 2028-01-23 coming from one of the platform feeds. If it's
-intentional (long-term let / closed season / dates not yet opened) it's correct;
-if not, it's a stale event in Airbnb or Booking.com silently killing a year of
-availability — check both platforms' Jan-2027 calendars and delete it there
-(clears here within ~30 min feed cache).
+DIAGNOSED (2026-07-28) — the ~368-night block first seen on 2026-07-23 is NOT a
+stale event. It is ROLLING: it started at day 181 from "today" on BOTH
+observation dates (2027-01-20 on Jul 23, 2027-01-25 on Jul 28 — it moved exactly
+5 days in 5 days). A rolling block is a SETTING, not a booking. Reading the two
+feeds separately shows it is BOTH platforms, tiling one continuous wall:
+
+  AIRBNB       2027-04-24 -> 2027-07-29   "Airbnb (Not available)"
+  BOOKING.COM  2027-01-25 -> 2027-04-24   "CLOSED - Not available"
+  BOOKING.COM  2027-07-29 -> 2028-01-28   "CLOSED - Not available"
+
+i.e. Airbnb's booking window is set to 9 MONTHS (day 270 = 2027-04-24 exactly)
+and Booking.com's calendar is only opened 6 MONTHS out (day 181 exactly). Each
+platform emits "not available" filler past its own window; this site takes the
+UNION, so the earlier of the two (6 months) is what guests actually hit.
+
+IMPACT: siteConfig.calendarHorizonDays = 365, so days 181-365 — HALF the
+bookable year — are dead on the direct site, and because it rolls forward daily
+it never resolves itself. Every day past 6 months is a direct booking (0%
+commission) being refused for no reason.
+
+OWNER FIX (only you can do this — platform settings, not code):
+  - Airbnb: Calendar > Availability > Booking window -> change "9 months in
+    advance" to 12 months or "All future dates".
+  - Booking.com: Extranet > Rates & Availability > open the calendar further
+    out (it allows well beyond 6 months); the closed dates are simply dates you
+    have never opened.
+  Clears here within ~30 min (feed cache).
+
+DO NOT "FIX" THIS IN CODE by ignoring "Not available"/"CLOSED" events. The same
+event types also carry your genuine manual blocks — the near-term Airbnb rows
+(e.g. 2026-07-30 -> 2026-08-02) are exactly that. Filtering them by summary
+would open dates you deliberately closed and double-book you. The union is the
+safe direction; the platforms' windows are what need widening.
 
 NOTE (not a checklist item, just so it isn't a surprise): the Airbnb and
 Booking.com calendars are not synced to each other — Airbnb's reservations do
