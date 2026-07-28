@@ -42,7 +42,7 @@ export const siteConfig = {
   // Version stamp for the guest-facing Terms/Privacy/House-Rules. Bump this
   // whenever their content changes; the version each guest accepted is recorded
   // with their booking as consent evidence. Keep as YYYY-MM-DD.
-  policyVersion: "2026-07-19",
+  policyVersion: "2026-07-28",
 
   // Set false once a lawyer has reviewed the legal pages — hides the "draft,
   // pending legal review" banner. Keep true until then.

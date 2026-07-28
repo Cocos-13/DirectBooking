@@ -130,10 +130,11 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
             ],
           },
           {
-            heading: "Πολιτική ακύρωσης & επιστροφών",
+            heading: "Πολιτική ακύρωσης",
             body: [
-              "14+ ημέρες πριν το check-in: πλήρης επιστροφή. 7–13 ημέρες: 50%. Λιγότερο από 7 ημέρες: χωρίς επιστροφή.",
-              "Οι επιστροφές γίνονται στην ίδια κάρτα που χρησιμοποιήθηκε, μέσω Viva.com — συνήθως εντός 5–10 εργάσιμων ημερών, ανάλογα με την τράπεζά σας.",
+              "Όλες οι κρατήσεις είναι μη επιστρεπτέες. Μετά την πληρωμή, το ποσό δεν επιστρέφεται σε περίπτωση ακύρωσης, συντόμευσης της διαμονής, καθυστερημένης άφιξης ή μη εμφάνισης.",
+              "Μέχρι την πληρωμή, το αίτημα κράτησης είναι δωρεάν και μπορεί να ακυρωθεί οποτεδήποτε χωρίς κόστος. Καμία χρέωση δεν γίνεται πριν επιβεβαιώσουμε τις ημερομηνίες σας.",
+              "Αυτό δεν επηρεάζει την προέγκριση της εγγύησης, η οποία αποδεσμεύεται μετά την αναχώρηση όπως περιγράφεται παρακάτω, ούτε τυχόν δικαιώματά σας βάσει αναγκαστικού δικαίου εφόσον δεν μπορέσουμε να παρέχουμε τη διαμονή.",
               "Οι όροι αυτοί αντιστοιχούν στην πολιτική ακύρωσης που εμφανίζεται στη σελίδα κράτησης κατά την υποβολή του αιτήματός σας· η έκδοση που αποδεχθήκατε καταγράφεται μαζί με την κράτησή σας.",
             ],
           },
@@ -247,10 +248,11 @@ export function getLegalDocs(lang: Lang): LegalDoc[] {
           ],
         },
         {
-          heading: "Cancellation & refund policy",
+          heading: "Cancellation policy",
           body: [
-            "14+ days before check-in: full refund. 7–13 days: 50%. Less than 7 days: non-refundable.",
-            "Refunds are returned to the same card used, via Viva.com — typically within 5–10 business days, depending on your bank.",
+            "All bookings are non-refundable. Once payment is made, the amount paid is not refunded if you cancel, shorten your stay, arrive late or do not show up.",
+            "Until payment is made, a booking request is free and can be cancelled at any time at no cost. Nothing is charged before we confirm your dates.",
+            "This does not affect the damage deposit pre-authorization, which is released after checkout as described below, nor any rights you have under mandatory law where we cannot deliver the stay.",
             "These terms mirror the cancellation policy shown on the booking page when you submit your request; the version you accepted is recorded with your booking.",
           ],
         },

@@ -339,11 +339,10 @@ export const translations: Record<Lang, Dictionary> = {
     },
     cancellation: {
       heading: "Πολιτική ακύρωσης",
-      intro: "Τα σχέδια αλλάζουν — δείτε πώς λειτουργούν οι ακυρώσεις μόλις επιβεβαιωθούν οι ημερομηνίες σας.",
+      intro: "Οι κρατήσεις δεν επιστρέφονται. Δείτε ακριβώς από πότε ισχύει αυτό.",
       tiers: [
-        { label: "14+ ημέρες πριν την άφιξη", detail: "Πλήρης επιστροφή" },
-        { label: "7–13 ημέρες πριν", detail: "Επιστροφή 50%" },
-        { label: "Λιγότερο από 7 ημέρες πριν", detail: "Χωρίς επιστροφή" },
+        { label: "Πριν την πληρωμή (στάδιο αιτήματος)", detail: "Δωρεάν ακύρωση" },
+        { label: "Μετά την πληρωμή", detail: "Χωρίς επιστροφή" },
       ],
       reassure: "Δεν προκαταβάλλεται κανένα ποσό μέχρι να επιβεβαιώσουμε τις ημερομηνίες σας — το αίτημα είναι πάντα δωρεάν.",
     },
@@ -352,7 +351,7 @@ export const translations: Record<Lang, Dictionary> = {
       items: [
         "Check-in από 15:00 · check-out έως 12:00",
         "Ελάχιστη διαμονή 2 διανυκτερεύσεις",
-        "Δωρεάν ακύρωση έως 14 ημέρες πριν την άφιξη",
+        "Χωρίς επιστροφή μετά την πληρωμή — δωρεάν ακύρωση πριν από αυτήν",
         "Καμία πληρωμή τώρα — πληρώνετε μετά την επιβεβαίωση",
       ],
     },
@@ -608,11 +607,10 @@ export const translations: Record<Lang, Dictionary> = {
     },
     cancellation: {
       heading: "Cancellation policy",
-      intro: "Plans change — here's how cancellations work once your dates are confirmed.",
+      intro: "Bookings are non-refundable. Here's exactly when that starts to apply.",
       tiers: [
-        { label: "14+ days before check-in", detail: "Full refund" },
-        { label: "7–13 days before", detail: "50% refund" },
-        { label: "Less than 7 days before", detail: "Non-refundable" },
+        { label: "Before you pay (request stage)", detail: "Free to cancel" },
+        { label: "Once payment is made", detail: "Non-refundable" },
       ],
       reassure: "No payment is taken until we confirm your dates, so sending a request is always free.",
     },
@@ -621,7 +619,7 @@ export const translations: Record<Lang, Dictionary> = {
       items: [
         "Check-in from 3 PM · check-out by 12 PM",
         "Minimum stay 2 nights",
-        "Free cancellation up to 14 days before arrival",
+        "Non-refundable once paid — cancel free before payment",
         "No payment now — you pay after we confirm",
       ],
     },
