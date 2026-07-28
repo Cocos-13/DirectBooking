@@ -3,10 +3,12 @@ import {
   audit,
   blockDates,
   deleteConfirmedBooking,
+  getActiveHolds,
   getBookingPii,
   getConfirmedBookings,
   getManualBlocks,
   isStoreConfigured,
+  releaseHold,
   unblockDates,
 } from "@/lib/bookingStore";
 import {
@@ -114,6 +116,19 @@ export async function POST(req: Request) {
     });
   }
 
+  if (action === "release") {
+    const holdId = ((form?.get("holdId") as string) ?? "").trim();
+    if (!holdId) return adminPage({ notice: "No hold specified.", view });
+    const { released, pendingRemoved } = await releaseHold(holdId);
+    await audit("hold.released", { holdId, released, pendingRemoved });
+    return adminPage({
+      notice: released
+        ? `✓ Released the hold. Those dates are free again${pendingRemoved ? " and the unpaid order's details were deleted" : ""}.`
+        : "That hold was not found (already expired or released?).",
+      view,
+    });
+  }
+
   if (action === "block" || action === "unblock") {
     const { dates, rejected } = cleanDates(form?.getAll("dates") ?? []);
     if (dates.length === 0) {
@@ -198,13 +213,14 @@ async function adminPage(opts: {
   const lastDay = addDaysYmd(today, siteConfig.calendarHorizonDays);
   const view = resolveView(opts.view, today, lastDay);
 
-  const [ranges, manualMap, bookings] = await Promise.all([
+  const [ranges, manualMap, bookings, holds] = await Promise.all([
     getRawBusyRanges().catch((err) => {
       console.error("[admin] busy ranges failed:", err);
       return [];
     }),
     getManualBlocks(today).catch(() => ({})),
     getConfirmedBookings().catch(() => []),
+    getActiveHolds().catch(() => []),
   ]);
   const manual = new Set(Object.keys(manualMap));
 
@@ -215,8 +231,44 @@ async function adminPage(opts: {
     <h1>Calendar &amp; bookings</h1>
     ${notice ? `<p class="notice">${notice}</p>` : ""}
     ${calendar}
+    ${renderHolds(holds, view)}
     ${await renderBookings(bookings, manual, { today, lastDay, view, confirmCode })}`;
   return page("Bookings admin", body);
+}
+
+function renderHolds(
+  holds: Awaited<ReturnType<typeof getActiveHolds>>,
+  view: string
+): string {
+  if (holds.length === 0) return "";
+  const sorted = [...holds].sort((a, b) => a.checkin.localeCompare(b.checkin));
+  const rows = sorted
+    .map(
+      (h) => `
+        <tr>
+          <td class="nowrap">${h.checkin} → ${h.checkout}</td>
+          <td class="muted">expires ${escapeHtml(h.expiresAt)}</td>
+          <td>
+            <form method="POST" action="${SELF}" style="display:inline">
+              <input type="hidden" name="action" value="release" />
+              <input type="hidden" name="holdId" value="${escapeHtml(h.id)}" />
+              <input type="hidden" name="view" value="${view.slice(0, 7)}" />
+              <button type="submit" class="danger">Release</button>
+            </form>
+          </td>
+        </tr>`
+    )
+    .join("");
+  return `
+    <h2>Pending pay links</h2>
+    <table>
+      <tr><th>Dates</th><th>Hold</th><th></th></tr>
+      ${rows}
+    </table>
+    <p class="muted">
+      A live checkout link for a guest who hasn't paid yet. It frees itself automatically once it expires —
+      use "Release" to open the dates immediately and delete the unpaid order's guest details right away.
+    </p>`;
 }
 
 async function renderBookings(

@@ -270,6 +270,39 @@ export async function deleteHold(holdId: string | undefined | null): Promise<voi
   await c.hdel(K.holds, holdId).catch(() => {});
 }
 
+/**
+ * Owner-triggered cancellation of a live pay link: frees the hold immediately
+ * (instead of waiting out its TTL) and purges the matching pending order —
+ * guest PII included — so an abandoned/test booking that was never paid
+ * leaves nothing behind. Matches the pending order by `holdId` since that's
+ * the only link between the two records.
+ */
+export async function releaseHold(
+  holdId: string
+): Promise<{ released: boolean; pendingRemoved: number }> {
+  const c = getClient();
+  if (!c) return { released: false, pendingRemoved: 0 };
+
+  const removed = await c.hdel(K.holds, holdId);
+
+  let pendingRemoved = 0;
+  let cursor = 0;
+  do {
+    const [next, keys] = await c.scan(cursor, { match: `${PREFIX.pending}*`, count: 100 });
+    cursor = Number(next);
+    for (const key of keys) {
+      const value = await c.get<PendingOrder | string>(key);
+      const order = typeof value === "string" ? safeParse<PendingOrder>(value) : value;
+      if (order?.holdId === holdId) {
+        await c.del(key).catch(() => {});
+        pendingRemoved++;
+      }
+    }
+  } while (cursor !== 0);
+
+  return { released: removed > 0, pendingRemoved };
+}
+
 // ---------------------------------------------------------------------------
 // Manual blocks — nights the owner closed by hand from the admin calendar,
 // exactly like blocking a date on Airbnb or the Booking.com extranet. The
@@ -477,6 +510,7 @@ export type AuditEvent =
   | "deposit.captured"
   | "deposit.released"
   | "booking.reopened"
+  | "hold.released"
   | "dates.blocked"
   | "dates.unblocked"
   | "admin.login"
