@@ -448,12 +448,35 @@ Stage 7. PAYMENTS ARE CLEARED TO GO LIVE.
 ------------------------------------------------------------------------
 STAGE 7 — GO LIVE (switch DEMO -> PRODUCTION Viva)
 ------------------------------------------------------------------------
-NOTHING CARRIES OVER FROM DEMO. The live account is a separate account: new
-credentials, new source, new webhook, new verification key, and the pre-auth
-API permission is a per-account switch that must be ticked again. Every value
-below is a DIFFERENT string from the demo one you are currently running on.
+NOTHING CARRIES OVER FROM DEMO. The live account is a SEPARATE ACCOUNT — a
+separate registration, not a mode switch. Your demo login does not work in
+production. New credentials, new source, new webhook, new verification key, and
+the pre-auth API permission is a per-account switch that must be ticked again.
+Every value below is a DIFFERENT string from the demo one you are running on.
 
-[ ] 7.1  Repeat Stage 5 in the LIVE portal (www.vivapayments.com), in order:
+[ ] 7.0  *** REGISTER THE LIVE VIVA ACCOUNT — DO THIS FIRST, IT IS THE LONG POLE ***
+         Discovered 2026-07-28: the demo credentials don't log in to production
+         because the live account doesn't exist yet. This is a KYC business
+         onboarding, not a portal visit — verification can take DAYS and can come
+         back asking for more documents, so start it before anything else in
+         this stage. 7.1-7.5 cannot begin until it is approved.
+         Sign up at www.vivapayments.com (the live self-care portal).
+         NOTE: accounts.vivapayments.com is NOT a login page — it is the OAuth2
+         token endpoint our server calls machine-to-machine (lib/viva.ts:12).
+         Trying to sign in there is a dead end.
+         Expect to be asked for (confirm against the actual form):
+           - entity type: individual/freelancer vs company, with your ΑΦΜ
+           - an identity document for the account holder
+           - an IBAN for settlement (where guest money lands)
+           - possibly the ΑΜΑ (00003559420), as this is short-term-let activity
+         DECIDE THE ENTITY TYPE BEFORE REGISTERING. It determines what appears on
+         guest receipts and how the income is recorded — same question as 8.3
+         (accountant: how you invoice STR income). Changing it later means
+         re-onboarding. Doing 8.3 before 7.0 is the cheaper order.
+         Nothing else is blocked while you wait: 6.7, 6.2 and Stage 8 are
+         independent, and the site sits safely on DEMO credentials (no real money
+         can move) until 7.2 swaps them.
+[ ] 7.1  Once 7.0 is APPROVED, repeat Stage 5 in the LIVE portal, in order:
          a. Settings > API Access > Smart Checkout credentials
             -> new VIVA_CLIENT_ID, VIVA_CLIENT_SECRET
          b. Sales > Online payments > Websites/Apps > create the source
