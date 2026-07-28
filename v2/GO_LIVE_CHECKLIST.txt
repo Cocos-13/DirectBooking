@@ -301,9 +301,10 @@ fallback was wrong and has been removed.)
            "Allow recurring payments and pre-auth captures via API"
          is on. (401/403 would have meant wrong credentials, or credentials
          from the other environment.)
-         This is an INDIRECT probe. Direct proof is 6.6 — releasing a real
-         demo hold. Re-run the same check in Stage 7 against LIVE credentials;
-         the checkbox is per-account and does NOT carry over from demo.
+         This is an INDIRECT probe. Direct proof arrived 2026-07-28: 6.6 passed,
+         a real demo hold was released through this API. Re-run the same check
+         in Stage 7 against LIVE credentials; the checkbox is per-account and
+         does NOT carry over from demo.
          Deposit amount lives in content/siteConfig.ts (deposit.amountEur).
 
 CODE FIX (2026-07-23) — found while working Stage 5, blocked 5.6 AND 6.6:
@@ -318,7 +319,8 @@ demo.vivapayments.com / www.vivapayments.com. Verified by probe:
 So EVERY "Release" or "Capture" click would have failed with a 404 and shown
 the owner "Viva rejected the request". Fixed: HOSTS.payments now serves those
 two calls, and the capture body carries the documented amount + currencyCode +
-customerTrns. This is the same host trap already noted in 5.4 for
+customerTrns. FIX CONFIRMED LIVE (2026-07-28) by 6.6 — a real demo pre-auth was
+released successfully through HOSTS.payments. This is the same host trap already noted in 5.4 for
 /api/messages/config/token — same legacy API, same host.
 
 CHECKED, NOT A BUG (2026-07-23): the webhook only accepts statusId "F"
@@ -346,12 +348,13 @@ against the LIVE credentials.
 STAGE 6 — DEPLOY + END-TO-END TEST (on DEMO)
 Viva webhooks and redirects cannot reach localhost, so this must be on the
 deployed HTTPS URL.
-STATUS (2026-07-28): the STAY payment is fully proven — 6.3/6.4/6.5 pass, happy
-AND sad path, money + emails owner-verified. Remaining: 6.6 (deposit pre-auth
-release/capture — the last untested money path), 6.7 (rate-limit browser check),
-6.2 (calendar eyeball pass, not payment-related). Stage 7 should not start until
-6.6 passes: the live Viva account's pre-auth permission is a separate switch, and
-you do not want the first release/capture attempt to be a real guest's €200.
+STATUS (2026-07-28): *** THE WHOLE MONEY FLOW IS PROVEN ON DEMO. *** 6.3/6.4/6.5
+pass (stay payment, happy AND sad path) and 6.6 passes (deposit hold sent,
+authorized, released) — money + emails owner-verified throughout. Nothing in the
+payment or deposit code is unproven except CAPTURE (release was the tested
+outcome; see 6.6). Remaining in this stage: 6.7 (rate-limit browser check) and
+6.2 (calendar eyeball pass) — neither is a payment item, and neither blocks
+Stage 7. PAYMENTS ARE CLEARED TO GO LIVE.
 ------------------------------------------------------------------------
 [x] 6.1  Deploy to Vercel; point your domain at it (HTTPS auto).
 [ ] 6.2  Open the site; confirm it loads, EL/EN toggle works, calendar shows
@@ -393,12 +396,19 @@ you do not want the first release/capture attempt to be a real guest's €200.
            - owner gets "PAID" email (with a "Send deposit hold link" button);
            - guest gets a receipt;
            - those dates now show as blocked on the site calendar.
-[ ] 6.6  Deposit: click "Send deposit hold link", authorize the hold as the
+[x] 6.6  Deposit: click "Send deposit hold link", authorize the hold as the
          guest, then use the "Release / Capture" email link to RELEASE it.
          Confirm the guest gets the release email.
-         *** THIS IS NOW THE ONLY UNTESTED MONEY PATH. *** 6.5 passed, so the
-         charge side is proven; the pre-auth side has never run end-to-end.
-         Exact steps (all on DEMO, from the PAID email of the 6.5 booking):
+         DONE (2026-07-28, owner-confirmed): hold sent, authorized by the guest,
+         and RELEASED from the owner email — the full pre-auth lifecycle ran
+         clean on DEMO. This is the DIRECT proof that 5.6 could only probe
+         indirectly and that the 2026-07-23 HOSTS.payments fix is correct: a
+         real hold was released via the legacy Payment API (different host,
+         Basic auth). RELEASE is proven; CAPTURE is still only proven by 5.6's
+         indirect probe — it shares the same host, credentials and permission
+         switch as release, so the risk is low, but the first capture will
+         happen on a real guest unless you test one on demo (see below).
+         Steps kept for the Stage 7 live re-run (7.5):
            a. Open the owner PAID email > "Send €200 deposit hold link" >
               review page opens (GET) > press Confirm (POST).
            b. Open the guest email, authorize with 4147 4630 1111 0133.
